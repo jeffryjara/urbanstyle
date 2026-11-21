@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AtSign, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Building2 } from 'lucide-react';
+import { AtSign, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { GlassButton } from './ui/GlassButton';
 import type { UserSession } from '../types';
 import { INITIAL_USERS } from '../data/initialData';
@@ -24,7 +24,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     const cleanPassword = password.trim();
 
     if (!cleanEmail || !cleanPassword) {
-      setErrorMessage('Por favor ingrese su correo institucional y contraseña.');
+      setErrorMessage('Por favor ingrese su correo electrónico y contraseña.');
       return;
     }
 
@@ -38,7 +38,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
       if (!userFound) {
         setIsLoading(false);
-        setErrorMessage('El correo institucional no está registrado en el sistema.');
+        setErrorMessage('El correo electrónico no está registrado en el sistema.');
         return;
       }
 
@@ -56,8 +56,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center p-4 md:p-8 bg-black overflow-hidden">
       {/* Background radial gradient and subtle ambient light */}
-      <div className="absolute top-1/4 -left-48 w-96 h-96 bg-apple-blue/15 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-apple-blueLight/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/4 -left-48 w-[500px] h-[500px] bg-apple-blue/15 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-48 w-[500px] h-[500px] bg-apple-blueLight/10 rounded-full blur-[160px] pointer-events-none" />
       
       {/* Subtle background grid */}
       <div 
@@ -68,79 +68,56 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         }}
       />
 
-      {/* Main Container - Split View on Desktop */}
-      <div className="relative w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 rounded-3xl md:rounded-[32px] overflow-hidden border border-white/10 bg-white/[0.03] backdrop-blur-2xl shadow-[0_25px_80px_rgba(0,0,0,0.85)] z-10 animate-fade-in">
+      {/* Main Container - Larger height and spacious Apple Liquid Glass Card */}
+      <div className="relative w-full max-w-4xl min-h-[580px] md:min-h-[620px] grid grid-cols-1 md:grid-cols-2 rounded-3xl md:rounded-[36px] overflow-hidden border border-white/10 bg-white/[0.03] backdrop-blur-3xl shadow-[0_30px_90px_rgba(0,0,0,0.9)] z-10 animate-fade-in">
         
-        {/* Left Side: Brand & Identity Showcase */}
-        <div className="relative p-8 md:p-12 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent">
-          <div>
-            {/* Logo Badge */}
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/15 p-3 flex items-center justify-center shadow-lg mb-6">
-              <svg viewBox="0 0 40 40" className="w-full h-full text-white" fill="none">
-                <path
-                  d="M10 26C13 26 15 22 20 22C25 22 26 25 31 25C34 25 36 23 37 20L34 14C32 11 29 11 26 14L20 20C17 23 13 23 10 21V26Z"
-                  fill="url(#logo_grad)"
-                />
-                <circle cx="15" cy="14" r="2.5" fill="#007AFF" />
-                <defs>
-                  <linearGradient id="logo_grad" x1="10" y1="11" x2="37" y2="26" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#007AFF" />
-                    <stop offset="1" stopColor="#58A6FF" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-
-            <h1 className="text-3xl md:text-4xl font-extrabold font-display tracking-tight text-[#F5F5F7]">
-              Urban Style
-            </h1>
-            <p className="mt-2 text-sm text-[#86868B] font-medium leading-relaxed">
-              Portal Corporativo de Gestión & Omnicanal POS
-            </p>
-
-            <div className="mt-8 space-y-3">
-              <div className="flex items-center gap-3 text-xs text-[#A1A1A6]">
-                <div className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-apple-blue shrink-0">
-                  <Building2 className="w-3.5 h-3.5" />
-                </div>
-                <span>Comercialización Omnicanal de Calzado Deportivo</span>
-              </div>
-              <div className="flex items-center gap-3 text-xs text-[#A1A1A6]">
-                <div className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[#30D158] shrink-0">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                </div>
-                <span>Data Warehouse & Auditoría OLAP de Producción</span>
-              </div>
-            </div>
+        {/* Left Side: Brand & Identity Showcase (Clean, centered, minimal, without bullet items or footers) */}
+        <div className="relative p-10 md:p-14 flex flex-col justify-center border-b md:border-b-0 md:border-r border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent">
+          {/* Logo Badge */}
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/15 p-3.5 flex items-center justify-center shadow-lg mb-8">
+            <svg viewBox="0 0 40 40" className="w-full h-full text-white" fill="none">
+              <path
+                d="M10 26C13 26 15 22 20 22C25 22 26 25 31 25C34 25 36 23 37 20L34 14C32 11 29 11 26 14L20 20C17 23 13 23 10 21V26Z"
+                fill="url(#login_logo_grad)"
+              />
+              <circle cx="15" cy="14" r="2.5" fill="#007AFF" />
+              <defs>
+                <linearGradient id="login_logo_grad" x1="10" y1="11" x2="37" y2="26" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#007AFF" />
+                  <stop offset="1" stopColor="#58A6FF" />
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
 
-          {/* Legal / Tax Identifier Footnote */}
-          <div className="mt-10 pt-6 border-t border-white/10 flex items-center justify-between text-[11px] text-[#636366] font-mono">
-            <span>RUC 10449598569</span>
-            <span>v2.6 Apple HIG</span>
-          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold font-display tracking-tight text-[#F5F5F7] leading-tight">
+            Urban Style
+          </h1>
+          <p className="mt-3 text-base md:text-lg text-[#86868B] font-medium leading-relaxed">
+            Portal Corporativo de Gestión & Omnicanal POS
+          </p>
         </div>
 
-        {/* Right Side: Authentication Form (Direct email & password login) */}
-        <div className="p-8 md:p-12 flex flex-col justify-center bg-black/40">
-          <div className="mb-6">
-            <h2 className="text-xl md:text-2xl font-bold font-display text-white tracking-tight">
+        {/* Right Side: Authentication Form with larger typography and comfortable inputs */}
+        <div className="p-10 md:p-14 flex flex-col justify-center bg-black/40">
+          <div className="mb-8">
+            <h2 className="text-2xl md:text-3xl font-extrabold font-display text-white tracking-tight">
               Iniciar Sesión
             </h2>
-            <p className="text-xs text-[#86868B] mt-1">
-              Ingrese su correo corporativo y contraseña para ingresar al sistema
+            <p className="text-sm md:text-base text-[#86868B] mt-1.5 leading-normal">
+              Ingrese su correo electrónico y contraseña para ingresar al sistema
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Input: Correo Institucional */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Input: Correo electrónico */}
             <div>
-              <label className="block text-xs font-medium text-[#86868B] mb-1.5">
-                Correo Institucional (@urbanstyle.pe)
+              <label className="block text-sm font-semibold text-[#A1A1A6] mb-2">
+                Correo electrónico
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-3.5 text-[#86868B] pointer-events-none">
-                  <AtSign className="w-4 h-4" />
+                <span className="absolute left-4 text-[#86868B] pointer-events-none">
+                  <AtSign className="w-5 h-5" />
                 </span>
                 <input
                   type="email"
@@ -149,8 +126,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     setEmail(e.target.value);
                     setErrorMessage('');
                   }}
-                  placeholder="ejemplo: gerencia@urbanstyle.pe"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-[#F5F5F7] placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
+                  placeholder="gerencia@urbanstyle.pe"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white/[0.04] border border-white/10 text-base text-[#F5F5F7] placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
                   required
                 />
               </div>
@@ -158,12 +135,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
             {/* Input: Contraseña */}
             <div>
-              <label className="block text-xs font-medium text-[#86868B] mb-1.5">
+              <label className="block text-sm font-semibold text-[#A1A1A6] mb-2">
                 Contraseña
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-3.5 text-[#86868B] pointer-events-none">
-                  <Lock className="w-4 h-4" />
+                <span className="absolute left-4 text-[#86868B] pointer-events-none">
+                  <Lock className="w-5 h-5" />
                 </span>
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -173,44 +150,44 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     setErrorMessage('');
                   }}
                   placeholder="••••••••••••"
-                  className="w-full pl-10 pr-11 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-[#F5F5F7] placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
+                  className="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-white/[0.04] border border-white/10 text-base text-[#F5F5F7] placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 text-[#86868B] hover:text-[#F5F5F7] transition-colors cursor-pointer"
+                  className="absolute right-4 text-[#86868B] hover:text-[#F5F5F7] transition-colors cursor-pointer p-1"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
             {/* Error Message */}
             {errorMessage && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-[#FF453A] animate-fade-in flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#FF453A] shrink-0" />
+              <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-sm text-[#FF453A] animate-fade-in flex items-center gap-2.5">
+                <div className="w-2 h-2 rounded-full bg-[#FF453A] shrink-0" />
                 <span>{errorMessage}</span>
               </div>
             )}
 
-            {/* Switch: Recordar Terminal */}
-            <div className="flex items-center justify-between py-1">
-              <label className="text-xs text-[#86868B] cursor-pointer select-none">
-                Recordar credenciales en esta terminal
+            {/* Switch: Recordar credenciales */}
+            <div className="flex items-center justify-between py-1.5">
+              <label className="text-sm text-[#A1A1A6] cursor-pointer select-none">
+                Recordar credenciales
               </label>
               <button
                 type="button"
                 role="switch"
                 aria-checked={rememberTerminal}
                 onClick={() => setRememberTerminal(!rememberTerminal)}
-                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                   rememberTerminal ? 'bg-apple-blue' : 'bg-white/10'
                 }`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                    rememberTerminal ? 'translate-x-4' : 'translate-x-0'
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                    rememberTerminal ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
               </button>
@@ -222,9 +199,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               variant="primary"
               size="lg"
               loading={isLoading}
-              icon={<ArrowRight className="w-4 h-4" />}
+              icon={<ArrowRight className="w-5 h-5" />}
               iconPosition="right"
-              className="w-full mt-2"
+              className="w-full mt-3 py-4 text-base font-semibold"
             >
               Iniciar Sesión
             </GlassButton>

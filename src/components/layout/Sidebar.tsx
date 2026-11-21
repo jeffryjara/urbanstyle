@@ -32,15 +32,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* TOP SECTION: Brand Identity & Views (Sin subtítulos de sección) */}
         <div className="relative z-10 flex flex-col">
-          {/* Brand Identity */}
+          {/* Brand Identity: Logo directo sin contenedores adicionales, con esquinas redondeadas */}
           <div className="flex items-center gap-3.5 pb-5 border-b border-white/10 mb-6">
-            <div className="w-10 h-10 rounded-2xl bg-white/[0.04] border border-white/15 p-1.5 flex items-center justify-center shadow-[0_0_20px_rgba(0,122,255,0.25)] shrink-0 overflow-hidden">
-              <img
-                src="/logo-icon.png"
-                alt="Urban Style"
-                className="w-full h-full object-contain rounded-xl"
-              />
-            </div>
+            <img
+              src="/logo-icon.png"
+              alt="Urban Style"
+              className="w-10 h-10 rounded-2xl object-cover shrink-0 shadow-md"
+            />
             <div className="flex flex-col min-w-0">
               <span className="font-extrabold font-display text-lg text-white tracking-tight leading-tight truncate">
                 Urban Style
@@ -89,9 +87,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         </div>
 
-        {/* BOTTOM SECTION: Botón de Inventario abajo del todo + Perfil de Usuario */}
-        <div className="pt-4 border-t border-white/10 relative z-10 space-y-3">
-          {/* Botón de Inventario & Stock ubicado abajo del todo */}
+        {/* BOTTOM SECTION: Botón de Inventario + Línea Divisoria Debajo + Perfil de Usuario */}
+        <div className="mt-auto relative z-10 space-y-3">
+          {/* Botón de Inventario & Stock */}
           <button
             onClick={() => setIsStockOpen(true)}
             className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-sm font-medium border border-white/5 transition-all duration-200 cursor-pointer group"
@@ -102,31 +100,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </span>
           </button>
 
-          {/* Tarjeta de Perfil de Usuario con Cerrar Sesión */}
-          <div className="flex items-center justify-between p-2.5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] transition-colors group">
-            <div className="flex items-center gap-3 min-w-0">
-              <img
-                src={user.avatarUrl}
-                alt={user.name}
-                className="w-9 h-9 rounded-full object-cover border border-white/20 shrink-0"
-              />
-              <div className="flex flex-col min-w-0">
-                <span className="text-sm font-semibold text-white truncate leading-tight">
-                  {user.name}
-                </span>
-                <span className="text-xs text-[#86868B] truncate leading-tight mt-0.5">
-                  {user.title}
-                </span>
+          {/* Línea divisoria colocada DEBAJO del botón de Inventario */}
+          <div className="pt-3 border-t border-white/10">
+            {/* Tarjeta de Perfil de Usuario con Cerrar Sesión */}
+            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] transition-colors group">
+              <div className="flex items-center gap-3 min-w-0">
+                <img
+                  src={user.avatarUrl}
+                  alt={user.name}
+                  className="w-9 h-9 rounded-full object-cover border border-white/20 shrink-0"
+                />
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-semibold text-white truncate leading-tight">
+                    {user.name}
+                  </span>
+                  <span className="text-xs text-[#86868B] truncate leading-tight mt-0.5">
+                    {user.title}
+                  </span>
+                </div>
               </div>
-            </div>
 
-            <button
-              onClick={onLogout}
-              title="Cerrar Sesión"
-              className="p-2 rounded-xl text-[#86868B] hover:text-[#FF453A] hover:bg-red-500/10 transition-colors cursor-pointer shrink-0 ml-1"
-            >
-              <LogOut className="w-4.5 h-4.5" />
-            </button>
+              <button
+                onClick={onLogout}
+                title="Cerrar Sesión"
+                className="p-2 rounded-xl text-[#86868B] hover:text-[#FF453A] hover:bg-red-500/10 transition-colors cursor-pointer shrink-0 ml-1"
+              >
+                <LogOut className="w-4.5 h-4.5" />
+              </button>
+            </div>
           </div>
         </div>
       </aside>

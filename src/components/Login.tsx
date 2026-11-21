@@ -99,14 +99,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         
         {/* Left Side: Brand & Identity Showcase with official logo */}
         <div className="relative p-10 md:p-14 flex flex-col justify-center border-b md:border-b-0 md:border-r border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent">
-          {/* Official Urban Style Logo Badge */}
-          <div className="w-20 h-20 rounded-3xl bg-white/[0.04] border border-white/15 p-2 flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.6)] mb-8 overflow-hidden backdrop-blur-xl">
-            <img
-              src="/logo-icon.png"
-              alt="Urban Style Logo"
-              className="w-full h-full object-contain rounded-2xl"
-            />
-          </div>
+          {/* Official Urban Style Logo */}
+          <img
+            src="/logo-icon.png"
+            alt="Urban Style Logo"
+            className="w-20 h-20 rounded-3xl object-cover shadow-[0_10px_30px_rgba(0,0,0,0.6)] mb-8"
+          />
 
           <h1 className="text-4xl md:text-5xl font-extrabold font-display tracking-tight text-[#F5F5F7] leading-tight">
             Urban Style

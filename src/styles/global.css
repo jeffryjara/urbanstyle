@@ -115,3 +115,67 @@
     background: rgba(255, 255, 255, 0.24);
   }
 }
+
+/* ==========================================================================
+   PRINT STYLESHEET: Clean, high-contrast, professional 80mm / A4 receipt
+   ========================================================================== */
+@media print {
+  @page {
+    margin: 8mm;
+    size: auto;
+  }
+
+  /* Force white background and black text on root */
+  html,
+  body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide everything on the page */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Hide all non-printable UI controls */
+  .no-print,
+  .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Display ONLY the printable receipt and all its descendants */
+  #printable-receipt,
+  #printable-receipt * {
+    visibility: visible !important;
+  }
+
+  /* Center the receipt cleanly at the top of the printed page */
+  #printable-receipt {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 480px !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 1px solid #222222 !important;
+    border-radius: 6px !important;
+    padding: 20px !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transform: none !important;
+  }
+}
+

@@ -58,27 +58,27 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Right: User Profile Pill with Interactive Dropdown (Cerrar Sesión inside) */}
+      {/* Right: User Profile Menu (Seamless, no button/pill border) */}
       <div className="relative z-10" ref={menuRef}>
         <button
           onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-          className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 transition-all duration-200 cursor-pointer shadow-sm"
+          className="flex items-center gap-2.5 py-1 px-2 rounded-xl hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer focus:outline-none group"
         >
           <img
             src={user.avatarUrl}
             alt={user.name}
-            className="w-7 h-7 rounded-full object-cover border border-white/20"
+            className="w-7 h-7 rounded-full object-cover border border-white/20 group-hover:border-white/40 transition-colors"
           />
           <div className="text-left hidden sm:block">
-            <span className="text-xs font-semibold text-white block leading-none">
+            <span className="text-xs font-semibold text-white block leading-none group-hover:text-white transition-colors">
               {user.name}
             </span>
-            <span className="text-[10px] text-[#86868B] leading-none mt-0.5">
+            <span className="text-[10px] text-[#86868B] leading-none mt-0.5 block">
               {user.title}
             </span>
           </div>
           <ChevronDown
-            className={`w-3.5 h-3.5 text-[#86868B] transition-transform duration-200 ${
+            className={`w-3.5 h-3.5 text-[#86868B] group-hover:text-white transition-transform duration-200 ${
               isProfileMenuOpen ? 'rotate-180 text-white' : ''
             }`}
           />

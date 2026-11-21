@@ -20,6 +20,8 @@ import { GlassCard } from './ui/GlassCard';
 import { GlassButton } from './ui/GlassButton';
 import { Badge } from './ui/Badge';
 import { InvoiceModal } from './ui/InvoiceModal';
+import { EditCustomerModal } from './ui/EditCustomerModal';
+import { Toast } from './ui/Toast';
 import type { UserSession, Product, CartItem, PaymentMethod } from '../types';
 import { INITIAL_PRODUCTS } from '../data/initialData';
 
@@ -65,6 +67,7 @@ export const Pos: React.FC<PosProps> = ({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Yape');
   const [orderNumber, setOrderNumber] = useState('#ORD-8492');
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [isEditCustomerOpen, setIsEditCustomerOpen] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -200,13 +203,8 @@ export const Pos: React.FC<PosProps> = ({
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Toast Notification */}
-      {notification && (
-        <div className="fixed top-20 right-6 z-50 px-4 py-2.5 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-2xl text-xs md:text-sm text-white shadow-2xl flex items-center gap-2 animate-scale-in">
-          <CheckCircle2 className="w-4 h-4 text-[#30D158]" />
-          <span>{notification}</span>
-        </div>
-      )}
+      {/* Apple Liquid Glass Toast Notification */}
+      <Toast message={notification} onClose={() => setNotification(null)} />
 
       {/* Main POS Container: Catalog Grid + Right Checkout Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -410,13 +408,9 @@ export const Pos: React.FC<PosProps> = ({
               </div>
 
               <button
-                onClick={() => {
-                  const newName = prompt('Ingrese Razón Social o Nombre del Cliente:', clientName);
-                  if (newName) setClientName(newName);
-                  const newDoc = prompt('Ingrese Número de Documento (DNI/RUC):', clientDoc);
-                  if (newDoc) setClientDoc(newDoc);
-                }}
-                className="text-[11px] text-apple-blue hover:text-apple-blueLight px-2 py-1 rounded bg-white/5 border border-white/10 cursor-pointer"
+                type="button"
+                onClick={() => setIsEditCustomerOpen(true)}
+                className="text-[11px] font-medium text-apple-blue hover:text-apple-blueLight px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
               >
                 Editar
               </button>
@@ -556,6 +550,21 @@ export const Pos: React.FC<PosProps> = ({
           </GlassCard>
         </div>
       </div>
+
+      {/* Customer Information Edit Modal */}
+      <EditCustomerModal
+        isOpen={isEditCustomerOpen}
+        onClose={() => setIsEditCustomerOpen(false)}
+        currentName={clientName}
+        currentDoc={clientDoc}
+        currentDocType={documentType}
+        onSave={(name, doc, type) => {
+          setClientName(name);
+          setClientDoc(doc);
+          setDocumentType(type);
+          showNotification('Datos del cliente actualizados');
+        }}
+      />
 
       {/* Official SUNAT Receipt / Invoice Modal */}
       <InvoiceModal

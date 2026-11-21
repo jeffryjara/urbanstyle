@@ -18,6 +18,7 @@ import {
 import { GlassCard } from './ui/GlassCard';
 import { GlassButton } from './ui/GlassButton';
 import { Badge } from './ui/Badge';
+import { Toast } from './ui/Toast';
 import { SegmentedControl, type SegmentOption } from './ui/SegmentedControl';
 import type { UserSession } from '../types';
 import { INITIAL_AUDIT_RECORDS, MONTHLY_SALES_DATA } from '../data/initialData';
@@ -88,12 +89,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Toast Notification */}
-      {notification && (
-        <div className="fixed top-20 right-6 z-50 px-4 py-2.5 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-2xl text-xs md:text-sm text-white shadow-2xl flex items-center gap-2 animate-scale-in">
-          <CheckCircle2 className="w-4 h-4 text-[#30D158]" />
-          <span>{notification}</span>
-        </div>
-      )}
+      <Toast message={notification} onClose={() => setNotification(null)} />
 
       {/* Welcome Headline & Timeframe Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">

@@ -5,8 +5,6 @@ import {
   Package,
   FileText,
   Database,
-  Building2,
-  CheckCircle2,
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { StockModal } from '../ui/StockModal';
@@ -31,78 +29,106 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      <aside className="w-64 min-w-[256px] max-w-[256px] shrink-0 h-[calc(100vh-4rem)] sticky top-16 border-r border-white/10 bg-[#09090b]/60 backdrop-blur-xl flex flex-col justify-between p-4 hidden lg:flex">
+      <aside className="relative w-64 min-w-[256px] max-w-[256px] shrink-0 h-full rounded-3xl border border-white/10 bg-gradient-to-b from-[#12141c]/80 via-[#0c0d14]/70 to-[#0a0a0f]/80 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] flex flex-col justify-between p-4 hidden lg:flex overflow-hidden">
+        {/* Soft diffused glow orbs behind the glass */}
+        <div className="absolute -top-16 -left-16 w-44 h-44 bg-apple-blue/15 rounded-full blur-[70px] pointer-events-none" />
+        <div className="absolute -bottom-16 -right-16 w-44 h-44 bg-[#30D158]/12 rounded-full blur-[80px] pointer-events-none" />
+
         {/* Navigation Sections */}
-        <div className="space-y-6">
-          {/* Section 1: Operaciones Principales */}
+        <div className="space-y-6 relative z-10">
+          {/* SECTION 1: Vistas Principales (Navegación de Pantalla) */}
           <div>
-            <span className="text-[10px] font-bold text-[#86868B] uppercase tracking-wider block px-2.5 mb-2">
-              Operaciones
-            </span>
-            <nav className="space-y-1">
+            <div className="flex items-center justify-between px-2.5 mb-2.5">
+              <span className="text-[10px] font-extrabold text-[#A1A1A6] uppercase tracking-wider">
+                Vistas de Pantalla
+              </span>
+              <span className="text-[9px] text-apple-blue font-mono font-medium">
+                Navegación
+              </span>
+            </div>
+
+            <nav className="space-y-1.5">
               <button
                 onClick={() => onViewChange('dashboard')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all duration-200 cursor-pointer ${
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all duration-200 cursor-pointer ${
                   currentView === 'dashboard'
-                    ? 'bg-white/10 border border-white/10 text-white shadow-sm font-semibold'
-                    : 'text-[#86868B] hover:text-white hover:bg-white/5 border border-transparent'
+                    ? 'bg-apple-blue text-white shadow-apple-glow font-semibold border border-apple-blueLight/30'
+                    : 'text-[#86868B] hover:text-white hover:bg-white/[0.04] border border-transparent'
                 }`}
               >
-                <TrendingUp className={`w-4 h-4 ${currentView === 'dashboard' ? 'text-apple-blue' : ''}`} />
-                <span>Dashboard Gerencial</span>
+                <span className="flex items-center gap-2.5">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>Dashboard Gerencial</span>
+                </span>
+                {currentView === 'dashboard' && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                )}
               </button>
 
               <button
                 onClick={() => onViewChange('pos')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all duration-200 cursor-pointer ${
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all duration-200 cursor-pointer ${
                   currentView === 'pos'
-                    ? 'bg-white/10 border border-white/10 text-white shadow-sm font-semibold'
-                    : 'text-[#86868B] hover:text-white hover:bg-white/5 border border-transparent'
+                    ? 'bg-apple-blue text-white shadow-apple-glow font-semibold border border-apple-blueLight/30'
+                    : 'text-[#86868B] hover:text-white hover:bg-white/[0.04] border border-transparent'
                 }`}
               >
-                <Store className={`w-4 h-4 ${currentView === 'pos' ? 'text-apple-blue' : ''}`} />
-                <span>Terminal POS</span>
+                <span className="flex items-center gap-2.5">
+                  <Store className="w-4 h-4" />
+                  <span>Terminal POS</span>
+                </span>
+                {currentView === 'pos' && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                )}
               </button>
             </nav>
           </div>
 
-          {/* Section 2: Gestión Comercial */}
-          <div>
-            <span className="text-[10px] font-bold text-[#86868B] uppercase tracking-wider block px-2.5 mb-2">
-              Gestión Comercial
-            </span>
-            <nav className="space-y-1">
+          {/* SECTION 2: Consultas & Modales (Claramente separado) */}
+          <div className="pt-4 border-t border-white/10">
+            <div className="flex items-center justify-between px-2.5 mb-2.5">
+              <span className="text-[10px] font-extrabold text-[#A1A1A6] uppercase tracking-wider">
+                Consultas & Modales
+              </span>
+              <span className="text-[9px] text-[#86868B] font-mono">
+                Ventanas
+              </span>
+            </div>
+
+            <nav className="space-y-1.5">
               <button
                 onClick={() => setIsStockOpen(true)}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[#86868B] hover:text-white hover:bg-white/5 text-xs font-medium transition-all duration-200 cursor-pointer"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-xs font-medium border border-white/5 transition-all duration-200 cursor-pointer"
               >
-                <Package className="w-4 h-4" />
-                <span>Inventario & Stock</span>
+                <span className="flex items-center gap-2.5">
+                  <Package className="w-4 h-4 text-apple-blueLight" />
+                  <span>Inventario & Stock</span>
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-[#86868B] border border-white/5">
+                  Modal
+                </span>
               </button>
 
               <button
                 onClick={() => setIsComprobantesOpen(true)}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-[#86868B] hover:text-white hover:bg-white/5 text-xs font-medium transition-all duration-200 cursor-pointer"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-xs font-medium border border-white/5 transition-all duration-200 cursor-pointer"
               >
-                <FileText className="w-4 h-4" />
-                <span>Comprobantes SUNAT</span>
+                <span className="flex items-center gap-2.5">
+                  <FileText className="w-4 h-4 text-[#30D158]" />
+                  <span>Comprobantes SUNAT</span>
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-[#86868B] border border-white/5">
+                  Modal
+                </span>
               </button>
-            </nav>
-          </div>
 
-          {/* Section 3: Data Warehouse & Pipeline (SQL Server / Spark) */}
-          <div>
-            <span className="text-[10px] font-bold text-[#86868B] uppercase tracking-wider block px-2.5 mb-2">
-              Auditoría & BI
-            </span>
-            <nav className="space-y-1">
               <button
                 onClick={() => setIsEtlOpen(true)}
-                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#86868B] hover:text-white hover:bg-white/5 text-xs font-medium transition-all duration-200 cursor-pointer"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-xs font-medium border border-white/5 transition-all duration-200 cursor-pointer"
               >
-                <span className="flex items-center gap-3">
-                  <Database className="w-4 h-4" />
-                  <span>Bitácora ETL (meta)</span>
+                <span className="flex items-center gap-2.5">
+                  <Database className="w-4 h-4 text-apple-purple" />
+                  <span>Bitácora ETL & DW</span>
                 </span>
                 <span className="w-2 h-2 rounded-full bg-[#30D158] animate-pulse" />
               </button>
@@ -110,9 +136,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        {/* Bottom Status Block: Always at the bottom of the full-height sidebar */}
-        <div className="pt-4 border-t border-white/10">
-          <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2.5">
+        {/* Bottom Status Block: Floating inside the sidebar */}
+        <div className="pt-4 border-t border-white/10 relative z-10">
+          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5 shadow-sm">
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-[#86868B] truncate max-w-[130px]">{user.location}</span>
               <Badge variant="emerald" dot className="text-[10px] py-0 px-2">En Línea</Badge>
@@ -136,7 +162,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </aside>
 
-      {/* Interactive Modals triggered from the Sidebar */}
+      {/* Interactive Modals */}
       <StockModal isOpen={isStockOpen} onClose={() => setIsStockOpen(false)} />
       <ComprobantesModal isOpen={isComprobantesOpen} onClose={() => setIsComprobantesOpen(false)} />
 
@@ -146,7 +172,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="relative w-full max-w-2xl bg-[#0e0e11] border border-white/15 rounded-3xl p-6 md:p-8 shadow-2xl overflow-hidden animate-scale-in text-[#F5F5F7]">
             <div className="flex items-center justify-between pb-4 border-b border-white/10">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-apple-blue/15 border border-apple-blue/30 flex items-center justify-center text-apple-blue">
+                <div className="w-10 h-10 rounded-2xl bg-apple-purple/15 border border-apple-purple/30 flex items-center justify-center text-apple-purple">
                   <Database className="w-5 h-5" />
                 </div>
                 <div>
@@ -160,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <button
                 onClick={() => setIsEtlOpen(false)}
-                className="p-1.5 rounded-full text-[#86868B] hover:text-white hover:bg-white/10 transition-colors"
+                className="p-1.5 rounded-full text-[#86868B] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 ✕
               </button>
@@ -192,9 +218,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="text-[#86868B]">Esquemas dw.FactVentas / meta.BitacoraETL</span>
               <button
                 onClick={() => setIsEtlOpen(false)}
-                className="px-4 py-1.5 rounded-xl bg-apple-blue text-white text-xs font-semibold hover:bg-apple-blueLight transition-colors"
+                className="px-4 py-1.5 rounded-xl bg-apple-blue text-white text-xs font-semibold hover:bg-apple-blueLight transition-colors cursor-pointer"
               >
-                Entendido
+                Cerrar Auditoría
               </button>
             </div>
           </div>

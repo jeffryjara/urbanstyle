@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogOut, Store, TrendingUp } from 'lucide-react';
+import { LogOut, Store, TrendingUp, Sparkles } from 'lucide-react';
 import { GlassButton } from '../ui/GlassButton';
 import type { UserSession } from '../../types';
 
@@ -17,11 +17,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogout,
 }) => {
   return (
-    <header className="w-full h-16 border-b border-white/10 bg-[#09090b]/85 backdrop-blur-2xl sticky top-0 z-40 px-4 md:px-6 flex items-center justify-between">
+    <header className="relative w-full h-16 border-b border-white/10 bg-gradient-to-r from-[#09090b]/92 via-[#0c101c]/88 to-[#09090b]/92 backdrop-blur-2xl sticky top-0 z-40 px-4 md:px-6 flex items-center justify-between overflow-hidden">
+      {/* Top subtle ambient glow orbs */}
+      <div className="absolute -top-12 left-1/4 w-96 h-24 bg-apple-blue/20 rounded-full blur-[80px] pointer-events-none" />
+      <div className="absolute -top-12 right-1/3 w-80 h-24 bg-apple-purple/15 rounded-full blur-[90px] pointer-events-none" />
+
       {/* Left: Brand Identity */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-6 relative z-10">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-white/15 to-white/[0.03] border border-white/15 p-1.5 flex items-center justify-center shadow-md">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-apple-blue/20 to-white/[0.03] border border-white/15 p-1.5 flex items-center justify-center shadow-[0_0_15px_rgba(0,122,255,0.25)]">
             <svg viewBox="0 0 40 40" className="w-full h-full text-white" fill="none">
               <path
                 d="M10 26C13 26 15 22 20 22C25 22 26 25 31 25C34 25 36 23 37 20L34 14C32 11 29 11 26 14L20 20C17 23 13 23 10 21V26Z"
@@ -46,24 +50,24 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Center-Left: Segmented Switcher for View */}
-        <div className="hidden sm:inline-flex rounded-full bg-white/[0.06] border border-white/10 p-1">
+        {/* Center-Left: Main View Switcher */}
+        <div className="hidden sm:inline-flex rounded-full bg-white/[0.05] border border-white/10 p-1 isolate">
           <button
             onClick={() => onViewChange('dashboard')}
             className={`px-4 py-1.5 rounded-full text-xs transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
               currentView === 'dashboard'
-                ? 'bg-white/15 text-white shadow-sm font-semibold'
+                ? 'bg-apple-blue text-white shadow-apple-glow font-semibold'
                 : 'text-[#86868B] hover:text-white hover:bg-white/5 font-medium'
             }`}
           >
-            <TrendingUp className="w-3.5 h-3.5 text-apple-blue" />
+            <TrendingUp className="w-3.5 h-3.5" />
             <span>Dashboard</span>
           </button>
           <button
             onClick={() => onViewChange('pos')}
             className={`px-4 py-1.5 rounded-full text-xs transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
               currentView === 'pos'
-                ? 'bg-white/15 text-white shadow-sm font-semibold'
+                ? 'bg-apple-blue text-white shadow-apple-glow font-semibold'
                 : 'text-[#86868B] hover:text-white hover:bg-white/5 font-medium'
             }`}
           >
@@ -74,7 +78,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Right: Active User Pill & Logout Button */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 relative z-10">
         <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10">
           <img
             src={user.avatarUrl}

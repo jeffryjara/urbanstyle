@@ -35,7 +35,7 @@ export function SegmentedControl<T extends string = string>({
   return (
     <div
       role="tablist"
-      className={`inline-flex items-center rounded-full bg-white/[0.06] border border-white/10 backdrop-blur-xl ${sizeClasses[size]} ${className}`}
+      className={`inline-flex items-center rounded-full bg-white/[0.06] border border-white/10 overflow-hidden select-none isolate ${sizeClasses[size]} ${className}`}
     >
       {options.map((option) => {
         const isActive = option.id === value;
@@ -45,10 +45,10 @@ export function SegmentedControl<T extends string = string>({
             role="tab"
             aria-selected={isActive}
             onClick={() => onChange(option.id)}
-            className={`relative flex items-center justify-center font-medium rounded-full transition-all duration-300 ease-out select-none cursor-pointer ${itemSizeClasses[size]} ${
+            className={`relative flex items-center justify-center font-medium rounded-full transition-colors duration-200 ease-out cursor-pointer ${itemSizeClasses[size]} ${
               isActive
-                ? 'bg-white/15 text-white shadow-[0_2px_10px_rgba(0,0,0,0.5),0_0.5px_1px_rgba(255,255,255,0.3)_inset] font-semibold'
-                : 'text-[#86868B] hover:text-[#F5F5F7] hover:bg-white/[0.04]'
+                ? 'bg-white/20 text-white font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.4),0_1px_0_rgba(255,255,255,0.25)_inset]'
+                : 'text-[#86868B] hover:text-[#F5F5F7] hover:bg-white/[0.05]'
             }`}
           >
             {option.icon && <span className="mr-1.5 inline-flex shrink-0">{option.icon}</span>}
@@ -57,7 +57,7 @@ export function SegmentedControl<T extends string = string>({
               <span
                 className={`ml-1.5 text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
                   isActive
-                    ? 'bg-white/20 text-white'
+                    ? 'bg-white/25 text-white'
                     : 'bg-white/10 text-[#86868B]'
                 }`}
               >

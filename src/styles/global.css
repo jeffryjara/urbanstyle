@@ -31,51 +31,48 @@
 }
 
 @layer utilities {
-  /* Apple Liquid Glass Panel */
+  /* Apple Liquid Glass Panel - No subpixel transform to avoid GPU clipping artifacts */
   .glass-panel {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.035);
     backdrop-filter: blur(28px) saturate(190%);
     -webkit-backdrop-filter: blur(28px) saturate(190%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
   }
 
   .glass-panel-hover {
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
   }
   .glass-panel-hover:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.16);
-    transform: translateY(-2px);
-    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.055);
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 122, 255, 0.08);
   }
 
-  /* Apple Floating Glass Bar / Dock */
+  /* Floating Glass Bar with subtle top illumination */
   .glass-bar {
-    background: rgba(18, 18, 20, 0.78);
+    background: rgba(14, 14, 17, 0.82);
     backdrop-filter: blur(32px) saturate(200%);
     -webkit-backdrop-filter: blur(32px) saturate(200%);
     border: 1px solid rgba(255, 255, 255, 0.10);
-    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.65), 0 1px 2px rgba(255, 255, 255, 0.06) inset;
+    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.65), 0 1px 0 rgba(255, 255, 255, 0.08) inset;
   }
 
-  /* Apple Glass Button */
+  /* Apple Glass Button - Crisp and stable on hover */
   .glass-button {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: #F5F5F7;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, transform 0.15s ease;
   }
   .glass-button:hover {
     background: rgba(255, 255, 255, 0.10);
-    border-color: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.24);
     color: #ffffff;
-    transform: scale(1.015);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
   }
   .glass-button:active {
-    transform: scale(0.975);
+    transform: scale(0.98);
   }
 
   /* Primary Apple Electric Blue Button */
@@ -83,31 +80,23 @@
     background: linear-gradient(180deg, #007AFF 0%, #0062cc 100%);
     color: #ffffff;
     box-shadow: 0 4px 18px -2px rgba(0, 122, 255, 0.5), 0 1px 0 rgba(255, 255, 255, 0.3) inset;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
   }
   .apple-btn-primary:hover {
     background: linear-gradient(180deg, #1a87ff 0%, #0071eb 100%);
     box-shadow: 0 6px 24px -2px rgba(0, 122, 255, 0.7), 0 1px 0 rgba(255, 255, 255, 0.4) inset;
-    transform: scale(1.01);
   }
   .apple-btn-primary:active {
-    transform: scale(0.975);
-    box-shadow: 0 2px 10px -2px rgba(0, 122, 255, 0.4);
+    transform: scale(0.98);
   }
 
-  /* iOS Segmented Control Container & Active Pill */
+  /* iOS Segmented Control - Crisp rendering without subpixel line artifacts */
   .segmented-control {
     background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
     border-radius: 9999px;
     padding: 3px;
-  }
-
-  .segmented-pill-active {
-    background: rgba(255, 255, 255, 0.16);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), 0 0.5px 1px rgba(255, 255, 255, 0.25) inset;
+    isolation: isolate;
   }
 
   /* Subtle Custom Scrollbar */
@@ -119,10 +108,10 @@
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.14);
     border-radius: 9999px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.24);
   }
 }

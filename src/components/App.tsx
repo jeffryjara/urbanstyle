@@ -9,7 +9,6 @@ import { INITIAL_USERS } from '../data/initialData';
 
 export const App: React.FC = () => {
   // Session state: null = login screen, or active UserSession
-  // Default to Gerencia for immediate interactive testing
   const [currentUser, setCurrentUser] = useState<UserSession | null>(INITIAL_USERS.gerencia);
   const [currentView, setCurrentView] = useState<'dashboard' | 'pos'>('dashboard');
 
@@ -31,8 +30,14 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-[#F5F5F7] flex flex-col overflow-hidden">
-      {/* 1. Full-width Top Navigation Bar (Header Normal, No Floating Pill) */}
+    <div className="relative min-h-screen bg-[#070709] text-[#F5F5F7] flex flex-col overflow-hidden">
+      {/* Multi-layered diffused ambient background gradients */}
+      <div className="fixed -top-12 left-1/4 w-[650px] h-64 bg-apple-blue/[0.10] rounded-full blur-[140px] pointer-events-none -z-0" />
+      <div className="fixed top-20 left-4 w-[380px] h-[550px] bg-apple-blue/[0.08] rounded-full blur-[160px] pointer-events-none -z-0" />
+      <div className="fixed bottom-10 left-8 w-[320px] h-[350px] bg-[#30D158]/[0.06] rounded-full blur-[150px] pointer-events-none -z-0" />
+      <div className="fixed top-1/3 right-12 w-[550px] h-[550px] bg-apple-purple/[0.05] rounded-full blur-[180px] pointer-events-none -z-0" />
+
+      {/* 1. Full-width Top Navigation Bar */}
       <Navbar
         user={currentUser}
         currentView={currentView}
@@ -40,17 +45,17 @@ export const App: React.FC = () => {
         onLogout={handleLogout}
       />
 
-      {/* 2. Main Body with Fixed-Width Full-Height Sidebar + Scrollable Content */}
-      <div className="flex-1 flex w-full h-[calc(100vh-4rem)] overflow-hidden">
-        {/* Fixed Persistent Sidebar (Always w-64, Never Resizes) */}
+      {/* 2. Main Flex Container: Floating Sticky Sidebar + Scrollable Content */}
+      <div className="flex-1 flex w-full max-w-[1720px] mx-auto p-4 md:p-5 lg:p-6 gap-6 h-[calc(100vh-4rem)] overflow-hidden relative z-10">
+        {/* Floating Glass Sidebar (Sticky & Pinned - Never Scrolls) */}
         <Sidebar
           user={currentUser}
           currentView={currentView}
           onViewChange={setCurrentView}
         />
 
-        {/* Dynamic Main View Area */}
-        <main className="flex-1 h-full overflow-y-auto custom-scrollbar p-4 md:p-6 lg:p-8 bg-black">
+        {/* Dynamic Scrollable Content (ONLY this section moves upon scrolling) */}
+        <main className="flex-1 h-full overflow-y-auto custom-scrollbar pr-1 md:pr-2">
           {currentView === 'dashboard' ? (
             <Dashboard
               user={currentUser}

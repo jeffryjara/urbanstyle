@@ -30,32 +30,30 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#070709] text-[#F5F5F7] flex flex-col overflow-hidden">
-      {/* Multi-layered diffused ambient background gradients */}
-      <div className="fixed -top-12 left-1/4 w-[650px] h-64 bg-apple-blue/[0.10] rounded-full blur-[140px] pointer-events-none -z-0" />
-      <div className="fixed top-20 left-4 w-[380px] h-[550px] bg-apple-blue/[0.08] rounded-full blur-[160px] pointer-events-none -z-0" />
-      <div className="fixed bottom-10 left-8 w-[320px] h-[350px] bg-[#30D158]/[0.06] rounded-full blur-[150px] pointer-events-none -z-0" />
-      <div className="fixed top-1/3 right-12 w-[550px] h-[550px] bg-apple-purple/[0.05] rounded-full blur-[180px] pointer-events-none -z-0" />
+    <div className="relative h-screen w-screen bg-[#070709] text-[#F5F5F7] flex flex-col overflow-hidden">
+      {/* Ambient background glow orbs */}
+      <div className="fixed -top-16 left-1/4 w-[600px] h-56 bg-apple-blue/[0.08] rounded-full blur-[140px] pointer-events-none -z-0" />
+      <div className="fixed top-24 left-2 w-[340px] h-[500px] bg-apple-blue/[0.07] rounded-full blur-[150px] pointer-events-none -z-0" />
+      <div className="fixed bottom-8 left-4 w-[300px] h-[350px] bg-[#30D158]/[0.06] rounded-full blur-[150px] pointer-events-none -z-0" />
+      <div className="fixed top-1/3 right-8 w-[500px] h-[500px] bg-apple-purple/[0.05] rounded-full blur-[180px] pointer-events-none -z-0" />
 
-      {/* 1. Full-width Top Navigation Bar */}
+      {/* 1. Header Fijo Permanente (Sin margen excesivo, de ancho completo) */}
       <Navbar
         user={currentUser}
-        currentView={currentView}
-        onViewChange={setCurrentView}
         onLogout={handleLogout}
       />
 
-      {/* 2. Main Flex Container: Floating Sticky Sidebar + Scrollable Content */}
-      <div className="flex-1 flex w-full max-w-[1720px] mx-auto p-4 md:p-5 lg:p-6 gap-6 h-[calc(100vh-4rem)] overflow-hidden relative z-10">
-        {/* Floating Glass Sidebar (Sticky & Pinned - Never Scrolls) */}
+      {/* 2. Cuerpo Principal: Sidebar Fijo a la Izquierda + Contenido con Scroll Único */}
+      <div className="flex-1 flex w-full h-[calc(100vh-4rem)] overflow-hidden p-4 lg:p-5 gap-5 relative z-10">
+        {/* Sidebar Fijo Flotante (Siempre visible, pegado a la izquierda sin espacio muerto) */}
         <Sidebar
           user={currentUser}
           currentView={currentView}
           onViewChange={setCurrentView}
         />
 
-        {/* Dynamic Scrollable Content (ONLY this section moves upon scrolling) */}
-        <main className="flex-1 h-full overflow-y-auto custom-scrollbar pr-1 md:pr-2">
+        {/* Contenido Dinámico (ÚNICO elemento que se desplaza al hacer scroll) */}
+        <main className="flex-1 h-full overflow-y-auto custom-scrollbar pr-1 lg:pr-2">
           {currentView === 'dashboard' ? (
             <Dashboard
               user={currentUser}

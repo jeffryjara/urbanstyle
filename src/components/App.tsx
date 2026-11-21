@@ -67,9 +67,9 @@ export const App: React.FC = () => {
         </div>
       </div>
 
-      {/* Full-Height Desktop Layout: Sidebar Fijo a la Izquierda + Contenido con Scroll Único */}
-      <div className="flex-1 flex w-full h-full overflow-hidden p-3 lg:p-4 gap-4 relative z-10">
-        {/* Sidebar Flotante Completo (con Logo en Top, Vistas y Stock en Medio, Perfil y Logout en Bottom) */}
+      {/* Full-Height Desktop Layout: Sidebar Pegado a la Izquierda + Contenido con Scroll Propio */}
+      <div className="flex-1 flex w-full h-full overflow-hidden relative z-10">
+        {/* Sidebar Pegado Lateral (Normal de siempre, h-full, border-r sin flotar) */}
         <Sidebar
           user={currentUser}
           onLogout={handleLogout}
@@ -77,8 +77,8 @@ export const App: React.FC = () => {
           onViewChange={setCurrentView}
         />
 
-        {/* Contenido Dinámico (ÚNICO elemento que se desplaza con scroll propio) */}
-        <main className="flex-1 h-full overflow-y-auto custom-scrollbar pr-1 lg:pr-2">
+        {/* Contenido Dinámico con Scroll Propio y Padding Cómodo */}
+        <main className="flex-1 h-full overflow-y-auto custom-scrollbar p-4 lg:p-6">
           {currentView === 'dashboard' ? (
             <Dashboard
               user={currentUser}

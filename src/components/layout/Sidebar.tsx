@@ -25,15 +25,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      <aside className="relative w-64 min-w-[256px] max-w-[256px] shrink-0 h-full rounded-3xl border border-white/10 bg-gradient-to-b from-[#12141c]/90 via-[#0c0d14]/85 to-[#0a0a0f]/90 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.7)] flex flex-col justify-between p-4 hidden lg:flex overflow-hidden">
-        {/* Soft diffused glow orbs behind the glass */}
-        <div className="absolute -top-16 -left-16 w-44 h-44 bg-apple-blue/15 rounded-full blur-[70px] pointer-events-none" />
-        <div className="absolute -bottom-16 -right-16 w-44 h-44 bg-apple-purple/15 rounded-full blur-[80px] pointer-events-none" />
+      <aside className="relative w-64 min-w-[256px] max-w-[256px] shrink-0 h-full border-r border-white/10 bg-[#090a0f]/95 backdrop-blur-2xl flex flex-col justify-between p-5 hidden lg:flex overflow-hidden z-20">
+        {/* Soft diffused ambient glow behind the sidebar */}
+        <div className="absolute -top-16 -left-16 w-44 h-44 bg-apple-blue/10 rounded-full blur-[70px] pointer-events-none" />
+        <div className="absolute -bottom-16 -right-16 w-44 h-44 bg-apple-purple/10 rounded-full blur-[80px] pointer-events-none" />
 
-        {/* TOP SECTION: Brand Identity & Navigation */}
+        {/* TOP SECTION: Brand Identity & Views (Sin subtítulos de sección) */}
         <div className="relative z-10 flex flex-col">
-          {/* Brand Identity moved from Header */}
-          <div className="flex items-center gap-3.5 pb-4 border-b border-white/10 mb-5">
+          {/* Brand Identity */}
+          <div className="flex items-center gap-3.5 pb-5 border-b border-white/10 mb-6">
             <div className="w-10 h-10 rounded-2xl bg-white/[0.04] border border-white/15 p-1.5 flex items-center justify-center shadow-[0_0_20px_rgba(0,122,255,0.25)] shrink-0 overflow-hidden">
               <img
                 src="/logo-icon.png"
@@ -51,75 +51,58 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          {/* Section 1: Vistas Principales */}
-          <div className="space-y-4">
-            <div>
-              <div className="px-2.5 mb-2.5">
-                <span className="text-xs font-bold text-[#A1A1A6] uppercase tracking-wider">
-                  Vistas de Pantalla
-                </span>
-              </div>
+          {/* Navigation Views (Sin subtítulo "VISTAS DE PANTALLA") */}
+          <nav className="space-y-2">
+            <button
+              onClick={() => onViewChange('dashboard')}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+                currentView === 'dashboard'
+                  ? 'bg-apple-blue text-white shadow-apple-glow font-semibold border border-apple-blueLight/30'
+                  : 'text-[#86868B] hover:text-white hover:bg-white/[0.04] border border-transparent'
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <TrendingUp className="w-4.5 h-4.5" />
+                <span>Dashboard</span>
+              </span>
+              {currentView === 'dashboard' && (
+                <span className="w-2 h-2 rounded-full bg-white shadow-sm" />
+              )}
+            </button>
 
-              <nav className="space-y-2">
-                <button
-                  onClick={() => onViewChange('dashboard')}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-200 cursor-pointer ${
-                    currentView === 'dashboard'
-                      ? 'bg-apple-blue text-white shadow-apple-glow font-semibold border border-apple-blueLight/30'
-                      : 'text-[#86868B] hover:text-white hover:bg-white/[0.04] border border-transparent'
-                  }`}
-                >
-                  <span className="flex items-center gap-3">
-                    <TrendingUp className="w-4.5 h-4.5" />
-                    <span>Dashboard</span>
-                  </span>
-                  {currentView === 'dashboard' && (
-                    <span className="w-2 h-2 rounded-full bg-white shadow-sm" />
-                  )}
-                </button>
-
-                <button
-                  onClick={() => onViewChange('pos')}
-                  className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-200 cursor-pointer ${
-                    currentView === 'pos'
-                      ? 'bg-apple-blue text-white shadow-apple-glow font-semibold border border-apple-blueLight/30'
-                      : 'text-[#86868B] hover:text-white hover:bg-white/[0.04] border border-transparent'
-                  }`}
-                >
-                  <span className="flex items-center gap-3">
-                    <Store className="w-4.5 h-4.5" />
-                    <span>Terminal POS</span>
-                  </span>
-                  {currentView === 'pos' && (
-                    <span className="w-2 h-2 rounded-full bg-white shadow-sm" />
-                  )}
-                </button>
-              </nav>
-            </div>
-
-            {/* Section 2: Inventario & Stock (Opción 2) */}
-            <div className="pt-3 border-t border-white/10">
-              <div className="px-2.5 mb-2.5">
-                <span className="text-xs font-bold text-[#A1A1A6] uppercase tracking-wider">
-                  Almacén
-                </span>
-              </div>
-
-              <button
-                onClick={() => setIsStockOpen(true)}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-sm font-medium border border-white/5 transition-all duration-200 cursor-pointer group"
-              >
-                <span className="flex items-center gap-3">
-                  <Package className="w-4.5 h-4.5 text-apple-blueLight group-hover:scale-110 transition-transform" />
-                  <span>Inventario & Stock</span>
-                </span>
-              </button>
-            </div>
-          </div>
+            <button
+              onClick={() => onViewChange('pos')}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+                currentView === 'pos'
+                  ? 'bg-apple-blue text-white shadow-apple-glow font-semibold border border-apple-blueLight/30'
+                  : 'text-[#86868B] hover:text-white hover:bg-white/[0.04] border border-transparent'
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <Store className="w-4.5 h-4.5" />
+                <span>Terminal POS</span>
+              </span>
+              {currentView === 'pos' && (
+                <span className="w-2 h-2 rounded-full bg-white shadow-sm" />
+              )}
+            </button>
+          </nav>
         </div>
 
-        {/* BOTTOM SECTION: User Profile & Logout moved from Header */}
-        <div className="pt-4 border-t border-white/10 relative z-10">
+        {/* BOTTOM SECTION: Botón de Inventario abajo del todo + Perfil de Usuario */}
+        <div className="pt-4 border-t border-white/10 relative z-10 space-y-3">
+          {/* Botón de Inventario & Stock ubicado abajo del todo */}
+          <button
+            onClick={() => setIsStockOpen(true)}
+            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-sm font-medium border border-white/5 transition-all duration-200 cursor-pointer group"
+          >
+            <span className="flex items-center gap-3">
+              <Package className="w-4.5 h-4.5 text-apple-blueLight group-hover:scale-110 transition-transform" />
+              <span>Inventario & Stock</span>
+            </span>
+          </button>
+
+          {/* Tarjeta de Perfil de Usuario con Cerrar Sesión */}
           <div className="flex items-center justify-between p-2.5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] transition-colors group">
             <div className="flex items-center gap-3 min-w-0">
               <img

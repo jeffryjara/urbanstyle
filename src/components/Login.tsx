@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { AtSign, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, Building2 } from 'lucide-react';
+import { AtSign, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Building2 } from 'lucide-react';
 import { GlassButton } from './ui/GlassButton';
-import { SegmentedControl, type SegmentOption } from './ui/SegmentedControl';
-import type { UserRole, UserSession } from '../types';
+import type { UserSession } from '../types';
 import { INITIAL_USERS } from '../data/initialData';
 
 interface LoginProps {
@@ -10,47 +9,48 @@ interface LoginProps {
 }
 
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
-  const [selectedRole, setSelectedRole] = useState<UserRole>('gerencia');
-  const [email, setEmail] = useState('gerencia@urbanstyle.pe');
-  const [password, setPassword] = useState('Admin2026!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberTerminal, setRememberTerminal] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const roleOptions: SegmentOption<UserRole>[] = [
-    { id: 'gerencia', label: 'Gerencia General' },
-    { id: 'ventas', label: 'Ventas & Almacén POS' },
-  ];
-
-  const handleRoleChange = (role: UserRole) => {
-    setSelectedRole(role);
-    setErrorMessage('');
-    if (role === 'gerencia') {
-      setEmail('gerencia@urbanstyle.pe');
-      setPassword('Admin2026!');
-    } else {
-      setEmail('ventas.lima@urbanstyle.pe');
-      setPassword('Ventas2026!');
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
-    if (!email || !password) {
-      setErrorMessage('Por favor ingrese correo institucional y contraseña.');
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanPassword) {
+      setErrorMessage('Por favor ingrese su correo institucional y contraseña.');
       return;
     }
 
     setIsLoading(true);
 
     setTimeout(() => {
+      // Lookup user by email in database
+      const userFound = Object.values(INITIAL_USERS).find(
+        (u) => u.email.toLowerCase() === cleanEmail
+      );
+
+      if (!userFound) {
+        setIsLoading(false);
+        setErrorMessage('El correo institucional no está registrado en el sistema.');
+        return;
+      }
+
+      if (userFound.password !== cleanPassword) {
+        setIsLoading(false);
+        setErrorMessage('Contraseña incorrecta. Verifique sus credenciales.');
+        return;
+      }
+
       setIsLoading(false);
-      const user = INITIAL_USERS[selectedRole];
-      onLoginSuccess(user);
-    }, 450);
+      onLoginSuccess(userFound);
+    }, 400);
   };
 
   return (
@@ -121,18 +121,15 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           </div>
         </div>
 
-        {/* Right Side: Authentication Form */}
+        {/* Right Side: Authentication Form (Direct email & password login) */}
         <div className="p-8 md:p-12 flex flex-col justify-center bg-black/40">
           <div className="mb-6">
-            <label className="block text-xs font-medium text-[#86868B] uppercase tracking-wider mb-2">
-              Perfil Operativo
-            </label>
-            <SegmentedControl
-              options={roleOptions}
-              value={selectedRole}
-              onChange={handleRoleChange}
-              className="w-full justify-between"
-            />
+            <h2 className="text-xl md:text-2xl font-bold font-display text-white tracking-tight">
+              Iniciar Sesión
+            </h2>
+            <p className="text-xs text-[#86868B] mt-1">
+              Ingrese su correo corporativo y contraseña para ingresar al sistema
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -148,8 +145,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="usuario@urbanstyle.pe"
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrorMessage('');
+                  }}
+                  placeholder="ejemplo: gerencia@urbanstyle.pe"
                   className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-[#F5F5F7] placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
                   required
                 />
@@ -168,7 +168,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrorMessage('');
+                  }}
                   placeholder="••••••••••••"
                   className="w-full pl-10 pr-11 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-[#F5F5F7] placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
                   required
@@ -176,7 +179,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 text-[#86868B] hover:text-[#F5F5F7] transition-colors"
+                  className="absolute right-3.5 text-[#86868B] hover:text-[#F5F5F7] transition-colors cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -185,15 +188,16 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
             {/* Error Message */}
             {errorMessage && (
-              <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-[#FF453A] animate-fade-in">
-                {errorMessage}
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-[#FF453A] animate-fade-in flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#FF453A] shrink-0" />
+                <span>{errorMessage}</span>
               </div>
             )}
 
             {/* Switch: Recordar Terminal */}
             <div className="flex items-center justify-between py-1">
               <label className="text-xs text-[#86868B] cursor-pointer select-none">
-                Recordar terminal
+                Recordar credenciales en esta terminal
               </label>
               <button
                 type="button"
@@ -225,14 +229,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               Iniciar Sesión
             </GlassButton>
           </form>
-
-          {/* Quick-credential hint helper pill */}
-          <div className="mt-6 pt-4 border-t border-white/10 text-center">
-            <span className="inline-flex items-center gap-1.5 text-[11px] text-[#86868B] bg-white/[0.03] px-3 py-1 rounded-full border border-white/5">
-              <Sparkles className="w-3 h-3 text-apple-blue" />
-              Perfil activo: <strong className="text-white">{selectedRole === 'gerencia' ? 'Gerencia' : 'Ventas POS'}</strong>
-            </span>
-          </div>
         </div>
       </div>
     </div>

@@ -1,10 +1,11 @@
-import type { Product, AuditRecord, ETLLog, MonthlySalesData, UserSession } from '../types';
+import type { Product, AuditRecord, ETLLog, MonthlySalesData, UserSession, UserAccount } from '../types';
 
-export const INITIAL_USERS: Record<string, UserSession> = {
+export const INITIAL_USERS: Record<string, UserAccount> = {
   gerencia: {
     role: 'gerencia',
     name: 'Idelfonso Ayala',
     email: 'gerencia@urbanstyle.pe',
+    password: 'Admin2026!',
     title: 'Gerente General',
     location: 'Sede Central — Lima',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
@@ -13,6 +14,7 @@ export const INITIAL_USERS: Record<string, UserSession> = {
     role: 'ventas',
     name: 'Ana Quispe',
     email: 'ventas.lima@urbanstyle.pe',
+    password: 'Ventas2026!',
     title: 'Especialista Ventas & Almacén POS',
     location: 'Tienda Principal — San Isidro',
     avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',

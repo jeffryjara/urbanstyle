@@ -9,6 +9,10 @@ export interface UserSession {
   avatarUrl?: string;
 }
 
+export interface UserAccount extends UserSession {
+  password: string;
+}
+
 export interface Product {
   id: string;
   name: string;

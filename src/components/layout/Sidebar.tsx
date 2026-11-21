@@ -39,46 +39,46 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* SECTION 1: Vistas Principales (Navegación de Pantalla) */}
           <div>
             <div className="flex items-center justify-between px-2.5 mb-2.5">
-              <span className="text-[10px] font-extrabold text-[#A1A1A6] uppercase tracking-wider">
+              <span className="text-xs font-bold text-[#A1A1A6] uppercase tracking-wider">
                 Vistas de Pantalla
               </span>
-              <span className="text-[9px] text-apple-blue font-mono font-medium">
+              <span className="text-[10px] text-apple-blue font-mono font-medium">
                 Navegación
               </span>
             </div>
 
-            <nav className="space-y-1.5">
+            <nav className="space-y-2">
               <button
                 onClick={() => onViewChange('dashboard')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all duration-200 cursor-pointer ${
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-200 cursor-pointer ${
                   currentView === 'dashboard'
                     ? 'bg-apple-blue text-white shadow-apple-glow font-semibold border border-apple-blueLight/30'
                     : 'text-[#86868B] hover:text-white hover:bg-white/[0.04] border border-transparent'
                 }`}
               >
-                <span className="flex items-center gap-2.5">
-                  <TrendingUp className="w-4 h-4" />
+                <span className="flex items-center gap-3">
+                  <TrendingUp className="w-4.5 h-4.5" />
                   <span>Dashboard Gerencial</span>
                 </span>
                 {currentView === 'dashboard' && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                  <span className="w-2 h-2 rounded-full bg-white shadow-sm" />
                 )}
               </button>
 
               <button
                 onClick={() => onViewChange('pos')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-medium transition-all duration-200 cursor-pointer ${
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-200 cursor-pointer ${
                   currentView === 'pos'
                     ? 'bg-apple-blue text-white shadow-apple-glow font-semibold border border-apple-blueLight/30'
                     : 'text-[#86868B] hover:text-white hover:bg-white/[0.04] border border-transparent'
                 }`}
               >
-                <span className="flex items-center gap-2.5">
-                  <Store className="w-4 h-4" />
+                <span className="flex items-center gap-3">
+                  <Store className="w-4.5 h-4.5" />
                   <span>Terminal POS</span>
                 </span>
                 {currentView === 'pos' && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-white shadow-sm" />
+                  <span className="w-2 h-2 rounded-full bg-white shadow-sm" />
                 )}
               </button>
             </nav>
@@ -87,41 +87,41 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* SECTION 2: Consultas & Modales (Claramente separado) */}
           <div className="pt-4 border-t border-white/10">
             <div className="flex items-center justify-between px-2.5 mb-2.5">
-              <span className="text-[10px] font-extrabold text-[#A1A1A6] uppercase tracking-wider">
+              <span className="text-xs font-bold text-[#A1A1A6] uppercase tracking-wider">
                 Consultas & Modales
               </span>
-              <span className="text-[9px] text-[#86868B] font-mono">
+              <span className="text-[10px] text-[#86868B] font-mono">
                 Ventanas
               </span>
             </div>
 
-            <nav className="space-y-1.5">
+            <nav className="space-y-2">
               <button
                 onClick={() => setIsStockOpen(true)}
-                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-xs font-medium border border-white/5 transition-all duration-200 cursor-pointer"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-sm font-medium border border-white/5 transition-all duration-200 cursor-pointer"
               >
-                <span className="flex items-center gap-2.5">
-                  <Package className="w-4 h-4 text-apple-blueLight" />
+                <span className="flex items-center gap-3">
+                  <Package className="w-4.5 h-4.5 text-apple-blueLight" />
                   <span>Inventario & Stock</span>
                 </span>
               </button>
 
               <button
                 onClick={() => setIsComprobantesOpen(true)}
-                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-xs font-medium border border-white/5 transition-all duration-200 cursor-pointer"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-sm font-medium border border-white/5 transition-all duration-200 cursor-pointer"
               >
-                <span className="flex items-center gap-2.5">
-                  <FileText className="w-4 h-4 text-[#30D158]" />
+                <span className="flex items-center gap-3">
+                  <FileText className="w-4.5 h-4.5 text-[#30D158]" />
                   <span>Comprobantes SUNAT</span>
                 </span>
               </button>
 
               <button
                 onClick={() => setIsEtlOpen(true)}
-                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-xs font-medium border border-white/5 transition-all duration-200 cursor-pointer"
+                className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-sm font-medium border border-white/5 transition-all duration-200 cursor-pointer"
               >
-                <span className="flex items-center gap-2.5">
-                  <Database className="w-4 h-4 text-apple-purple" />
+                <span className="flex items-center gap-3">
+                  <Database className="w-4.5 h-4.5 text-apple-purple" />
                   <span>Bitácora ETL & DW</span>
                 </span>
                 <span className="w-2 h-2 rounded-full bg-[#30D158] animate-pulse" />
@@ -132,14 +132,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Bottom Status Block: Floating inside the sidebar */}
         <div className="pt-4 border-t border-white/10 relative z-10">
-          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2.5 shadow-sm">
-            <div className="flex items-center justify-between text-[11px]">
-              <span className="text-[#86868B] truncate max-w-[130px]">{user.location}</span>
-              <Badge variant="emerald" dot className="text-[10px] py-0 px-2">En Línea</Badge>
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3 shadow-sm">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[#86868B] truncate max-w-[130px] font-medium">{user.location}</span>
+              <Badge variant="emerald" dot className="text-xs py-0.5 px-2.5">En Línea</Badge>
             </div>
 
             <div>
-              <div className="flex justify-between text-[10px] text-[#86868B] mb-1">
+              <div className="flex justify-between text-xs text-[#86868B] mb-1.5">
                 <span>Sincronización SUNAT</span>
                 <span className="text-[#30D158] font-mono font-medium">100%</span>
               </div>
@@ -148,7 +148,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
             </div>
 
-            <div className="pt-1.5 flex justify-between items-center text-[10px] text-[#86868B] border-t border-white/5">
+            <div className="pt-2 flex justify-between items-center text-xs text-[#86868B] border-t border-white/5">
               <span>Caja POS Activa</span>
               <span className="font-mono text-white font-semibold">Caja 04</span>
             </div>

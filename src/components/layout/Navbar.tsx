@@ -31,54 +31,46 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="absolute -top-12 left-1/4 w-96 h-24 bg-apple-blue/20 rounded-full blur-[80px] pointer-events-none" />
       <div className="absolute -top-12 right-1/4 w-80 h-24 bg-apple-purple/15 rounded-full blur-[90px] pointer-events-none" />
 
-      {/* Left: Brand Identity with Subtitle (NO RUC, NO dashboard/terminal pills) */}
-      <div className="flex items-center gap-3 relative z-10">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-apple-blue/25 to-white/[0.04] border border-white/15 p-1.5 flex items-center justify-center shadow-[0_0_18px_rgba(0,122,255,0.3)] shrink-0">
-          <svg viewBox="0 0 40 40" className="w-full h-full text-white" fill="none">
-            <path
-              d="M10 26C13 26 15 22 20 22C25 22 26 25 31 25C34 25 36 23 37 20L34 14C32 11 29 11 26 14L20 20C17 23 13 23 10 21V26Z"
-              fill="url(#nav_logo_grad)"
-            />
-            <circle cx="15" cy="14" r="2.5" fill="#007AFF" />
-            <defs>
-              <linearGradient id="nav_logo_grad" x1="10" y1="11" x2="37" y2="26" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#007AFF" />
-                <stop offset="1" stopColor="#58A6FF" />
-              </linearGradient>
-            </defs>
-          </svg>
+      {/* Left: Brand Identity with Official Logo & Larger Typography */}
+      <div className="flex items-center gap-3.5 relative z-10">
+        <div className="w-10 h-10 rounded-2xl bg-white/[0.04] border border-white/15 p-1.5 flex items-center justify-center shadow-[0_0_20px_rgba(0,122,255,0.25)] shrink-0 overflow-hidden">
+          <img
+            src="/logo-icon.png"
+            alt="Urban Style"
+            className="w-full h-full object-contain rounded-xl"
+          />
         </div>
         <div className="flex flex-col">
-          <span className="font-extrabold font-display text-base text-white tracking-tight leading-none">
+          <span className="font-extrabold font-display text-lg text-white tracking-tight leading-tight">
             Urban Style
           </span>
-          <span className="text-[11px] text-[#86868B] font-medium tracking-wide mt-1 leading-none">
+          <span className="text-xs md:text-sm text-[#86868B] font-medium tracking-wide mt-0.5 leading-tight">
             Venta de Calzado Deportivo
           </span>
         </div>
       </div>
 
-      {/* Right: User Profile Menu (Seamless, no button/pill border) */}
+      {/* Right: User Profile Menu (Seamless, no button/pill border, larger text) */}
       <div className="relative z-10" ref={menuRef}>
         <button
           onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-          className="flex items-center gap-2.5 py-1 px-2 rounded-xl hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer focus:outline-none group"
+          className="flex items-center gap-3 py-1.5 px-2.5 rounded-2xl hover:bg-white/[0.06] transition-colors duration-150 cursor-pointer focus:outline-none group"
         >
           <img
             src={user.avatarUrl}
             alt={user.name}
-            className="w-7 h-7 rounded-full object-cover border border-white/20 group-hover:border-white/40 transition-colors"
+            className="w-8 h-8 rounded-full object-cover border border-white/20 group-hover:border-white/40 transition-colors"
           />
           <div className="text-left hidden sm:block">
-            <span className="text-xs font-semibold text-white block leading-none group-hover:text-white transition-colors">
+            <span className="text-sm font-semibold text-white block leading-tight group-hover:text-white transition-colors">
               {user.name}
             </span>
-            <span className="text-[10px] text-[#86868B] leading-none mt-0.5 block">
+            <span className="text-xs text-[#86868B] leading-tight mt-0.5 block">
               {user.title}
             </span>
           </div>
           <ChevronDown
-            className={`w-3.5 h-3.5 text-[#86868B] group-hover:text-white transition-transform duration-200 ${
+            className={`w-4 h-4 text-[#86868B] group-hover:text-white transition-transform duration-200 ${
               isProfileMenuOpen ? 'rotate-180 text-white' : ''
             }`}
           />

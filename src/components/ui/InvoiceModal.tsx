@@ -75,32 +75,39 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
         </div>
 
         {/* PRINTABLE RECEIPT SECTION: ID #printable-receipt is captured by @media print */}
-        <div id="printable-receipt" className="space-y-3 pt-2">
-          {/* Corporate Header */}
-          <div className="py-3 px-4 rounded-2xl bg-white/[0.02] border border-white/5 print:border-black print:bg-white text-xs space-y-1.5">
-            <div className="flex justify-between items-center text-sm font-bold font-display text-white print:text-black">
-              <span className="tracking-tight text-base font-extrabold">URBAN STYLE S.A.C.</span>
-              <span className="text-apple-blue print:text-black font-mono font-semibold text-xs border border-apple-blue/30 print:border-black px-2 py-0.5 rounded">
+        <div id="printable-receipt" className="space-y-4 pt-2">
+          {/* Corporate Header with Official Logo */}
+          <div className="py-3.5 px-4 rounded-2xl bg-white/[0.02] border border-white/5 print:border-black print:bg-white text-sm space-y-2">
+            <div className="flex justify-between items-center font-bold font-display text-white print:text-black">
+              <div className="flex items-center gap-2.5">
+                <img
+                  src="/logo-icon.png"
+                  alt="Urban Style"
+                  className="w-8 h-8 rounded-xl object-contain border border-white/15 print:border-black shrink-0"
+                />
+                <span className="tracking-tight text-base md:text-lg font-extrabold">URBAN STYLE S.A.C.</span>
+              </div>
+              <span className="text-apple-blue print:text-black font-mono font-semibold text-xs border border-apple-blue/30 print:border-black px-2.5 py-1 rounded-lg">
                 RUC 10449598569
               </span>
             </div>
-            <p className="text-[#86868B] print:text-gray-700 text-[11px]">
+            <p className="text-[#86868B] print:text-gray-700 text-xs">
               Comercialización Omnicanal de Calzado Deportivo de Alta Gama
             </p>
-            <p className="text-[#86868B] print:text-gray-700 text-[11px]">
+            <p className="text-[#86868B] print:text-gray-700 text-xs">
               Sede Central: Av. Conquistadores 480, San Isidro — Lima, Perú
             </p>
-            <div className="pt-2 flex justify-between text-[#A1A1A6] print:text-gray-800 text-[11px] border-t border-white/5 print:border-gray-300">
+            <div className="pt-2 flex justify-between text-[#A1A1A6] print:text-gray-800 text-xs border-t border-white/5 print:border-gray-300">
               <span>Fecha: {formattedDate} — {formattedTime}</span>
               <span className="font-semibold text-white print:text-black">{documentType.toUpperCase()} ELECTRÓNICA: {serieCorrelativo}</span>
             </div>
           </div>
 
           {/* Customer & Transaction Info */}
-          <div className="p-3 bg-white/[0.02] border border-white/5 print:border-gray-300 print:bg-white rounded-xl text-xs space-y-1">
+          <div className="p-3.5 bg-white/[0.02] border border-white/5 print:border-gray-300 print:bg-white rounded-2xl text-sm space-y-1.5">
             <div className="flex justify-between text-[#86868B] print:text-gray-700">
               <span>Adquirente / Cliente:</span>
-              <span className="font-medium text-white print:text-black">{clientName}</span>
+              <span className="font-semibold text-white print:text-black">{clientName}</span>
             </div>
             <div className="flex justify-between text-[#86868B] print:text-gray-700">
               <span>Documento ({isFactura ? 'RUC' : 'DNI'}):</span>
@@ -112,7 +119,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
             </div>
             <div className="flex justify-between text-[#86868B] print:text-gray-700">
               <span>Punto de Emisión:</span>
-              <span className="font-mono text-white print:text-black">Caja 04 — Tienda Principal San Isidro</span>
+              <span className="font-mono text-white print:text-black text-xs">Caja 04 — Tienda San Isidro</span>
             </div>
           </div>
 

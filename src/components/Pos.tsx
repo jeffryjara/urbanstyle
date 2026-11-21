@@ -214,22 +214,22 @@ export const Pos: React.FC<PosProps> = ({
           <div className="space-y-3">
             {/* Search Input with ⌘ K badge */}
             <div className="relative flex items-center">
-              <Search className="w-4 h-4 text-[#86868B] absolute left-3.5 pointer-events-none" />
+              <Search className="w-5 h-5 text-[#86868B] absolute left-4 pointer-events-none" />
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar modelo, SKU o código..."
-                className="w-full pl-10 pr-14 py-2.5 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
+                className="w-full pl-12 pr-16 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-base text-white placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
               />
-              <span className="absolute right-3 px-1.5 py-0.5 rounded-md bg-white/10 border border-white/10 text-[10px] font-mono text-[#86868B]">
+              <span className="absolute right-3.5 px-2 py-0.5 rounded-lg bg-white/10 border border-white/10 text-xs font-mono text-[#A1A1A6]">
                 ⌘ K
               </span>
             </div>
 
             {/* Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 custom-scrollbar">
               {[
                 { id: 'todos', label: `Todos (${products.length})` },
                 { id: 'nike', label: 'Nike' },
@@ -242,7 +242,7 @@ export const Pos: React.FC<PosProps> = ({
                 <button
                   key={pill.id}
                   onClick={() => setSelectedFilter(pill.id as FilterCategory)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 cursor-pointer ${
                     selectedFilter === pill.id
                       ? 'bg-apple-blue text-white shadow-apple-glow font-semibold'
                       : 'bg-white/[0.04] text-[#86868B] hover:text-white hover:bg-white/[0.08] border border-white/5'
@@ -281,33 +281,33 @@ export const Pos: React.FC<PosProps> = ({
                           loading="lazy"
                         />
                         {/* SKU floating badge */}
-                        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md border border-white/10 text-[9px] font-mono text-[#A1A1A6]">
+                        <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-xs font-mono text-[#A1A1A6]">
                           {product.sku}
                         </div>
 
                         {/* Stock indicator badge */}
                         <div className="absolute bottom-2 left-2">
-                          <Badge variant="emerald" dot className="text-[10px] py-0.5 px-2">
+                          <Badge variant="emerald" dot className="text-xs py-1 px-2.5 font-medium">
                             {product.stock} disp.
                           </Badge>
                         </div>
                       </div>
 
                       {/* Product Name & Brand */}
-                      <h4 className="text-xs md:text-sm font-bold font-display text-white line-clamp-1">
+                      <h4 className="text-sm md:text-base font-bold font-display text-white line-clamp-1">
                         {product.name}
                       </h4>
-                      <p className="text-[11px] text-[#86868B] mt-0.5 mb-2">
+                      <p className="text-xs text-[#86868B] mt-0.5 mb-2">
                         {product.category}
                       </p>
 
                       {/* Size Selector Pills */}
-                      <div className="flex items-center gap-1.5 my-2">
+                      <div className="flex items-center gap-1.5 my-2.5">
                         {product.sizes.map((size) => (
                           <button
                             key={size}
                             onClick={() => handleSelectSize(product.id, size)}
-                            className={`px-2 py-0.5 rounded-lg text-[10px] font-medium transition-all cursor-pointer ${
+                            className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                               currentSelectedSize === size
                                 ? 'bg-apple-blue text-white shadow-sm font-semibold'
                                 : 'bg-white/5 text-[#86868B] hover:text-white hover:bg-white/10 border border-white/5'
@@ -320,10 +320,10 @@ export const Pos: React.FC<PosProps> = ({
                     </div>
 
                     {/* Price & Add to Cart button */}
-                    <div className="pt-2 border-t border-white/5 flex items-center justify-between mt-2">
+                    <div className="pt-2.5 border-t border-white/5 flex items-center justify-between mt-2">
                       <div className="flex flex-col">
-                        <span className="text-[9px] text-[#86868B]">Precio inc. IGV</span>
-                        <span className="text-sm md:text-base font-extrabold font-display text-white">
+                        <span className="text-[10px] uppercase font-semibold text-[#86868B] tracking-wider">Precio inc. IGV</span>
+                        <span className="text-base md:text-lg font-extrabold font-display text-white">
                           S/ {product.price.toFixed(2)}
                         </span>
                       </div>
@@ -331,7 +331,7 @@ export const Pos: React.FC<PosProps> = ({
                       <GlassButton
                         variant="primary"
                         size="sm"
-                        icon={<Plus className="w-3.5 h-3.5" />}
+                        icon={<Plus className="w-4 h-4" />}
                         onClick={() => handleAddToCart(product)}
                       >
                         Agregar
@@ -352,7 +352,7 @@ export const Pos: React.FC<PosProps> = ({
               <span className="text-xs font-bold text-[#86868B] tracking-wider uppercase">
                 Orden
               </span>
-              <span className="font-mono text-sm font-bold text-white bg-white/5 px-2.5 py-0.5 rounded-lg border border-white/10">
+              <span className="font-mono text-sm md:text-base font-bold text-white bg-white/5 px-3 py-1 rounded-lg border border-white/10">
                 {orderNumber}
               </span>
             </div>
@@ -365,13 +365,13 @@ export const Pos: React.FC<PosProps> = ({
                   setClientName('Consumidor Final');
                   setClientDoc('00000000');
                 }}
-                className={`py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                className={`py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                   documentType === 'Boleta'
-                    ? 'bg-white/15 text-white shadow-sm font-semibold'
+                    ? 'bg-white/15 text-white shadow-sm font-bold'
                     : 'text-[#86868B] hover:text-white'
                 }`}
               >
-                <FileText className="w-3.5 h-3.5" />
+                <FileText className="w-4 h-4" />
                 Boleta
               </button>
               <button
@@ -380,28 +380,28 @@ export const Pos: React.FC<PosProps> = ({
                   setClientName('Inversiones Deportivas S.A.C.');
                   setClientDoc('20608941231');
                 }}
-                className={`py-1.5 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                className={`py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                   documentType === 'Factura'
-                    ? 'bg-white/15 text-white shadow-sm font-semibold'
+                    ? 'bg-white/15 text-white shadow-sm font-bold'
                     : 'text-[#86868B] hover:text-white'
                 }`}
               >
-                <Building className="w-3.5 h-3.5" />
+                <Building className="w-4 h-4" />
                 Factura
               </button>
             </div>
 
             {/* Customer Pill Selector */}
-            <div className="p-2.5 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-apple-blue shrink-0">
-                  <UserCheck className="w-3.5 h-3.5" />
+            <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-apple-blue shrink-0">
+                  <UserCheck className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-medium text-white truncate max-w-[140px]">
+                  <span className="font-semibold text-white truncate max-w-[140px]">
                     {clientName}
                   </span>
-                  <span className="text-[10px] text-[#86868B] font-mono">
+                  <span className="text-xs text-[#86868B] font-mono">
                     {documentType === 'Factura' ? 'RUC: ' : 'DNI: '}{clientDoc}
                   </span>
                 </div>
@@ -410,7 +410,7 @@ export const Pos: React.FC<PosProps> = ({
               <button
                 type="button"
                 onClick={() => setIsEditCustomerOpen(true)}
-                className="text-[11px] font-medium text-apple-blue hover:text-apple-blueLight px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
+                className="text-xs font-semibold text-apple-blue hover:text-apple-blueLight px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
               >
                 Editar
               </button>
@@ -418,27 +418,27 @@ export const Pos: React.FC<PosProps> = ({
 
             {/* Selected Items List */}
             <div>
-              <div className="flex justify-between items-center text-xs text-[#86868B] mb-2 font-medium">
+              <div className="flex justify-between items-center text-xs md:text-sm text-[#86868B] mb-2 font-semibold">
                 <span>Ítems Seleccionados</span>
                 <span>{cart.reduce((a, b) => a + b.quantity, 0)} artículos</span>
               </div>
 
               <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                 {cart.length === 0 ? (
-                  <div className="py-6 text-center text-[#636366] text-xs">
+                  <div className="py-6 text-center text-[#86868B] text-sm">
                     Sin artículos en la orden
                   </div>
                 ) : (
                   cart.map((item) => (
                     <div
                       key={`${item.product.id}-${item.selectedSize}`}
-                      className="p-2.5 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-between gap-2"
+                      className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-between gap-2"
                     >
                       <div className="flex flex-col">
-                        <span className="text-xs font-semibold text-white truncate max-w-[110px]">
+                        <span className="text-sm font-semibold text-white truncate max-w-[120px]">
                           {item.product.name}
                         </span>
-                        <span className="text-[10px] text-[#86868B]">
+                        <span className="text-xs text-[#86868B]">
                           Talla: <strong className="text-white">{item.selectedSize}</strong> | SKU: {item.product.sku}
                         </span>
                       </div>
@@ -450,21 +450,21 @@ export const Pos: React.FC<PosProps> = ({
                             onClick={() => handleUpdateQuantity(item.product.id, item.selectedSize, -1)}
                             className="p-1 text-[#86868B] hover:text-white cursor-pointer"
                           >
-                            <Minus className="w-3 h-3" />
+                            <Minus className="w-3.5 h-3.5" />
                           </button>
-                          <span className="px-1.5 text-xs font-mono font-medium text-white">
+                          <span className="px-2 text-sm font-mono font-bold text-white">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => handleUpdateQuantity(item.product.id, item.selectedSize, 1)}
                             className="p-1 text-[#86868B] hover:text-white cursor-pointer"
                           >
-                            <Plus className="w-3 h-3" />
+                            <Plus className="w-3.5 h-3.5" />
                           </button>
                         </div>
 
                         {/* Price */}
-                        <span className="text-xs font-mono font-bold text-white shrink-0 min-w-[55px] text-right">
+                        <span className="text-sm font-mono font-bold text-white shrink-0 min-w-[60px] text-right">
                           S/ {(item.product.price * item.quantity).toFixed(2)}
                         </span>
 
@@ -473,7 +473,7 @@ export const Pos: React.FC<PosProps> = ({
                           onClick={() => handleRemoveItem(item.product.id, item.selectedSize)}
                           className="p-1 text-[#86868B] hover:text-[#FF453A] transition-colors cursor-pointer"
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
@@ -484,24 +484,24 @@ export const Pos: React.FC<PosProps> = ({
 
             {/* Official Payment Method Selector */}
             <div>
-              <span className="text-xs font-medium text-[#86868B] block mb-2">
+              <span className="text-xs md:text-sm font-semibold text-[#86868B] block mb-2">
                 Medio de Pago Oficial
               </span>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { id: 'Yape', label: 'Yape', icon: <QrCode className="w-3.5 h-3.5 text-[#BF5AF2]" /> },
-                  { id: 'Plin', label: 'Plin', icon: <QrCode className="w-3.5 h-3.5 text-[#5AC8FA]" /> },
-                  { id: 'Efectivo', label: 'Efectivo', icon: <Banknote className="w-3.5 h-3.5 text-[#30D158]" /> },
-                  { id: 'Tarjeta', label: 'Tarjeta', icon: <CreditCard className="w-3.5 h-3.5 text-apple-blue" /> },
+                  { id: 'Yape', label: 'Yape', icon: <QrCode className="w-4 h-4 text-[#BF5AF2]" /> },
+                  { id: 'Plin', label: 'Plin', icon: <QrCode className="w-4 h-4 text-[#5AC8FA]" /> },
+                  { id: 'Efectivo', label: 'Efectivo', icon: <Banknote className="w-4 h-4 text-[#30D158]" /> },
+                  { id: 'Tarjeta', label: 'Tarjeta', icon: <CreditCard className="w-4 h-4 text-apple-blue" /> },
                 ].map((m) => {
                   const isSelected = paymentMethod === m.id;
                   return (
                     <button
                       key={m.id}
                       onClick={() => setPaymentMethod(m.id as PaymentMethod)}
-                      className={`p-2.5 rounded-2xl border text-xs font-medium flex items-center justify-between transition-all cursor-pointer ${
+                      className={`p-3 rounded-2xl border text-sm font-medium flex items-center justify-between transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-white/10 border-apple-blue text-white shadow-sm'
+                          ? 'bg-white/10 border-apple-blue text-white shadow-sm font-semibold'
                           : 'bg-white/[0.03] border-white/5 text-[#86868B] hover:text-white hover:bg-white/[0.06]'
                       }`}
                     >
@@ -509,7 +509,7 @@ export const Pos: React.FC<PosProps> = ({
                         {m.icon}
                         {m.label}
                       </span>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-apple-blue" />}
+                      {isSelected && <Check className="w-4 h-4 text-apple-blue" />}
                     </button>
                   );
                 })}
@@ -517,20 +517,20 @@ export const Pos: React.FC<PosProps> = ({
             </div>
 
             {/* Amount Breakdown */}
-            <div className="pt-3 border-t border-white/10 space-y-1.5 text-xs">
+            <div className="pt-3 border-t border-white/10 space-y-2 text-sm">
               <div className="flex justify-between text-[#86868B]">
                 <span>Subtotal (sin IGV):</span>
-                <span className="font-mono text-white">S/ {subtotal.toFixed(2)}</span>
+                <span className="font-mono text-white font-medium">S/ {subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-[#86868B]">
                 <span>IGV (18.00%):</span>
-                <span className="font-mono text-white">S/ {igv.toFixed(2)}</span>
+                <span className="font-mono text-white font-medium">S/ {igv.toFixed(2)}</span>
               </div>
               <div className="pt-2 flex justify-between items-baseline text-white">
-                <span className="text-xs uppercase tracking-wider font-semibold text-[#86868B]">
+                <span className="text-xs uppercase tracking-wider font-bold text-[#86868B]">
                   Total a Pagar:
                 </span>
-                <span className="text-2xl md:text-3xl font-extrabold font-display tracking-tight text-white">
+                <span className="text-3xl md:text-4xl font-extrabold font-display tracking-tight text-white">
                   S/ {total.toFixed(2)}
                 </span>
               </div>
@@ -543,7 +543,7 @@ export const Pos: React.FC<PosProps> = ({
               disabled={cart.length === 0}
               icon={<Zap className="w-4 h-4" />}
               onClick={handleProcessSale}
-              className="w-full mt-2"
+              className="w-full mt-2 text-base font-semibold py-3.5"
             >
               Procesar Venta & Emitir Comprobante
             </GlassButton>

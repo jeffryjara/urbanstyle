@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AtSign, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { AtSign, Lock, Eye, EyeOff, ArrowRight, AlertCircle, AlertTriangle } from 'lucide-react';
 import { GlassButton } from './ui/GlassButton';
 import type { UserSession } from '../types';
 import { INITIAL_USERS } from '../data/initialData';
@@ -14,43 +14,69 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberTerminal, setRememberTerminal] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+
+  // Custom elaborate validation states
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [generalError, setGeneralError] = useState<string | null>(null);
+
+  const validateEmailFormat = (val: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage('');
+    setEmailError(null);
+    setPasswordError(null);
+    setGeneralError(null);
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanPassword = password.trim();
 
-    if (!cleanEmail || !cleanPassword) {
-      setErrorMessage('Por favor ingrese su correo electrónico y contraseña.');
-      return;
+    let hasError = false;
+
+    // Validate email
+    if (!cleanEmail) {
+      setEmailError('Por favor ingrese su correo electrónico institucional');
+      hasError = true;
+    } else if (!validateEmailFormat(cleanEmail)) {
+      setEmailError('Formato de correo no válido (ejemplo: usuario@urbanstyle.pe)');
+      hasError = true;
     }
+
+    // Validate password
+    if (!cleanPassword) {
+      setPasswordError('Por favor ingrese su contraseña de acceso');
+      hasError = true;
+    }
+
+    if (hasError) return;
 
     setIsLoading(true);
 
     setTimeout(() => {
-      // Lookup user by email in database
+      // Lookup user in database
       const userFound = Object.values(INITIAL_USERS).find(
         (u) => u.email.toLowerCase() === cleanEmail
       );
 
       if (!userFound) {
         setIsLoading(false);
-        setErrorMessage('El correo electrónico no está registrado en el sistema.');
+        setGeneralError('El correo electrónico no está registrado en el sistema.');
+        setEmailError('Correo no encontrado');
         return;
       }
 
       if (userFound.password !== cleanPassword) {
         setIsLoading(false);
-        setErrorMessage('Contraseña incorrecta. Verifique sus credenciales.');
+        setPasswordError('Contraseña incorrecta');
+        setGeneralError('La contraseña ingresada no coincide con nuestros registros de seguridad.');
         return;
       }
 
       setIsLoading(false);
       onLoginSuccess(userFound);
-    }, 400);
+    }, 450);
   };
 
   return (
@@ -71,23 +97,15 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       {/* Main Container - Larger height and spacious Apple Liquid Glass Card */}
       <div className="relative w-full max-w-4xl min-h-[580px] md:min-h-[620px] grid grid-cols-1 md:grid-cols-2 rounded-3xl md:rounded-[36px] overflow-hidden border border-white/10 bg-white/[0.03] backdrop-blur-3xl shadow-[0_30px_90px_rgba(0,0,0,0.9)] z-10 animate-fade-in">
         
-        {/* Left Side: Brand & Identity Showcase (Clean, centered, minimal, without bullet items or footers) */}
+        {/* Left Side: Brand & Identity Showcase with official logo */}
         <div className="relative p-10 md:p-14 flex flex-col justify-center border-b md:border-b-0 md:border-r border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent">
-          {/* Logo Badge */}
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/15 p-3.5 flex items-center justify-center shadow-lg mb-8">
-            <svg viewBox="0 0 40 40" className="w-full h-full text-white" fill="none">
-              <path
-                d="M10 26C13 26 15 22 20 22C25 22 26 25 31 25C34 25 36 23 37 20L34 14C32 11 29 11 26 14L20 20C17 23 13 23 10 21V26Z"
-                fill="url(#login_logo_grad)"
-              />
-              <circle cx="15" cy="14" r="2.5" fill="#007AFF" />
-              <defs>
-                <linearGradient id="login_logo_grad" x1="10" y1="11" x2="37" y2="26" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#007AFF" />
-                  <stop offset="1" stopColor="#58A6FF" />
-                </linearGradient>
-              </defs>
-            </svg>
+          {/* Official Urban Style Logo Badge */}
+          <div className="w-20 h-20 rounded-3xl bg-white/[0.04] border border-white/15 p-2 flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.6)] mb-8 overflow-hidden backdrop-blur-xl">
+            <img
+              src="/logo-icon.png"
+              alt="Urban Style Logo"
+              className="w-full h-full object-contain rounded-2xl"
+            />
           </div>
 
           <h1 className="text-4xl md:text-5xl font-extrabold font-display tracking-tight text-[#F5F5F7] leading-tight">
@@ -98,7 +116,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           </p>
         </div>
 
-        {/* Right Side: Authentication Form with larger typography and comfortable inputs */}
+        {/* Right Side: Authentication Form with custom elaborate validation */}
         <div className="p-10 md:p-14 flex flex-col justify-center bg-black/40">
           <div className="mb-8">
             <h2 className="text-2xl md:text-3xl font-extrabold font-display text-white tracking-tight">
@@ -109,7 +127,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Form with noValidate to disable generic browser popups */}
+          <form noValidate onSubmit={handleSubmit} className="space-y-5">
             {/* Input: Correo electrónico */}
             <div>
               <label className="block text-sm font-semibold text-[#A1A1A6] mb-2">
@@ -124,13 +143,24 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    setErrorMessage('');
+                    if (emailError) setEmailError(null);
+                    if (generalError) setGeneralError(null);
                   }}
                   placeholder="gerencia@urbanstyle.pe"
-                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white/[0.04] border border-white/10 text-base text-[#F5F5F7] placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
-                  required
+                  className={`w-full pl-12 pr-4 py-3.5 rounded-2xl border text-base text-[#F5F5F7] placeholder-[#636366] transition-all focus:outline-none ${
+                    emailError
+                      ? 'border-red-500/70 bg-red-500/[0.04] ring-1 ring-red-500/30 focus:border-red-500'
+                      : 'border-white/10 bg-white/[0.04] focus:border-apple-blue focus:ring-1 focus:ring-apple-blue'
+                  }`}
                 />
               </div>
+              {/* Custom In-App Error Notification for Email */}
+              {emailError && (
+                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-[#FF453A] animate-fade-in">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{emailError}</span>
+                </div>
+              )}
             </div>
 
             {/* Input: Contraseña */}
@@ -147,11 +177,15 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
-                    setErrorMessage('');
+                    if (passwordError) setPasswordError(null);
+                    if (generalError) setGeneralError(null);
                   }}
                   placeholder="••••••••••••"
-                  className="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-white/[0.04] border border-white/10 text-base text-[#F5F5F7] placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
-                  required
+                  className={`w-full pl-12 pr-12 py-3.5 rounded-2xl border text-base text-[#F5F5F7] placeholder-[#636366] transition-all focus:outline-none ${
+                    passwordError
+                      ? 'border-red-500/70 bg-red-500/[0.04] ring-1 ring-red-500/30 focus:border-red-500'
+                      : 'border-white/10 bg-white/[0.04] focus:border-apple-blue focus:ring-1 focus:ring-apple-blue'
+                  }`}
                 />
                 <button
                   type="button"
@@ -161,13 +195,29 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
+              {/* Custom In-App Error Notification for Password */}
+              {passwordError && (
+                <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-[#FF453A] animate-fade-in">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{passwordError}</span>
+                </div>
+              )}
             </div>
 
-            {/* Error Message */}
-            {errorMessage && (
-              <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-sm text-[#FF453A] animate-fade-in flex items-center gap-2.5">
-                <div className="w-2 h-2 rounded-full bg-[#FF453A] shrink-0" />
-                <span>{errorMessage}</span>
+            {/* General Authentication Error Card */}
+            {generalError && (
+              <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/25 text-sm text-[#FF453A] animate-fade-in flex items-start gap-3">
+                <div className="w-7 h-7 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                  <AlertTriangle className="w-4 h-4 text-[#FF453A]" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-bold text-xs uppercase tracking-wider text-red-400">
+                    Error de Autenticación
+                  </span>
+                  <span className="text-xs md:text-sm text-[#F5F5F7] mt-0.5 leading-snug">
+                    {generalError}
+                  </span>
+                </div>
               </div>
             )}
 

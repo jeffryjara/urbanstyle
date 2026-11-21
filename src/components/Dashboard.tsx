@@ -94,25 +94,25 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* Welcome Headline & Timeframe Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div>
-          <h2 className="text-2xl md:text-3xl font-extrabold font-display tracking-tight text-white">
+          <h2 className="text-3xl md:text-4xl font-extrabold font-display tracking-tight text-white">
             Bienvenido, {user.name}
           </h2>
-          <p className="text-xs text-[#86868B] mt-0.5">
+          <p className="text-sm md:text-base text-[#86868B] mt-1 font-medium">
             Resumen Ejecutivo Omnicanal de Calzado Deportivo
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <SegmentedControl
             options={timeframeOptions}
             value={timeframe}
             onChange={setTimeframe}
-            size="sm"
+            size="md"
           />
           <GlassButton
             variant="glass"
-            size="sm"
-            icon={<Download className="w-3.5 h-3.5" />}
+            size="md"
+            icon={<Download className="w-4 h-4" />}
             onClick={() => showNotification('Reporte Ejecutivo BI exportado exitosamente.')}
           >
             Exportar BI
@@ -123,10 +123,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* 3 Featured KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* KPI 1: Ingresos Totales */}
-        <GlassCard hoverEffect className="relative overflow-hidden">
+        <GlassCard hoverEffect className="relative overflow-hidden p-6">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-[#86868B]">Ingresos Totales</span>
-            <Badge variant="emerald" icon={<ArrowUpRight className="w-3 h-3" />}>
+            <span className="text-sm font-semibold text-[#86868B]">Ingresos Totales</span>
+            <Badge variant="emerald" icon={<ArrowUpRight className="w-3.5 h-3.5" />}>
               {kpiData.change}
             </Badge>
           </div>
@@ -137,12 +137,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </span>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-white/5">
-            <div className="flex justify-between text-[11px] text-[#86868B] mb-1.5">
+          <div className="mt-4 pt-3.5 border-t border-white/5">
+            <div className="flex justify-between text-xs text-[#86868B] mb-2 font-medium">
               <span>Meta: S/ 200,000</span>
-              <span className="font-mono text-apple-blue font-medium">{kpiData.metaPct}</span>
+              <span className="font-mono text-apple-blue font-semibold">{kpiData.metaPct}</span>
             </div>
-            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-apple-blue to-apple-blueLight rounded-full transition-all duration-500"
                 style={{ width: kpiData.metaPct }}
@@ -152,29 +152,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </GlassCard>
 
         {/* KPI 2: Calzado Top Ventas */}
-        <GlassCard hoverEffect className="relative overflow-hidden">
+        <GlassCard hoverEffect className="relative overflow-hidden p-6">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-[#86868B]">Calzado Top Ventas</span>
-            <div className="w-7 h-7 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-apple-blue">
-              <ShoppingBag className="w-3.5 h-3.5" />
+            <span className="text-sm font-semibold text-[#86868B]">Calzado Top Ventas</span>
+            <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-apple-blue">
+              <ShoppingBag className="w-4 h-4" />
             </div>
           </div>
 
-          <div className="mt-2 flex items-center justify-between">
+          <div className="mt-3 flex items-center justify-between">
             <div>
-              <h4 className="text-base font-bold font-display text-white truncate max-w-[160px]">
+              <h4 className="text-lg font-bold font-display text-white truncate max-w-[170px]">
                 Adidas Ultraboost 22
               </h4>
               <div className="mt-1 flex items-baseline gap-1.5">
                 <span className="text-2xl md:text-3xl font-extrabold font-display text-white">
                   {kpiData.topCount}
                 </span>
-                <span className="text-xs text-[#86868B]">unds</span>
+                <span className="text-sm text-[#86868B] font-medium">unds</span>
               </div>
             </div>
 
             {/* Sneaker Thumbnail */}
-            <div className="w-16 h-12 rounded-xl overflow-hidden border border-white/10 bg-black/40 shrink-0">
+            <div className="w-18 h-14 rounded-2xl overflow-hidden border border-white/10 bg-black/40 shrink-0">
               <img
                 src="https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&w=200&q=80"
                 alt="Ultraboost 22"
@@ -183,17 +183,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-white/5 flex justify-between text-[11px] text-[#86868B]">
+          <div className="mt-4 pt-3.5 border-t border-white/5 flex justify-between text-xs text-[#86868B] font-medium">
             <span>Margen: <strong className="text-[#30D158]">42.8%</strong></span>
             <span>Ticket Prom: <strong className="text-white font-mono">S/ 545.30</strong></span>
           </div>
         </GlassCard>
 
         {/* KPI 3: Distribución por Canal */}
-        <GlassCard hoverEffect className="relative overflow-hidden">
+        <GlassCard hoverEffect className="relative overflow-hidden p-6">
           <div className="flex justify-between items-start">
-            <span className="text-xs font-semibold text-[#86868B]">Distribución por Canal</span>
-            <span className="text-[11px] font-mono text-[#86868B]">1,648 ops</span>
+            <span className="text-sm font-semibold text-[#86868B]">Distribución por Canal</span>
+            <span className="text-xs font-mono text-[#86868B] font-medium">1,648 ops</span>
           </div>
 
           {/* Dual Visual Bar */}
@@ -212,21 +212,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          <div className="mt-4 pt-2 flex justify-between items-center text-xs">
+          <div className="mt-5 pt-3 border-t border-white/5 flex justify-between items-center text-sm">
             <div className="flex flex-col">
-              <span className="flex items-center gap-1.5 text-white font-medium">
-                <span className="w-2 h-2 rounded-full bg-apple-blue" />
+              <span className="flex items-center gap-2 text-white font-semibold">
+                <span className="w-2.5 h-2.5 rounded-full bg-apple-blue" />
                 {kpiData.digitalPct}% Digital
               </span>
-              <span className="text-[10px] text-[#86868B]">890 pedidos</span>
+              <span className="text-xs text-[#86868B] mt-0.5 font-medium">890 pedidos</span>
             </div>
 
             <div className="flex flex-col text-right">
-              <span className="flex items-center justify-end gap-1.5 text-white font-medium">
-                <span className="w-2 h-2 rounded-full bg-white/40" />
+              <span className="flex items-center justify-end gap-2 text-white font-semibold">
+                <span className="w-2.5 h-2.5 rounded-full bg-white/40" />
                 {kpiData.storePct}% Tienda
               </span>
-              <span className="text-[10px] text-[#86868B]">758 compras</span>
+              <span className="text-xs text-[#86868B] mt-0.5 font-medium">758 compras</span>
             </div>
           </div>
         </GlassCard>
@@ -373,27 +373,27 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* Bottom Row: Real-time Audit Table */}
-      <GlassCard className="p-5 md:p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <GlassCard className="p-6 md:p-8 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-base font-bold font-display text-white">
+            <h3 className="text-lg md:text-xl font-bold font-display text-white">
               Auditoría de Transacciones en Tiempo Real
             </h3>
-            <p className="text-xs text-[#86868B]">
+            <p className="text-sm text-[#86868B] mt-0.5">
               Sincronización continua de comprobantes electrónicos con SUNAT
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-3">
             {/* Search input */}
             <div className="relative flex items-center">
-              <Search className="w-3.5 h-3.5 text-[#86868B] absolute left-3 pointer-events-none" />
+              <Search className="w-4 h-4 text-[#86868B] absolute left-3.5 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar ticket o cliente..."
-                className="pl-8 pr-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs text-white placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all w-44 md:w-56"
+                className="pl-10 pr-4 py-2 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all w-52 md:w-64"
               />
             </div>
 
@@ -401,30 +401,30 @@ export const Dashboard: React.FC<DashboardProps> = ({
               options={docFilterOptions}
               value={docFilter}
               onChange={setDocFilter}
-              size="sm"
+              size="md"
             />
           </div>
         </div>
 
         {/* Table Container */}
         <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="border-b border-white/10 text-[#86868B] font-semibold uppercase text-[10px] tracking-wider">
-                <th className="py-2.5 px-3">ID</th>
-                <th className="py-2.5 px-3">Hora</th>
-                <th className="py-2.5 px-3">Cliente</th>
-                <th className="py-2.5 px-3">Canal</th>
-                <th className="py-2.5 px-3">Medio de Pago</th>
-                <th className="py-2.5 px-3 text-right">Total</th>
-                <th className="py-2.5 px-3">Comprobante SUNAT</th>
-                <th className="py-2.5 px-3 text-center">Estado</th>
+              <tr className="border-b border-white/10 text-[#86868B] font-bold uppercase text-xs tracking-wider">
+                <th className="py-3 px-3.5">ID</th>
+                <th className="py-3 px-3.5">Hora</th>
+                <th className="py-3 px-3.5">Cliente</th>
+                <th className="py-3 px-3.5">Canal</th>
+                <th className="py-3 px-3.5">Medio de Pago</th>
+                <th className="py-3 px-3.5 text-right">Total</th>
+                <th className="py-3 px-3.5">Comprobante SUNAT</th>
+                <th className="py-3 px-3.5 text-center">Estado</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-[#86868B]">
+                  <td colSpan={8} className="py-8 text-center text-[#86868B] text-sm">
                     No se encontraron registros con los filtros seleccionados.
                   </td>
                 </tr>
@@ -434,29 +434,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     key={rec.id}
                     className="hover:bg-white/[0.02] transition-colors duration-150"
                   >
-                    <td className="py-3 px-3 font-mono text-apple-blue font-medium">
+                    <td className="py-3.5 px-3.5 font-mono text-apple-blue font-semibold text-xs">
                       {rec.id}
                     </td>
-                    <td className="py-3 px-3 text-[#86868B]">{rec.time}</td>
-                    <td className="py-3 px-3 text-white font-medium">{rec.client}</td>
-                    <td className="py-3 px-3 text-[#A1A1A6]">
+                    <td className="py-3.5 px-3.5 text-[#86868B] text-xs">{rec.time}</td>
+                    <td className="py-3.5 px-3.5 text-white font-medium">{rec.client}</td>
+                    <td className="py-3.5 px-3.5 text-[#A1A1A6]">
                       <span className="inline-flex items-center gap-1.5">
-                        {rec.channel === 'Tienda Física' && <Store className="w-3 h-3 text-white/60" />}
-                        {rec.channel === 'WhatsApp Store' && <MessageCircle className="w-3 h-3 text-[#30D158]" />}
-                        {rec.channel === 'Web' && <Globe className="w-3 h-3 text-apple-blue" />}
-                        {rec.channel === 'B2B Corporativo' && <Building2 className="w-3 h-3 text-[#BF5AF2]" />}
+                        {rec.channel === 'Tienda Física' && <Store className="w-3.5 h-3.5 text-white/60" />}
+                        {rec.channel === 'WhatsApp Store' && <MessageCircle className="w-3.5 h-3.5 text-[#30D158]" />}
+                        {rec.channel === 'Web' && <Globe className="w-3.5 h-3.5 text-apple-blue" />}
+                        {rec.channel === 'B2B Corporativo' && <Building2 className="w-3.5 h-3.5 text-[#BF5AF2]" />}
                         {rec.channel}
                       </span>
                     </td>
-                    <td className="py-3 px-3 text-[#86868B]">{rec.payment}</td>
-                    <td className="py-3 px-3 text-right font-mono font-semibold text-white">
+                    <td className="py-3.5 px-3.5 text-[#86868B]">{rec.payment}</td>
+                    <td className="py-3.5 px-3.5 text-right font-mono font-bold text-white">
                       S/ {rec.total.toFixed(2)}
                     </td>
-                    <td className="py-3 px-3 font-mono text-xs text-apple-blueLight">
+                    <td className="py-3.5 px-3.5 font-mono text-xs text-apple-blueLight font-medium">
                       {rec.sunatNumber}
                     </td>
-                    <td className="py-3 px-3 text-center">
-                      <Badge variant="emerald" dot>
+                    <td className="py-3.5 px-3.5 text-center">
+                      <Badge variant="emerald" dot className="text-xs py-0.5 px-2.5">
                         {rec.status}
                       </Badge>
                     </td>
@@ -468,24 +468,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Table Footer Actions */}
-        <div className="pt-3 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#86868B]">
+        <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[#86868B]">
           <span>
             Mostrando {filteredRecords.length} de {INITIAL_AUDIT_RECORDS.length} registros auditados
           </span>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <GlassButton
               variant="glass"
-              size="sm"
-              icon={<FileSpreadsheet className="w-3.5 h-3.5 text-apple-emerald" />}
+              size="md"
+              icon={<FileSpreadsheet className="w-4 h-4 text-apple-emerald" />}
               onClick={() => showNotification('Libro de Ventas exportado en formato Excel.')}
             >
               Excel
             </GlassButton>
             <GlassButton
               variant="primary"
-              size="sm"
-              icon={<FileText className="w-3.5 h-3.5" />}
+              size="md"
+              icon={<FileText className="w-4 h-4" />}
               onClick={() => showNotification('Estructura PLE 14.1 (Registro de Ventas e Ingresos) generada.')}
             >
               Declarar PLE

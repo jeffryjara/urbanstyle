@@ -136,8 +136,8 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
           </div>
         </div>
 
-        {/* Clean 5-Column Inventory Table */}
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar no-scrollbar border border-white/[0.08] rounded-2xl relative z-10 bg-black">
+        {/* Clean 5-Column Inventory Table with Subtle Apple Scrollbar */}
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto custom-scrollbar border border-white/[0.08] rounded-2xl relative z-10 bg-black">
           <table className="w-full text-left text-base">
             <thead className="bg-[#121212] border-b border-white/[0.08] text-sm text-[#8E8E93] font-semibold sticky top-0 z-10">
               <tr>

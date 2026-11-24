@@ -264,7 +264,7 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
             {/* ACADEMIC EXPLANATION PANEL FOR THE TEACHER */}
             {showDocenteGuide && activePreset && (
-              <div className="rounded-2xl bg-[#111111] border border-white/[0.09] p-5 shrink-0 max-h-56 overflow-y-auto custom-scrollbar no-scrollbar transition-all space-y-4">
+              <div className="rounded-2xl bg-[#111111] border border-white/[0.09] p-5 shrink-0 max-h-56 overflow-y-auto custom-scrollbar transition-all space-y-4">
                 <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
                   <div>
                     <h4 className="text-base font-bold text-white flex items-center gap-2.5">
@@ -354,8 +354,8 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
                 )}
               </div>
 
-              {/* Table Result Display */}
-              <div className="flex-1 overflow-x-auto no-scrollbar overflow-y-auto custom-scrollbar">
+              {/* Table Result Display with Subtle Apple Scrollbar */}
+              <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar">
                 {queryResult && queryResult.columns.length > 0 ? (
                   <table className="w-full text-left border-collapse text-sm">
                     <thead>
@@ -469,8 +469,8 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
                 </div>
               </div>
 
-              {/* Code Preformatted Block without Horizontal Scrollbar */}
-              <div className="flex-1 overflow-y-auto overflow-x-auto no-scrollbar custom-scrollbar p-7">
+              {/* Code Preformatted Block with Subtle Apple Scrollbar */}
+              <div className="flex-1 overflow-y-auto overflow-x-auto custom-scrollbar p-7">
                 <pre className="font-mono text-sm text-[#D4D4D8] leading-relaxed select-text whitespace-pre">
                   <code>{selectedScript.code}</code>
                 </pre>

@@ -239,7 +239,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           {/* PowerBI-Inspired Thick Bar Visualizer with Responsive Scroll */}
-          <div className="overflow-x-auto no-scrollbar">
+          <div className="overflow-x-auto custom-scrollbar pb-2">
             <div className="relative h-80 flex pt-6 pb-2 min-w-[500px] sm:min-w-full">
             {/* Y-Axis Scale Labels */}
             <div className="flex flex-col justify-between pr-4 pb-8 text-xs font-mono font-semibold text-[#636366] select-none shrink-0 text-right w-12">
@@ -397,7 +397,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Spacious Minimalist Table (5 Key Columns) */}
-        <div className="overflow-x-auto no-scrollbar">
+        <div className="overflow-x-auto custom-scrollbar pb-2">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/[0.08] text-[#8E8E93] font-semibold text-sm">

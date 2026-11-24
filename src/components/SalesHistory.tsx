@@ -261,7 +261,7 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
         </div>
 
         {/* Spacious Minimalist Table (5 Key Columns, generous padding) */}
-        <div className="overflow-x-auto no-scrollbar">
+        <div className="overflow-x-auto custom-scrollbar pb-2">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/[0.08] text-[#8E8E93] font-semibold text-sm">

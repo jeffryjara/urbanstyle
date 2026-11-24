@@ -9,10 +9,32 @@ interface LoginProps {
 }
 
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('urbanstyle_remembered_email');
+      if (saved) return saved;
+    }
+    return 'gerencia@urbanstyle.pe';
+  });
+
+  const [password, setPassword] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('urbanstyle_remembered_password');
+      if (saved) return saved;
+    }
+    return 'Gerencia2026';
+  });
+
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberTerminal, setRememberTerminal] = useState(true);
+
+  const [rememberTerminal, setRememberTerminal] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('urbanstyle_remember_credentials');
+      if (saved !== null) return saved === 'true';
+    }
+    return true;
+  });
+
   const [isLoading, setIsLoading] = useState(false);
 
   // Custom elaborate validation states
@@ -72,6 +94,16 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         setPasswordError('Contraseña incorrecta');
         setGeneralError('La contraseña ingresada no coincide con nuestros registros de seguridad.');
         return;
+      }
+
+      if (rememberTerminal) {
+        localStorage.setItem('urbanstyle_remembered_email', cleanEmail);
+        localStorage.setItem('urbanstyle_remembered_password', cleanPassword);
+        localStorage.setItem('urbanstyle_remember_credentials', 'true');
+      } else {
+        localStorage.removeItem('urbanstyle_remembered_email');
+        localStorage.removeItem('urbanstyle_remembered_password');
+        localStorage.setItem('urbanstyle_remember_credentials', 'false');
       }
 
       setIsLoading(false);

@@ -3,6 +3,7 @@ import { Login } from './Login';
 import { Sidebar } from './layout/Sidebar';
 import { Dashboard } from './Dashboard';
 import { Pos } from './Pos';
+import { SplashScreen } from './ui/SplashScreen';
 import type { UserSession, Product, AuditRecord } from '../types';
 import { INITIAL_USERS, INITIAL_PRODUCTS, INITIAL_AUDIT_RECORDS } from '../data/initialData';
 import { initSqlEngine, subscribeToDatabase, syncSqlEngineState } from '../utils/sqlEngine';
@@ -10,22 +11,38 @@ import { LogOut } from 'lucide-react';
 
 export const App: React.FC = () => {
   // Session state: null = login screen, or active UserSession
-  const [currentUser, setCurrentUser] = useState<UserSession | null>(INITIAL_USERS.gerencia);
+  const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
   const [currentView, setCurrentView] = useState<'dashboard' | 'pos'>('dashboard');
+  const [showSplash, setShowSplash] = useState<boolean>(false);
 
   // Reactive database state connected to SQL Engine
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [auditRecords, setAuditRecords] = useState<AuditRecord[]>(INITIAL_AUDIT_RECORDS);
 
   useEffect(() => {
-    // Initialize in-memory SQL database
+    // 1. Initialize in-memory SQL database
     initSqlEngine(INITIAL_PRODUCTS, INITIAL_AUDIT_RECORDS);
 
-    // Subscribe to live SQL mutations (INSERT, UPDATE, DELETE from Script console)
+    // 2. Subscribe to live SQL mutations (INSERT, UPDATE, DELETE from Script console)
     const unsubscribe = subscribeToDatabase((state) => {
       setProducts([...state.products]);
       setAuditRecords([...state.auditRecords]);
     });
+
+    // 3. Restore persisted session from localStorage if exists
+    try {
+      const stored = localStorage.getItem('urbanstyle_session');
+      if (stored) {
+        const parsed = JSON.parse(stored) as UserSession;
+        if (parsed && parsed.email) {
+          setCurrentUser(parsed);
+          setCurrentView(parsed.role === 'ventas' ? 'pos' : 'dashboard');
+          setShowSplash(true); // Entry animation with logo for few seconds
+        }
+      }
+    } catch {
+      // Fallback: stay on login
+    }
 
     return () => unsubscribe();
   }, []);
@@ -37,20 +54,43 @@ export const App: React.FC = () => {
   };
 
   const handleLoginSuccess = (session: UserSession) => {
+    try {
+      localStorage.setItem('urbanstyle_session', JSON.stringify(session));
+    } catch {
+      // ignore
+    }
     setCurrentUser(session);
     if (session.role === 'ventas') {
       setCurrentView('pos');
     } else {
       setCurrentView('dashboard');
     }
+    // Trigger entry splash animation with Urban Style logo for brief seconds
+    setShowSplash(true);
   };
 
   const handleLogout = () => {
+    try {
+      localStorage.removeItem('urbanstyle_session');
+    } catch {
+      // ignore
+    }
     setCurrentUser(null);
+    setShowSplash(false);
+    // Replace browser history state so back button cannot return to protected dashboard
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
   };
 
+  // If user is not authenticated, show Login immediately without splash animation
   if (!currentUser) {
     return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // If splash animation is active, display the Apple-style entry splash screen
+  if (showSplash) {
+    return <SplashScreen onFinish={() => setShowSplash(false)} user={currentUser} />;
   }
 
   return (

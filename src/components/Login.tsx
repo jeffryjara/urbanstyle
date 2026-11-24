@@ -1,5 +1,16 @@
-import React, { useState } from 'react';
-import { AtSign, Lock, Eye, EyeOff, ArrowRight, AlertCircle, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import {
+  AtSign,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  AlertCircle,
+  AlertTriangle,
+  ChevronDown,
+  Check,
+  ShieldCheck,
+} from 'lucide-react';
 import { GlassButton } from './ui/GlassButton';
 import type { UserSession } from '../types';
 import { INITIAL_USERS } from '../data/initialData';
@@ -27,6 +38,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
   const [showPassword, setShowPassword] = useState(false);
 
+  // Chevron dropdown state for email & password selection
+  const [showEmailMenu, setShowEmailMenu] = useState(false);
+  const [showPasswordMenu, setShowPasswordMenu] = useState(false);
+
   const [rememberTerminal, setRememberTerminal] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('urbanstyle_remember_credentials');
@@ -41,6 +56,57 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState<string | null>(null);
+
+  // Close dropdowns on click outside
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.account-dropdown-container')) {
+        setShowEmailMenu(false);
+        setShowPasswordMenu(false);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, []);
+
+  const accounts = [
+    {
+      id: 'gerencia',
+      title: 'Gerente General',
+      name: 'Carlos Mendoza',
+      email: 'gerencia@urbanstyle.pe',
+      password: 'Gerencia2026',
+      badge: 'Gerencial / BI',
+      badgeColor: 'blue',
+      letter: 'G',
+    },
+    {
+      id: 'ventas',
+      title: 'Cajera & Ventas POS',
+      name: 'Valeria Rojas',
+      email: 'ventas@urbanstyle.pe',
+      password: 'Ventas2026',
+      badge: 'Caja / POS',
+      badgeColor: 'emerald',
+      letter: 'V',
+    },
+  ];
+
+  const handleSelectAccount = (type: 'gerencia' | 'ventas') => {
+    if (type === 'gerencia') {
+      setEmail('gerencia@urbanstyle.pe');
+      setPassword('Gerencia2026');
+    } else {
+      setEmail('ventas@urbanstyle.pe');
+      setPassword('Ventas2026');
+    }
+    setEmailError(null);
+    setPasswordError(null);
+    setGeneralError(null);
+    setShowEmailMenu(false);
+    setShowPasswordMenu(false);
+  };
 
   const validateEmailFormat = (val: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
@@ -144,9 +210,14 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           <p className="mt-3 text-base md:text-lg text-[#86868B] font-medium leading-relaxed">
             Portal Corporativo de Gestión & Omnicanal POS
           </p>
+
+          <div className="mt-8 pt-6 border-t border-white/10 flex items-center gap-3 text-xs text-[#86868B]">
+            <ShieldCheck className="w-4 h-4 text-apple-emerald shrink-0" />
+            <span>Acceso seguro con roles asignados para Gerencia y Terminal POS</span>
+          </div>
         </div>
 
-        {/* Right Side: Authentication Form with custom elaborate validation */}
+        {/* Right Side: Authentication Form with custom elaborate validation & quick selector */}
         <div className="p-10 md:p-14 flex flex-col justify-center bg-black/40">
           <div className="mb-8">
             <h2 className="text-2xl md:text-3xl font-extrabold font-display text-white tracking-tight">
@@ -159,10 +230,21 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
           {/* Form with noValidate to disable generic browser popups */}
           <form noValidate onSubmit={handleSubmit} className="space-y-5">
-            {/* Input: Correo electrónico */}
-            <div>
-              <label className="block text-sm font-semibold text-[#A1A1A6] mb-2">
-                Correo electrónico
+            {/* Input: Correo electrónico con selector Chevron */}
+            <div className="relative account-dropdown-container">
+              <label className="block text-sm font-semibold text-[#A1A1A6] mb-2 flex items-center justify-between">
+                <span>Correo electrónico</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEmailMenu(!showEmailMenu);
+                    setShowPasswordMenu(false);
+                  }}
+                  className="text-xs font-mono text-apple-blue hover:text-apple-blueLight flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span>Cuentas rápidas</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showEmailMenu ? 'rotate-180' : ''}`} />
+                </button>
               </label>
               <div className="relative flex items-center">
                 <span className="absolute left-4 text-[#86868B] pointer-events-none">
@@ -177,13 +259,68 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     if (generalError) setGeneralError(null);
                   }}
                   placeholder="gerencia@urbanstyle.pe"
-                  className={`w-full pl-12 pr-4 py-3.5 rounded-2xl border text-base text-[#F5F5F7] placeholder-[#636366] transition-all focus:outline-none ${
+                  className={`w-full pl-12 pr-12 py-3.5 rounded-2xl border text-base text-[#F5F5F7] placeholder-[#636366] transition-all focus:outline-none ${
                     emailError
                       ? 'border-red-500/70 bg-red-500/[0.04] ring-1 ring-red-500/30 focus:border-red-500'
                       : 'border-white/10 bg-white/[0.04] focus:border-apple-blue focus:ring-1 focus:ring-apple-blue'
                   }`}
                 />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEmailMenu(!showEmailMenu);
+                    setShowPasswordMenu(false);
+                  }}
+                  className="absolute right-3.5 text-[#86868B] hover:text-[#F5F5F7] transition-colors cursor-pointer p-1.5 rounded-xl hover:bg-white/5"
+                  title="Elegir cuenta institucional (Gerente o Ventas)"
+                >
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showEmailMenu ? 'rotate-180 text-apple-blue' : ''}`} />
+                </button>
               </div>
+
+              {/* Dropdown Menu for Email */}
+              {showEmailMenu && (
+                <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl bg-[#11121b]/98 border border-white/15 backdrop-blur-3xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-30 animate-scale-in">
+                  <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-[#86868B] border-b border-white/5 mb-1">
+                    Seleccionar Cuenta:
+                  </div>
+                  {accounts.map((acc) => (
+                    <button
+                      key={acc.id}
+                      type="button"
+                      onClick={() => handleSelectAccount(acc.id as any)}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-colors cursor-pointer ${
+                        email === acc.email
+                          ? 'bg-apple-blue/20 text-white border border-apple-blue/30'
+                          : 'hover:bg-white/5 text-[#A1A1A6]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${
+                          acc.badgeColor === 'blue' ? 'bg-apple-blue/20 text-apple-blue' : 'bg-apple-emerald/20 text-apple-emerald'
+                        }`}>
+                          {acc.letter}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-white">{acc.name}</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                              acc.badgeColor === 'blue' ? 'bg-apple-blue/15 text-apple-blue' : 'bg-apple-emerald/15 text-apple-emerald'
+                            }`}>
+                              {acc.badge}
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-[#86868B] font-mono block mt-0.5">
+                            {acc.email}
+                          </span>
+                        </div>
+                      </div>
+                      {email === acc.email && <Check className="w-4 h-4 text-apple-blue shrink-0 ml-2" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Custom In-App Error Notification for Email */}
               {emailError && (
                 <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-[#FF453A] animate-fade-in">
@@ -193,10 +330,21 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               )}
             </div>
 
-            {/* Input: Contraseña */}
-            <div>
-              <label className="block text-sm font-semibold text-[#A1A1A6] mb-2">
-                Contraseña
+            {/* Input: Contraseña con selector Chevron */}
+            <div className="relative account-dropdown-container">
+              <label className="block text-sm font-semibold text-[#A1A1A6] mb-2 flex items-center justify-between">
+                <span>Contraseña</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordMenu(!showPasswordMenu);
+                    setShowEmailMenu(false);
+                  }}
+                  className="text-xs font-mono text-apple-blue hover:text-apple-blueLight flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span>Contraseñas rápidas</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showPasswordMenu ? 'rotate-180' : ''}`} />
+                </button>
               </label>
               <div className="relative flex items-center">
                 <span className="absolute left-4 text-[#86868B] pointer-events-none">
@@ -211,20 +359,73 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     if (generalError) setGeneralError(null);
                   }}
                   placeholder="••••••••••••"
-                  className={`w-full pl-12 pr-12 py-3.5 rounded-2xl border text-base text-[#F5F5F7] placeholder-[#636366] transition-all focus:outline-none ${
+                  className={`w-full pl-12 pr-20 py-3.5 rounded-2xl border text-base text-[#F5F5F7] placeholder-[#636366] transition-all focus:outline-none ${
                     passwordError
                       ? 'border-red-500/70 bg-red-500/[0.04] ring-1 ring-red-500/30 focus:border-red-500'
                       : 'border-white/10 bg-white/[0.04] focus:border-apple-blue focus:ring-1 focus:ring-apple-blue'
                   }`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 text-[#86868B] hover:text-[#F5F5F7] transition-colors cursor-pointer p-1"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+                <div className="absolute right-3.5 flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-[#86868B] hover:text-[#F5F5F7] transition-colors cursor-pointer p-1.5 rounded-xl hover:bg-white/5"
+                    title={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPasswordMenu(!showPasswordMenu);
+                      setShowEmailMenu(false);
+                    }}
+                    className="text-[#86868B] hover:text-[#F5F5F7] transition-colors cursor-pointer p-1.5 rounded-xl hover:bg-white/5"
+                    title="Elegir contraseña predefinida"
+                  >
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showPasswordMenu ? 'rotate-180 text-apple-blue' : ''}`} />
+                  </button>
+                </div>
               </div>
+
+              {/* Dropdown Menu for Password */}
+              {showPasswordMenu && (
+                <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl bg-[#11121b]/98 border border-white/15 backdrop-blur-3xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-30 animate-scale-in">
+                  <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-[#86868B] border-b border-white/5 mb-1">
+                    Seleccionar Contraseña:
+                  </div>
+                  {accounts.map((acc) => (
+                    <button
+                      key={acc.id}
+                      type="button"
+                      onClick={() => handleSelectAccount(acc.id as any)}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-colors cursor-pointer ${
+                        password === acc.password
+                          ? 'bg-apple-blue/20 text-white border border-apple-blue/30'
+                          : 'hover:bg-white/5 text-[#A1A1A6]'
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono font-bold text-white tracking-wider">
+                            {showPassword ? acc.password : '••••••••••••'}
+                          </span>
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded-md font-mono ${
+                            acc.badgeColor === 'blue' ? 'bg-apple-blue/15 text-apple-blue' : 'bg-apple-emerald/15 text-apple-emerald'
+                          }`}>
+                            {acc.badge}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-[#86868B] mt-0.5">
+                          Para {acc.name} ({acc.email})
+                        </span>
+                      </div>
+                      {password === acc.password && <Check className="w-4 h-4 text-apple-blue shrink-0 ml-2" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Custom In-App Error Notification for Password */}
               {passwordError && (
                 <div className="flex items-center gap-1.5 mt-2 text-xs font-medium text-[#FF453A] animate-fade-in">
@@ -266,25 +467,27 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 }`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                  aria-hidden="true"
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
                     rememberTerminal ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
               </button>
             </div>
 
-            {/* Primary Action Button */}
-            <GlassButton
-              type="submit"
-              variant="primary"
-              size="lg"
-              loading={isLoading}
-              icon={<ArrowRight className="w-5 h-5" />}
-              iconPosition="right"
-              className="w-full mt-3 py-4 text-base font-semibold"
-            >
-              Iniciar Sesión
-            </GlassButton>
+            {/* Submit Button */}
+            <div className="pt-2">
+              <GlassButton
+                type="submit"
+                variant="primary"
+                size="lg"
+                className="w-full justify-center text-base font-bold shadow-[0_4px_24px_rgba(0,122,255,0.4)]"
+                icon={<ArrowRight className="w-4 h-4" />}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Verificando...' : 'Iniciar Sesión'}
+              </GlassButton>
+            </div>
           </form>
         </div>
       </div>

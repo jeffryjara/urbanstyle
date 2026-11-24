@@ -20,12 +20,14 @@ import { GlassButton } from './ui/GlassButton';
 import { Badge } from './ui/Badge';
 import { Toast } from './ui/Toast';
 import { SegmentedControl, type SegmentOption } from './ui/SegmentedControl';
-import type { UserSession } from '../types';
+import type { UserSession, AuditRecord, Product } from '../types';
 import { INITIAL_AUDIT_RECORDS, MONTHLY_SALES_DATA } from '../data/initialData';
 
 interface DashboardProps {
   user: UserSession;
   onNavigateToPos: () => void;
+  auditRecords?: AuditRecord[];
+  products?: Product[];
 }
 
 type Timeframe = 'hoy' | 'semana' | 'mes' | 'anio';
@@ -34,6 +36,8 @@ type DocFilter = 'todos' | 'boletas' | 'facturas';
 export const Dashboard: React.FC<DashboardProps> = ({
   user,
   onNavigateToPos,
+  auditRecords,
+  products,
 }) => {
   const [timeframe, setTimeframe] = useState<Timeframe>('mes');
   const [docFilter, setDocFilter] = useState<DocFilter>('todos');
@@ -67,8 +71,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
     anio: { total: 'S/ 1,480,200.00', change: '+22.6%', topCount: 2840, digitalPct: 52, storePct: 48, metaPct: '96.2%' },
   }[timeframe];
 
+  const records = auditRecords || INITIAL_AUDIT_RECORDS;
+
   // Filtered audit records
-  const filteredRecords = INITIAL_AUDIT_RECORDS.filter((rec) => {
+  const filteredRecords = records.filter((rec) => {
     const matchesDoc =
       docFilter === 'todos'
         ? true
@@ -470,7 +476,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* Table Footer Actions */}
         <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[#86868B]">
           <span>
-            Mostrando {filteredRecords.length} de {INITIAL_AUDIT_RECORDS.length} registros auditados
+            Mostrando {filteredRecords.length} de {records.length} registros auditados
           </span>
 
           <div className="flex items-center gap-2.5">

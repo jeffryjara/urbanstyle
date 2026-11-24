@@ -37,16 +37,17 @@
     backdrop-filter: blur(28px) saturate(190%);
     -webkit-backdrop-filter: blur(28px) saturate(190%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+    isolation: isolate;
   }
 
   .glass-panel-hover {
-    transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   }
   .glass-panel-hover:hover {
-    background: rgba(255, 255, 255, 0.055);
+    background: rgba(255, 255, 255, 0.06);
     border-color: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 122, 255, 0.08);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
   }
 
   /* Floating Glass Bar with subtle top illumination */

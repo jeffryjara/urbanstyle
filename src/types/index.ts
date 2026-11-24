@@ -13,10 +13,12 @@ export interface UserAccount extends UserSession {
   password: string;
 }
 
+export type ShoeBrand = 'Adidas' | 'Nike' | 'Puma' | 'Reebok' | 'New Balance' | 'Vans' | 'Converse';
+
 export interface Product {
   id: string;
   name: string;
-  brand: 'Nike' | 'Adidas' | 'Puma' | 'New Balance';
+  brand: ShoeBrand;
   category: string;
   sku: string;
   price: number;
@@ -33,18 +35,18 @@ export interface CartItem {
   quantity: number;
 }
 
-export type PaymentMethod = 'Yape' | 'Plin' | 'Efectivo' | 'Tarjeta';
+export type PaymentMethod = 'Efectivo' | 'Tarjeta' | 'Yape' | 'Plin' | 'Transferencia';
 
 export interface AuditRecord {
   id: string;
   time: string;
   client: string;
-  channel: 'Tienda Física' | 'WhatsApp Store' | 'B2B Corporativo' | 'Web' | 'Instagram';
-  payment: 'POS Débito' | 'Yape QR' | 'Transferencia BCP' | 'Efectivo' | 'Plin';
+  channel: 'Tienda física' | 'WhatsApp' | 'Instagram' | 'TikTok' | 'Facebook' | 'Web' | 'B2B Corporativo';
+  payment: 'Efectivo' | 'Tarjeta' | 'Yape' | 'Plin' | 'Transferencia' | 'POS Débito' | 'Yape QR' | 'Transferencia BCP';
   total: number;
   sunatNumber: string;
-  type: 'Boleta' | 'Factura';
-  status: 'Procesado' | 'Sincronizado';
+  type: 'Boleta' | 'Factura' | 'Nota de Crédito';
+  status: 'Procesado' | 'Sincronizado' | 'Anulado';
 }
 
 export interface ETLLog {
@@ -53,7 +55,7 @@ export interface ETLLog {
   startTime: string;
   duration: string;
   records: number;
-  status: 'EXITOSO' | 'EN PROCESO';
+  status: 'EXITOSO' | 'EN PROCESO' | 'ERROR';
   table: string;
 }
 
@@ -62,4 +64,15 @@ export interface MonthlySalesData {
   digital: number;
   store: number;
   total: number;
+}
+
+export interface QueryResult {
+  columns: string[];
+  rows: (string | number | boolean | null)[][];
+  rowCount: number;
+  executionTimeMs: number;
+  affectedRows?: number;
+  message?: string;
+  isError?: boolean;
+  operation?: 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'EXEC' | 'OTHER';
 }

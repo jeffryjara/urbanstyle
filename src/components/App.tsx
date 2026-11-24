@@ -1,16 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Login } from './Login';
 import { Sidebar } from './layout/Sidebar';
 import { Dashboard } from './Dashboard';
 import { Pos } from './Pos';
-import type { UserSession } from '../types';
-import { INITIAL_USERS } from '../data/initialData';
+import type { UserSession, Product, AuditRecord } from '../types';
+import { INITIAL_USERS, INITIAL_PRODUCTS, INITIAL_AUDIT_RECORDS } from '../data/initialData';
+import { initSqlEngine, subscribeToDatabase, syncSqlEngineState } from '../utils/sqlEngine';
 import { LogOut } from 'lucide-react';
 
 export const App: React.FC = () => {
   // Session state: null = login screen, or active UserSession
   const [currentUser, setCurrentUser] = useState<UserSession | null>(INITIAL_USERS.gerencia);
   const [currentView, setCurrentView] = useState<'dashboard' | 'pos'>('dashboard');
+
+  // Reactive database state connected to SQL Engine
+  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [auditRecords, setAuditRecords] = useState<AuditRecord[]>(INITIAL_AUDIT_RECORDS);
+
+  useEffect(() => {
+    // Initialize in-memory SQL database
+    initSqlEngine(INITIAL_PRODUCTS, INITIAL_AUDIT_RECORDS);
+
+    // Subscribe to live SQL mutations (INSERT, UPDATE, DELETE from Script console)
+    const unsubscribe = subscribeToDatabase((state) => {
+      setProducts([...state.products]);
+      setAuditRecords([...state.auditRecords]);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleAddSale = (newRecord: AuditRecord) => {
+    const updated = [newRecord, ...auditRecords];
+    setAuditRecords(updated);
+    syncSqlEngineState(products, updated);
+  };
 
   const handleLoginSuccess = (session: UserSession) => {
     setCurrentUser(session);
@@ -75,6 +99,7 @@ export const App: React.FC = () => {
           onLogout={handleLogout}
           currentView={currentView}
           onViewChange={setCurrentView}
+          products={products}
         />
 
         {/* Contenido Dinámico con Scroll Propio y Padding Cómodo */}
@@ -83,11 +108,15 @@ export const App: React.FC = () => {
             <Dashboard
               user={currentUser}
               onNavigateToPos={() => setCurrentView('pos')}
+              auditRecords={auditRecords}
+              products={products}
             />
           ) : (
             <Pos
               user={currentUser}
               onNavigateToDashboard={() => setCurrentView('dashboard')}
+              products={products}
+              onAddSale={handleAddSale}
             />
           )}
         </main>

@@ -3,26 +3,36 @@ import { X, Search, Package, AlertTriangle, Layers, TrendingUp, CheckCircle2, Do
 import { GlassButton } from '../ui/GlassButton';
 import { Badge } from '../ui/Badge';
 import { ModalPortal } from './ModalPortal';
+import type { Product } from '../../types';
 import { INITIAL_PRODUCTS } from '../../data/initialData';
 
 interface StockModalProps {
   isOpen: boolean;
   onClose: () => void;
+  products?: Product[];
 }
 
-export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose }) => {
+export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, products }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBrand, setSelectedBrand] = useState<string>('todos');
   const [onlyLowStock, setOnlyLowStock] = useState<boolean>(false);
 
-  // Compute stats
-  const totalStock = useMemo(() => INITIAL_PRODUCTS.reduce((acc, p) => acc + p.stock, 0), []);
-  const totalValuation = useMemo(() => INITIAL_PRODUCTS.reduce((acc, p) => acc + (p.price * p.stock), 0), []);
-  const lowStockCount = useMemo(() => INITIAL_PRODUCTS.filter(p => p.stock <= 10).length, []);
+  const currentProducts = products || INITIAL_PRODUCTS;
+
+  // Compute stats dynamically
+  const totalStock = useMemo(() => currentProducts.reduce((acc, p) => acc + p.stock, 0), [currentProducts]);
+  const totalValuation = useMemo(() => currentProducts.reduce((acc, p) => acc + (p.price * p.stock), 0), [currentProducts]);
+  const lowStockCount = useMemo(() => currentProducts.filter(p => p.stock <= 10).length, [currentProducts]);
+
+  // Dynamic brands list from live products
+  const brands = useMemo(() => {
+    const list = Array.from(new Set(currentProducts.map(p => p.brand)));
+    return ['todos', ...list];
+  }, [currentProducts]);
 
   // Filtered list
   const filtered = useMemo(() => {
-    return INITIAL_PRODUCTS.filter((p) => {
+    return currentProducts.filter((p) => {
       const matchesSearch =
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -35,9 +45,7 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose }) => {
 
       return matchesSearch && matchesBrand && matchesLowStock;
     });
-  }, [searchTerm, selectedBrand, onlyLowStock]);
-
-  const brands = ['todos', 'Nike', 'Adidas', 'Puma', 'Under Armour'];
+  }, [currentProducts, searchTerm, selectedBrand, onlyLowStock]);
 
   return (
     <ModalPortal isOpen={isOpen} onClose={onClose}>
@@ -82,7 +90,7 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose }) => {
             </div>
             <div>
               <span className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider block">Modelos</span>
-              <span className="text-base font-bold font-display text-white">{INITIAL_PRODUCTS.length} SKUs</span>
+              <span className="text-base font-bold font-display text-white">{currentProducts.length} SKUs</span>
             </div>
           </div>
 
@@ -270,7 +278,7 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose }) => {
         {/* Footer */}
         <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-sm text-[#86868B] relative z-10 shrink-0">
           <span>
-            Mostrando <strong className="text-white">{filtered.length}</strong> de <strong className="text-white">{INITIAL_PRODUCTS.length}</strong> modelos registrados
+            Mostrando <strong className="text-white">{filtered.length}</strong> de <strong className="text-white">{currentProducts.length}</strong> modelos registrados
           </span>
           <GlassButton variant="primary" size="md" onClick={onClose} className="text-sm font-semibold px-6">
             Aceptar

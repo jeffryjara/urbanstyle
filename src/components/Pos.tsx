@@ -22,26 +22,29 @@ import { Badge } from './ui/Badge';
 import { InvoiceModal } from './ui/InvoiceModal';
 import { EditCustomerModal } from './ui/EditCustomerModal';
 import { Toast } from './ui/Toast';
-import type { UserSession, Product, CartItem, PaymentMethod } from '../types';
+import type { UserSession, Product, CartItem, PaymentMethod, AuditRecord } from '../types';
 import { INITIAL_PRODUCTS } from '../data/initialData';
 
 interface PosProps {
   user: UserSession;
   onNavigateToDashboard: () => void;
+  products?: Product[];
+  onAddSale?: (record: AuditRecord) => void;
 }
 
-type FilterCategory = 'todos' | 'nike' | 'adidas' | 'puma' | 'talla-40' | 'talla-42' | 'nuevos';
+type FilterCategory = 'todos' | 'adidas' | 'nike' | 'puma' | 'reebok' | 'new-balance' | 'vans' | 'converse' | 'talla-40' | 'talla-42' | 'nuevos';
 
 export const Pos: React.FC<PosProps> = ({
   user,
   onNavigateToDashboard,
+  products = INITIAL_PRODUCTS,
+  onAddSale,
 }) => {
-  const [products] = useState<Product[]>(INITIAL_PRODUCTS);
   const [selectedFilter, setSelectedFilter] = useState<FilterCategory>('todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSizes, setSelectedSizes] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
-    INITIAL_PRODUCTS.forEach((p) => {
+    products.forEach((p) => {
       if (p.sizes.length > 0) initial[p.id] = p.sizes[0];
     });
     return initial;
@@ -100,12 +103,20 @@ export const Pos: React.FC<PosProps> = ({
     if (!matchesSearch) return false;
 
     switch (selectedFilter) {
-      case 'nike':
-        return product.brand === 'Nike';
       case 'adidas':
         return product.brand === 'Adidas';
+      case 'nike':
+        return product.brand === 'Nike';
       case 'puma':
         return product.brand === 'Puma';
+      case 'reebok':
+        return product.brand === 'Reebok';
+      case 'new-balance':
+        return product.brand === 'New Balance';
+      case 'vans':
+        return product.brand === 'Vans';
+      case 'converse':
+        return product.brand === 'Converse';
       case 'talla-40':
         return product.sizes.includes(40);
       case 'talla-42':
@@ -187,7 +198,22 @@ export const Pos: React.FC<PosProps> = ({
         colors: ['#007AFF', '#30D158', '#58A6FF', '#ffffff'],
       });
     } catch {
-      // safe fallback
+      // ignore confetti errors in SSR or restricted environments
+    }
+
+    if (onAddSale) {
+      const newRecord: AuditRecord = {
+        id: `TR-${Math.floor(Math.random() * 800) + 9100}`,
+        time: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
+        client: customerName || 'Clientes Varios',
+        channel: 'Tienda física',
+        payment: selectedPayment === 'Tarjeta' ? 'POS Débito' : selectedPayment === 'Yape' ? 'Yape QR' : selectedPayment,
+        total: total,
+        sunatNumber: documentType === 'Factura' ? `F001-${String(Math.floor(Math.random() * 900) + 10).padStart(8, '0')}` : `B001-${String(Math.floor(Math.random() * 900) + 10).padStart(8, '0')}`,
+        type: documentType,
+        status: 'Procesado',
+      };
+      onAddSale(newRecord);
     }
 
     setIsInvoiceModalOpen(true);
@@ -232,9 +258,13 @@ export const Pos: React.FC<PosProps> = ({
             <div className="flex items-center gap-2.5 overflow-x-auto pb-1 custom-scrollbar">
               {[
                 { id: 'todos', label: `Todos (${products.length})` },
-                { id: 'nike', label: 'Nike' },
                 { id: 'adidas', label: 'Adidas' },
+                { id: 'nike', label: 'Nike' },
                 { id: 'puma', label: 'Puma' },
+                { id: 'reebok', label: 'Reebok' },
+                { id: 'new-balance', label: 'New Balance' },
+                { id: 'vans', label: 'Vans' },
+                { id: 'converse', label: 'Converse' },
                 { id: 'talla-40', label: 'Talla 40' },
                 { id: 'talla-42', label: 'Talla 42' },
                 { id: 'nuevos', label: '● Nuevos' },

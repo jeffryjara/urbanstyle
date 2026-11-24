@@ -4,15 +4,19 @@ import {
   Store,
   Package,
   LogOut,
+  Terminal,
 } from 'lucide-react';
 import { StockModal } from '../ui/StockModal';
-import type { UserSession } from '../../types';
+import { ScriptModal } from '../ui/ScriptModal';
+import type { UserSession, Product } from '../../types';
 
 interface SidebarProps {
   user: UserSession;
   onLogout: () => void;
   currentView: 'dashboard' | 'pos';
   onViewChange: (view: 'dashboard' | 'pos') => void;
+  products?: Product[];
+  onDatabaseMutated?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -20,8 +24,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onLogout,
   currentView,
   onViewChange,
+  products,
+  onDatabaseMutated,
 }) => {
   const [isStockOpen, setIsStockOpen] = useState(false);
+  const [isScriptOpen, setIsScriptOpen] = useState(false);
 
   return (
     <>
@@ -39,23 +46,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
               alt="Urban Style"
               className="w-10 h-10 rounded-2xl object-cover shrink-0 shadow-md"
             />
-            <div className="flex flex-col min-w-0">
-              <span className="font-extrabold font-display text-lg text-white tracking-tight leading-tight truncate">
+            <div className="flex flex-col">
+              <span className="font-extrabold text-base font-display text-white tracking-tight leading-tight">
                 Urban Style
               </span>
-              <span className="text-xs text-[#86868B] font-medium tracking-wide mt-0.5 leading-tight truncate">
-                Venta de Calzado
+              <span className="text-xs text-[#86868B] font-mono leading-tight mt-0.5">
+                RUC 10449598569
               </span>
             </div>
           </div>
 
-          {/* Navigation Views (Sin subtítulo "VISTAS DE PANTALLA") */}
-          <nav className="space-y-2">
+          {/* Vistas Principales (Dashboard y Terminal POS) */}
+          <nav className="space-y-1.5">
             <button
               onClick={() => onViewChange('dashboard')}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 cursor-pointer ${
                 currentView === 'dashboard'
-                  ? 'bg-apple-blue text-white shadow-apple-glow font-semibold border border-apple-blueLight/30'
+                  ? 'bg-apple-blue text-white shadow-apple-glow'
                   : 'text-[#86868B] hover:text-white hover:bg-white/[0.04] border border-transparent'
               }`}
             >
@@ -70,9 +77,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             <button
               onClick={() => onViewChange('pos')}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 cursor-pointer ${
                 currentView === 'pos'
-                  ? 'bg-apple-blue text-white shadow-apple-glow font-semibold border border-apple-blueLight/30'
+                  ? 'bg-apple-blue text-white shadow-apple-glow'
                   : 'text-[#86868B] hover:text-white hover:bg-white/[0.04] border border-transparent'
               }`}
             >
@@ -87,8 +94,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         </div>
 
-        {/* BOTTOM SECTION: Botón de Inventario + Línea Divisoria Debajo + Perfil de Usuario */}
-        <div className="mt-auto relative z-10 space-y-3">
+        {/* BOTTOM SECTION: Botón Script + Botón Inventario + Línea Divisoria Debajo + Perfil de Usuario */}
+        <div className="mt-auto relative z-10 space-y-2.5">
+          {/* Botón de Script (Colocado ENCIMA del botón Inventario) */}
+          <button
+            onClick={() => setIsScriptOpen(true)}
+            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-sm font-medium border border-white/5 transition-all duration-200 cursor-pointer group"
+          >
+            <span className="flex items-center gap-3">
+              <Terminal className="w-4.5 h-4.5 text-apple-emerald group-hover:scale-110 transition-transform" />
+              <span>Script</span>
+            </span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-apple-emerald/10 text-apple-emerald border border-apple-emerald/20">
+              SQL / Spark
+            </span>
+          </button>
+
           {/* Botón de Inventario & Stock */}
           <button
             onClick={() => setIsStockOpen(true)}
@@ -101,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           {/* Línea divisoria colocada DEBAJO del botón de Inventario */}
-          <div className="pt-3 border-t border-white/10">
+          <div className="pt-2.5 border-t border-white/10">
             {/* Tarjeta de Perfil de Usuario con Cerrar Sesión */}
             <div className="flex items-center justify-between p-2.5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] transition-colors group">
               <div className="flex items-center gap-3 min-w-0">
@@ -133,7 +154,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </aside>
 
       {/* Interactive Stock Modal with Viewport Centering */}
-      <StockModal isOpen={isStockOpen} onClose={() => setIsStockOpen(false)} />
+      <StockModal isOpen={isStockOpen} onClose={() => setIsStockOpen(false)} products={products} />
+
+      {/* Interactive Script & SQL Studio Modal */}
+      <ScriptModal
+        isOpen={isScriptOpen}
+        onClose={() => setIsScriptOpen(false)}
+        onDatabaseMutated={onDatabaseMutated}
+      />
     </>
   );
 };

@@ -68,6 +68,7 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose, count: externalC
   const [mounted, setMounted] = useState(false);
   const [visibleToast, setVisibleToast] = useState<{ text: string; count: number; key: number } | null>(null);
   const [isExiting, setIsExiting] = useState(false);
+  const [isAnimatedIn, setIsAnimatedIn] = useState(false);
   const exitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -84,6 +85,7 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose, count: externalC
         exitTimerRef.current = null;
       }
       setIsExiting(false);
+      setIsAnimatedIn(false);
 
       if (typeof message === 'object') {
         setVisibleToast({
@@ -106,6 +108,7 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose, count: externalC
       exitTimerRef.current = setTimeout(() => {
         setVisibleToast(null);
         setIsExiting(false);
+        setIsAnimatedIn(false);
       }, 270);
     }
   }, [message, externalCount]);
@@ -116,6 +119,7 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose, count: externalC
     exitTimerRef.current = setTimeout(() => {
       setVisibleToast(null);
       setIsExiting(false);
+      setIsAnimatedIn(false);
       onClose();
     }, 260);
   };
@@ -125,11 +129,16 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose, count: externalC
   return createPortal(
     <div className="fixed top-6 inset-x-0 z-[9999] pointer-events-none flex justify-center items-start px-4">
       <div
+        onAnimationEnd={() => {
+          if (!isExiting) {
+            setIsAnimatedIn(true);
+          }
+        }}
         className={`pointer-events-auto select-none ${
-          isExiting ? 'animate-toast-out' : 'animate-toast-in'
+          isExiting ? 'animate-toast-out' : isAnimatedIn ? '' : 'animate-toast-in'
         }`}
       >
-        <div className="toast-pill-blur backdrop-blur-2xl backdrop-saturate-200 flex items-center gap-4 px-6 py-3.5 md:px-7 md:py-4 rounded-full text-white max-w-[92vw] sm:max-w-xl">
+        <div className="toast-pill-blur flex items-center gap-4 px-6 py-3.5 md:px-7 md:py-4 rounded-full text-white max-w-[92vw] sm:max-w-xl">
           {/* Solid Accent Check Circle */}
           <div className="w-8 h-8 rounded-full bg-[#007AFF] flex items-center justify-center shrink-0 shadow-[0_0_16px_rgba(0,122,255,0.4)]">
             <Check className="w-4.5 h-4.5 text-white stroke-[2.8]" />

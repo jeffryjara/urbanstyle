@@ -203,7 +203,7 @@ export const Pos: React.FC<PosProps> = ({
         id: `TR-${Math.floor(Math.random() * 800) + 9100}`,
         time: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
         client: clientName || 'Consumidor Final',
-        channel: 'Tienda Física',
+        channel: 'Tienda física',
         payment: paymentMethod === 'Tarjeta' ? 'POS Débito' : paymentMethod === 'Yape' ? 'Yape QR' : paymentMethod,
         total: total,
         sunatNumber: documentType === 'Factura' ? `F001-${String(Math.floor(Math.random() * 900) + 10).padStart(8, '0')}` : `B001-${String(Math.floor(Math.random() * 900) + 10).padStart(8, '0')}`,

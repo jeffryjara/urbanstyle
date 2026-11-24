@@ -430,8 +430,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <td className="py-4.5 px-4 text-white font-bold">{rec.client}</td>
                     <td className="py-4.5 px-4 text-[#A1A1A6] font-medium">
                       <span className="inline-flex items-center gap-2">
-                        {rec.channel === 'Tienda Física' && <Store className="w-4 h-4 text-white/60" />}
-                        {rec.channel === 'WhatsApp Store' && <MessageCircle className="w-4 h-4 text-white/60" />}
+                        {rec.channel === 'Tienda física' && <Store className="w-4 h-4 text-white/60" />}
+                        {rec.channel === 'WhatsApp' && <MessageCircle className="w-4 h-4 text-white/60" />}
                         {rec.channel === 'Web' && <Globe className="w-4 h-4 text-white/60" />}
                         {rec.channel === 'B2B Corporativo' && <Building2 className="w-4 h-4 text-white/60" />}
                         {rec.channel}

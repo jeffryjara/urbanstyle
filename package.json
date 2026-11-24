@@ -3,10 +3,18 @@
   "type": "module",
   "version": "1.0.0",
   "private": true,
+  "description": "Urban Style — Sistema POS Omnicanal & Business Intelligence con Arquitectura SQL (3FN), Data Warehouse Kimball y PySpark",
+  "author": "Jeffry Jara",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeffryjara/urbanstyle.git"
+  },
   "scripts": {
     "dev": "astro dev --host",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "check": "astro check"
   },
   "dependencies": {
     "@astrojs/react": "^4.2.0",
@@ -20,6 +28,7 @@
     "tailwind-merge": "^3.0.1"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.12",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/typography": "^0.5.16",
     "@types/canvas-confetti": "^1.9.0",

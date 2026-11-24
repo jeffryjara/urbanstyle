@@ -175,38 +175,38 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="relative min-h-[100dvh] w-full flex items-center justify-center p-6 md:p-12 bg-black overflow-hidden">
+    <div className="relative min-h-[100dvh] w-full flex items-center justify-center p-4 sm:p-6 md:p-12 bg-black overflow-hidden">
       {/* Main Minimalist Neutral Container */}
-      <div className="relative w-full max-w-5xl min-h-[600px] grid grid-cols-1 md:grid-cols-12 rounded-[36px] overflow-hidden border border-white/[0.08] bg-[#0a0a0a] shadow-[0_40px_100px_rgba(0,0,0,0.95)] z-10 animate-scale-in">
+      <div className="relative w-full max-w-5xl min-h-[540px] md:min-h-[600px] grid grid-cols-1 md:grid-cols-12 rounded-[28px] sm:rounded-[36px] overflow-hidden border border-white/[0.08] bg-[#0a0a0a] shadow-[0_40px_100px_rgba(0,0,0,0.95)] z-10 animate-scale-in">
         
         {/* Left Brand Showcase (5 cols) */}
-        <div className="md:col-span-5 p-10 md:p-14 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/[0.07] bg-[#111111]">
+        <div className="md:col-span-5 p-6 sm:p-8 md:p-14 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/[0.07] bg-[#111111]">
           <img
             src="/logo-icon.png"
             alt="Urban Style"
-            className="w-20 h-20 md:w-24 md:h-24 rounded-[26px] object-contain"
+            className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-[22px] sm:rounded-[26px] object-contain"
           />
 
-          <div className="my-auto py-8">
-            <h1 className="text-5xl md:text-6xl font-extrabold font-display tracking-tight text-white leading-[1.05]">
+          <div className="my-auto py-6 sm:py-8">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold font-display tracking-tight text-white leading-[1.05]">
               Urban
               <br />
               Style.
             </h1>
-            <p className="mt-4 text-lg md:text-xl text-[#8E8E93] font-medium">
+            <p className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-[#8E8E93] font-medium">
               Calzado Deportivo
             </p>
           </div>
 
-          <div className="text-sm text-[#636366] font-mono">
+          <div className="text-xs sm:text-sm text-[#636366] font-mono">
             Lima, Perú
           </div>
         </div>
 
         {/* Right Authentication Form (7 cols) */}
-        <div className="md:col-span-7 p-10 md:p-16 flex flex-col justify-center bg-[#0a0a0a]">
-          <div className="mb-10">
-            <h2 className="text-4xl md:text-5xl font-extrabold font-display text-white tracking-tight">
+        <div className="md:col-span-7 p-6 sm:p-8 md:p-16 flex flex-col justify-center bg-[#0a0a0a]">
+          <div className="mb-6 sm:mb-10">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-display text-white tracking-tight">
               Acceso
             </h2>
           </div>

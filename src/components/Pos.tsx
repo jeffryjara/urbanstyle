@@ -14,6 +14,8 @@ import {
   UserCheck,
   Building,
   CheckCircle2,
+  ShoppingBag,
+  ArrowRight,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { GlassCard } from './ui/GlassCard';
@@ -42,6 +44,7 @@ export const Pos: React.FC<PosProps> = ({
 }) => {
   const [selectedFilter, setSelectedFilter] = useState<FilterCategory>('todos');
   const [searchQuery, setSearchQuery] = useState('');
+  const [mobilePosTab, setMobilePosTab] = useState<'catalogo' | 'orden'>('catalogo');
   const [selectedSizes, setSelectedSizes] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
     products.forEach((p) => {
@@ -112,10 +115,14 @@ export const Pos: React.FC<PosProps> = ({
 
   const handleSelectSize = (productId: string, size: number) => {
     setSelectedSizes((prev) => ({ ...prev, [productId]: size }));
-    showNotification(`Talla ${size} seleccionada`);
+    showNotification(`Talla ${size} seleccionada`, 'info');
   };
 
   const handleAddToCart = (product: Product) => {
+    if (product.stock <= 0) {
+      showNotification(`Agotado: Sin existencias para ${product.name}`, 'warning');
+      return;
+    }
     const size = selectedSizes[product.id] || product.sizes[0] || 40;
 
     setCart((prev) => {
@@ -127,13 +134,13 @@ export const Pos: React.FC<PosProps> = ({
         const updated = [...prev];
         if (updated[existingIndex].quantity < product.stock) {
           updated[existingIndex].quantity += 1;
-          showNotification(`${product.name} (Talla ${size}) agregado`);
+          showNotification(`${product.name} (Talla ${size}) agregado`, 'success');
         } else {
-          showNotification(`Stock máximo alcanzado (${product.stock} disp.)`);
+          showNotification(`Stock máximo alcanzado: solo hay ${product.stock} disponibles`, 'warning');
         }
         return updated;
       } else {
-        showNotification(`${product.name} (Talla ${size}) agregado`);
+        showNotification(`${product.name} (Talla ${size}) agregado`, 'success');
         return [...prev, { product, selectedSize: size, quantity: 1 }];
       }
     });
@@ -146,13 +153,15 @@ export const Pos: React.FC<PosProps> = ({
           if (item.product.id === productId && item.selectedSize === size) {
             const newQty = item.quantity + delta;
             if (newQty > item.product.stock) {
-              showNotification(`Stock máximo: ${item.product.stock} unidades`);
+              showNotification(`Stock máximo: ${item.product.stock} unidades en existencia`, 'warning');
               return item;
             }
             if (delta > 0) {
-              showNotification(`${item.product.name} (Talla ${size}) agregado`);
+              showNotification(`${item.product.name} (Talla ${size}) agregado`, 'success');
             } else if (newQty > 0) {
-              showNotification(`${item.product.name} actualizado`);
+              showNotification(`${item.product.name} actualizado`, 'info');
+            } else {
+              showNotification('Artículo removido de la orden', 'info');
             }
             return { ...item, quantity: newQty };
           }
@@ -164,7 +173,7 @@ export const Pos: React.FC<PosProps> = ({
 
   const handleRemoveItem = (productId: string, size: number) => {
     setCart((prev) => prev.filter((i) => !(i.product.id === productId && i.selectedSize === size)));
-    showNotification('Artículo eliminado de la orden');
+    showNotification('Artículo eliminado de la orden', 'info');
   };
 
   // Financial Calculations
@@ -174,7 +183,7 @@ export const Pos: React.FC<PosProps> = ({
 
   const handleProcessSale = () => {
     if (cart.length === 0) {
-      showNotification('La orden está vacía');
+      showNotification('La orden está vacía: agregue calzado para cobrar', 'warning');
       return;
     }
 
@@ -216,18 +225,47 @@ export const Pos: React.FC<PosProps> = ({
   };
 
   return (
-    <div className="space-y-8 pb-8">
+    <div className="space-y-6 sm:space-y-8 pb-20 lg:pb-8">
       {/* Centered Pill Toast Notification with x2/x3 Counter */}
       <Toast message={toast} onClose={clearToast} />
+
+      {/* Mobile Top View Switcher (Catálogo vs Orden) */}
+      <div className="lg:hidden flex items-center p-1 rounded-2xl bg-[#141416] border border-white/10 stagger-1">
+        <button
+          onClick={() => setMobilePosTab('catalogo')}
+          className={`flex-1 py-3 rounded-xl text-base font-bold transition-all duration-300 ease-spring flex items-center justify-center gap-2 cursor-pointer ${
+            mobilePosTab === 'catalogo'
+              ? 'bg-white text-black shadow-md'
+              : 'text-[#8E8E93] hover:text-white'
+          }`}
+        >
+          <span>Catálogo</span>
+          <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-black/15">
+            {filteredProducts.length}
+          </span>
+        </button>
+        <button
+          onClick={() => setMobilePosTab('orden')}
+          className={`flex-1 py-3 rounded-xl text-base font-bold transition-all duration-300 ease-spring flex items-center justify-center gap-2 cursor-pointer ${
+            mobilePosTab === 'orden'
+              ? 'bg-white text-black shadow-md'
+              : 'text-[#8E8E93] hover:text-white'
+          }`}
+        >
+          <ShoppingBag className="w-4 h-4" />
+          <span>Orden ({cart.reduce((a, b) => a + b.quantity, 0)})</span>
+          {total > 0 && <span className="font-mono text-xs opacity-80">S/ {total.toFixed(0)}</span>}
+        </button>
+      </div>
 
       {/* Main POS Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left/Center: Catalog (8 cols) */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className={`lg:col-span-8 space-y-6 ${mobilePosTab === 'orden' ? 'hidden lg:block' : 'block'}`}>
           {/* Header & Oversized Search (Without keyboard shortcut badge) */}
           <div className="space-y-5 stagger-1">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h2 className="text-4xl md:text-5xl font-extrabold font-display tracking-tight text-white">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-display tracking-tight text-white">
                 Catálogo
               </h2>
 
@@ -356,8 +394,8 @@ export const Pos: React.FC<PosProps> = ({
         </div>
 
         {/* Right Checkout Panel (4 cols) */}
-        <div className="lg:col-span-4 stagger-3">
-          <GlassCard className="p-6 md:p-7 sticky top-8 space-y-6">
+        <div className={`lg:col-span-4 stagger-3 ${mobilePosTab === 'catalogo' ? 'hidden lg:block' : 'block'}`}>
+          <GlassCard className="p-5 sm:p-6 md:p-7 sticky top-8 space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-extrabold font-display text-white tracking-tight">
@@ -375,7 +413,7 @@ export const Pos: React.FC<PosProps> = ({
                   setDocumentType('Boleta');
                   setClientName('Consumidor Final');
                   setClientDoc('00000000');
-                  showNotification('Comprobante: Boleta');
+                  showNotification('Comprobante: Boleta', 'info');
                 }}
                 className={`py-2.5 rounded-xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer flex items-center justify-center gap-2 ${
                   documentType === 'Boleta'
@@ -390,7 +428,7 @@ export const Pos: React.FC<PosProps> = ({
                   setDocumentType('Factura');
                   setClientName('Inversiones Deportivas S.A.C.');
                   setClientDoc('20608941231');
-                  showNotification('Comprobante: Factura');
+                  showNotification('Comprobante: Factura', 'info');
                 }}
                 className={`py-2.5 rounded-xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer flex items-center justify-center gap-2 ${
                   documentType === 'Factura'
@@ -492,7 +530,7 @@ export const Pos: React.FC<PosProps> = ({
                     key={m.id}
                     onClick={() => {
                       setPaymentMethod(m.id as PaymentMethod);
-                      showNotification(`Pago con ${m.label}`);
+                      showNotification(`Pago con ${m.label}`, 'info');
                     }}
                     className={`p-3.5 rounded-2xl border text-base font-bold flex items-center justify-between transition-all duration-300 ease-spring cursor-pointer active:scale-95 ${
                       isSelected
@@ -520,7 +558,7 @@ export const Pos: React.FC<PosProps> = ({
                 <span className="text-base font-bold text-[#8E8E93]">
                   Total
                 </span>
-                <span className="text-4xl xl:text-5xl font-extrabold font-display tracking-tight text-white">
+                <span className="text-3xl sm:text-4xl xl:text-5xl font-extrabold font-display tracking-tight text-white">
                   S/ {total.toFixed(2)}
                 </span>
               </div>
@@ -540,6 +578,25 @@ export const Pos: React.FC<PosProps> = ({
         </div>
       </div>
 
+      {/* Mobile Floating Checkout Pill Bar */}
+      {mobilePosTab === 'catalogo' && cart.length > 0 && (
+        <div className="lg:hidden fixed bottom-5 inset-x-4 z-40 animate-slide-up">
+          <button
+            onClick={() => setMobilePosTab('orden')}
+            className="w-full py-4 px-6 rounded-2xl bg-[#007AFF] hover:bg-[#0066D6] text-white flex items-center justify-between shadow-[0_16px_36px_rgba(0,122,255,0.5)] active:scale-[0.98] transition-all cursor-pointer"
+          >
+            <span className="flex items-center gap-2.5 font-extrabold text-base">
+              <ShoppingBag className="w-5 h-5" />
+              <span>Ver Orden ({cart.reduce((a, b) => a + b.quantity, 0)} {cart.reduce((a, b) => a + b.quantity, 0) === 1 ? 'par' : 'pares'})</span>
+            </span>
+            <span className="flex items-center gap-1.5 font-display font-extrabold text-lg">
+              <span>S/ {total.toFixed(2)}</span>
+              <ArrowRight className="w-4.5 h-4.5" />
+            </span>
+          </button>
+        </div>
+      )}
+
       {/* Customer Information Edit Modal */}
       <EditCustomerModal
         isOpen={isEditCustomerOpen}
@@ -551,7 +608,7 @@ export const Pos: React.FC<PosProps> = ({
           setClientName(name);
           setClientDoc(doc);
           setDocumentType(type);
-          showNotification('Cliente actualizado');
+          showNotification('Cliente actualizado', 'success');
         }}
       />
 

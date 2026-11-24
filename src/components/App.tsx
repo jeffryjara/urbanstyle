@@ -4,10 +4,13 @@ import { Sidebar } from './layout/Sidebar';
 import { Dashboard } from './Dashboard';
 import { Pos } from './Pos';
 import { SplashScreen } from './ui/SplashScreen';
+import { StockModal } from './ui/StockModal';
+import { ScriptModal } from './ui/ScriptModal';
+import { Toast, useToastNotification } from './ui/Toast';
 import type { UserSession, Product, AuditRecord } from '../types';
 import { INITIAL_USERS, INITIAL_PRODUCTS, INITIAL_AUDIT_RECORDS } from '../data/initialData';
 import { initSqlEngine, subscribeToDatabase, syncSqlEngineState } from '../utils/sqlEngine';
-import { LogOut } from 'lucide-react';
+import { LogOut, Package, Terminal, TrendingUp, Store, Menu, X, Lock } from 'lucide-react';
 
 // Helper to read persisted session synchronously from localStorage on initial render
 const getInitialSession = (): UserSession | null => {
@@ -36,6 +39,10 @@ export const App: React.FC = () => {
   const [showSplash, setShowSplash] = useState<boolean>(() => {
     return !!getInitialSession();
   });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileStockOpen, setIsMobileStockOpen] = useState(false);
+  const [isMobileScriptOpen, setIsMobileScriptOpen] = useState(false);
+  const { toast, showNotification, clearToast } = useToastNotification();
 
   // Reactive database state connected to SQL Engine
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
@@ -175,32 +182,179 @@ export const App: React.FC = () => {
 
   return (
     <div className="relative h-[100dvh] w-screen bg-black text-[#F5F5F7] flex flex-col lg:flex-row overflow-hidden">
-      {/* Mobile Top Header */}
-      <div className="lg:hidden flex items-center justify-between px-5 py-4 border-b border-white/[0.07] bg-[#080808] relative z-20 shrink-0">
-        <div className="flex items-center gap-3">
+      <Toast message={toast} onClose={clearToast} />
+
+      {/* Mobile Top Header with Liquid Glass & Apple Elegance */}
+      <div className="lg:hidden flex items-center justify-between px-4 sm:px-6 py-3.5 border-b border-white/[0.08] bg-[#09090b] relative z-30 shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
           <img
             src="/logo-icon.png"
             alt="Urban Style"
-            className="w-9 h-9 rounded-xl object-contain"
+            className="w-9 h-9 rounded-xl object-contain shrink-0"
           />
-          <span className="font-extrabold font-display text-white text-lg">Urban Style</span>
+          <div className="flex flex-col min-w-0">
+            <span className="font-extrabold font-display text-white text-base leading-tight truncate">
+              Urban Style
+            </span>
+            <span className="text-[11px] font-semibold text-[#8E8E93] leading-tight flex items-center gap-1.5 mt-0.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${currentUser.role === 'gerencia' ? 'bg-[#007AFF]' : 'bg-[#30D158]'}`} />
+              <span className="capitalize">{currentUser.name.split(' ')[0]} ({currentUser.role === 'gerencia' ? 'Gerente' : 'Ventas'})</span>
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2.5">
+
+        <div className="flex items-center gap-2">
+          {currentUser.role === 'gerencia' && (
+            <button
+              onClick={() => handleViewChange(currentView === 'dashboard' ? 'pos' : 'dashboard')}
+              className="px-3 py-1.5 rounded-xl bg-[#18181b] border border-white/10 text-white text-xs font-bold transition-all duration-300 ease-spring active:scale-95 cursor-pointer"
+            >
+              {currentView === 'dashboard' ? 'Catálogo' : 'Dashboard'}
+            </button>
+          )}
+
           <button
-            onClick={() => handleViewChange(currentView === 'dashboard' ? 'pos' : 'dashboard')}
-            className="px-4 py-2 rounded-xl bg-[#007AFF] text-white text-sm font-bold transition-all duration-300 ease-spring active:scale-95"
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2.5 rounded-xl text-[#A1A1A6] hover:text-white bg-white/[0.06] hover:bg-white/10 transition-colors cursor-pointer"
+            title="Menú"
           >
-            {currentView === 'dashboard' ? 'Catálogo' : 'Dashboard'}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="p-2 rounded-xl text-[#8E8E93] hover:text-white hover:bg-white/10 transition-colors"
-            title="Cerrar Sesión"
-          >
-            <LogOut className="w-5 h-5" />
+            <Menu className="w-5 h-5" />
           </button>
         </div>
       </div>
+
+      {/* Mobile Drawer Navigation */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          {/* Backdrop */}
+          <div
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md animate-fade-in"
+          />
+
+          {/* Drawer Body */}
+          <div className="relative ml-auto w-4/5 max-w-xs h-full bg-[#0d0d10] border-l border-white/15 p-6 flex flex-col justify-between z-10 animate-slide-in shadow-2xl">
+            <div className="space-y-6">
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={currentUser.avatarUrl}
+                    alt={currentUser.name}
+                    className="w-10 h-10 rounded-full object-cover border border-white/15"
+                  />
+                  <div>
+                    <h4 className="font-extrabold text-white text-base leading-tight">{currentUser.name}</h4>
+                    <span className="text-xs font-medium text-[#8E8E93] capitalize">
+                      {currentUser.role === 'gerencia' ? 'Gerencia General' : 'Asesor de Ventas'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center cursor-pointer active:scale-90"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Navigation Items */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    handleViewChange('pos');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-base font-bold transition-all cursor-pointer ${
+                    currentView === 'pos'
+                      ? 'bg-[#007AFF] text-white shadow-lg'
+                      : 'text-[#8E8E93] hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Store className="w-5 h-5" />
+                  <span>Catálogo (POS)</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (currentUser.role === 'ventas') {
+                      showNotification('Acceso restringido: Módulo exclusivo para Gerencia', 'error');
+                      return;
+                    }
+                    handleViewChange('dashboard');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-base font-bold transition-all cursor-pointer ${
+                    currentView === 'dashboard'
+                      ? 'bg-[#007AFF] text-white shadow-lg'
+                      : currentUser.role === 'ventas'
+                      ? 'text-[#52525B] opacity-60'
+                      : 'text-[#8E8E93] hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <TrendingUp className="w-5 h-5" />
+                    <span>Dashboard</span>
+                  </div>
+                  {currentUser.role === 'ventas' && (
+                    <Lock className="w-4 h-4 text-[#52525B]" />
+                  )}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setIsMobileStockOpen(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-base font-bold text-[#8E8E93] hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+                >
+                  <Package className="w-5 h-5" />
+                  <span>Inventario</span>
+                </button>
+
+                {currentUser.role === 'gerencia' && (
+                  <button
+                    onClick={() => {
+                      setIsMobileScriptOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-base font-bold text-[#8E8E93] hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+                  >
+                    <Terminal className="w-5 h-5" />
+                    <span>Script SQL</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Logout Footer */}
+            <div className="pt-4 border-t border-white/10">
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl bg-red-500/10 text-[#FF453A] font-bold text-base hover:bg-red-500/20 active:scale-95 transition-all cursor-pointer"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>Cerrar Sesión</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Modals */}
+      <StockModal
+        isOpen={isMobileStockOpen}
+        onClose={() => setIsMobileStockOpen(false)}
+        products={products}
+      />
+      <ScriptModal
+        isOpen={isMobileScriptOpen}
+        onClose={() => setIsMobileScriptOpen(false)}
+      />
 
       {/* Desktop Layout */}
       <div className="flex-1 flex w-full h-full overflow-hidden relative z-10">
@@ -218,7 +372,7 @@ export const App: React.FC = () => {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="flex-1 h-full overflow-y-auto custom-scrollbar p-6 lg:p-10 xl:p-12"
+          className="flex-1 h-full overflow-y-auto custom-scrollbar p-4 sm:p-6 lg:p-10 xl:p-12"
         >
           {/* Apple Rubber-Band Overscroll Container + Top-to-Bottom Section Bounce */}
           <div

@@ -95,18 +95,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <Toast message={toast} onClose={clearToast} />
 
       {/* Minimalist Oversized Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 stagger-1">
-        <h2 className="text-4xl md:text-5xl font-extrabold font-display tracking-tight text-white">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 stagger-1">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-display tracking-tight text-white">
           Hola, {firstName}
         </h2>
 
-        <div className="flex flex-wrap items-center gap-3.5">
+        <div className="flex flex-wrap items-center gap-3">
           <SegmentedControl
             options={timeframeOptions}
             value={timeframe}
             onChange={(val) => {
               setTimeframe(val);
-              showNotification(`Vista filtrada: ${val.toUpperCase()}`);
+              showNotification(`Vista filtrada: ${val.toUpperCase()}`, 'info');
             }}
             size="md"
           />
@@ -114,7 +114,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             variant="glass"
             size="md"
             icon={<Download className="w-4.5 h-4.5" />}
-            onClick={() => showNotification('Reporte BI exportado')}
+            onClick={() => showNotification('Reporte BI exportado en formato oficial', 'success')}
           >
             Exportar
           </GlassButton>
@@ -122,9 +122,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* 3 Minimalist Oversized Hero KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 stagger-2">
         {/* KPI 1: Ingresos */}
-        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[210px]">
+        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[200px] sm:min-h-[210px]">
           <div className="flex justify-between items-center">
             <span className="text-base font-semibold text-[#8E8E93]">Ingresos</span>
             <Badge variant="neutral" icon={<ArrowUpRight className="w-4 h-4 text-[#007AFF]" />}>
@@ -133,7 +133,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           <div className="my-4">
-            <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight block">
+            <span className="text-3xl sm:text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight block">
               {kpiData.total}
             </span>
           </div>
@@ -153,7 +153,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </GlassCard>
 
         {/* KPI 2: Más Vendido */}
-        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[210px]">
+        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[200px] sm:min-h-[210px]">
           <div className="flex justify-between items-center">
             <span className="text-base font-semibold text-[#8E8E93]">Más Vendido</span>
             <span className="text-sm font-bold text-[#007AFF]">Ultraboost 22</span>
@@ -161,13 +161,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
           <div className="my-4 flex items-center justify-between gap-4">
             <div className="flex items-baseline gap-2.5">
-              <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
+              <span className="text-3xl sm:text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
                 {kpiData.topCount}
               </span>
-              <span className="text-lg text-[#8E8E93] font-semibold">pares</span>
+              <span className="text-base sm:text-lg text-[#8E8E93] font-semibold">pares</span>
             </div>
 
-            <div className="w-24 h-16 rounded-2xl overflow-hidden border border-white/10 bg-black shrink-0">
+            <div className="w-20 h-14 sm:w-24 sm:h-16 rounded-2xl overflow-hidden border border-white/10 bg-black shrink-0">
               <img
                 src="https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&w=240&q=80"
                 alt="Ultraboost 22"
@@ -183,17 +183,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </GlassCard>
 
         {/* KPI 3: Canales */}
-        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[210px]">
+        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[200px] sm:min-h-[210px]">
           <div className="flex justify-between items-center">
             <span className="text-base font-semibold text-[#8E8E93]">Canales</span>
             <span className="text-sm font-semibold text-[#8E8E93]">Digital / Tienda</span>
           </div>
 
           <div className="my-4 flex items-baseline gap-3">
-            <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
+            <span className="text-3xl sm:text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
               {kpiData.digitalPct}%
             </span>
-            <span className="text-2xl font-bold font-display text-[#636366]">
+            <span className="text-xl sm:text-2xl font-bold font-display text-[#636366]">
               / {kpiData.storePct}%
             </span>
           </div>
@@ -221,7 +221,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 stagger-3">
         {/* Sales Chart (8 cols) */}
         <GlassCard className="lg:col-span-8 flex flex-col justify-between">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
             <div>
               <h3 className="text-2xl md:text-3xl font-extrabold font-display text-white tracking-tight">
                 Ventas Anuales
@@ -238,8 +238,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          {/* PowerBI-Inspired Thick Bar Visualizer with Y-Axis Grid & Value Callouts */}
-          <div className="relative h-80 flex pt-6 pb-2">
+          {/* PowerBI-Inspired Thick Bar Visualizer with Responsive Scroll */}
+          <div className="overflow-x-auto no-scrollbar">
+            <div className="relative h-80 flex pt-6 pb-2 min-w-[500px] sm:min-w-full">
             {/* Y-Axis Scale Labels */}
             <div className="flex flex-col justify-between pr-4 pb-8 text-xs font-mono font-semibold text-[#636366] select-none shrink-0 text-right w-12">
               <span>65k</span>
@@ -326,6 +327,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 );
               })}
             </div>
+          </div>
           </div>
         </GlassCard>
 
@@ -457,7 +459,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               variant="glass"
               size="md"
               icon={<FileSpreadsheet className="w-4.5 h-4.5" />}
-              onClick={() => showNotification('Excel exportado')}
+              onClick={() => showNotification('Libro Excel exportado con éxito', 'success')}
             >
               Excel
             </GlassButton>
@@ -465,7 +467,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               variant="primary"
               size="md"
               icon={<FileText className="w-4.5 h-4.5" />}
-              onClick={() => showNotification('PLE 14.1 generado')}
+              onClick={() => showNotification('Libro Electrónico PLE 14.1 generado', 'success')}
             >
               Declarar PLE
             </GlassButton>

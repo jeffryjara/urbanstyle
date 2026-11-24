@@ -91,9 +91,9 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
       if (notify) {
         if (res.isError) {
-          showNotification('Restricción SQL activada');
+          showNotification('Restricción SQL activada: violación de restricción', 'warning');
         } else {
-          showNotification(`Consulta ejecutada (${res.rowCount} filas)`);
+          showNotification(`Consulta ejecutada (${res.rowCount} filas)`, 'success');
         }
       }
 
@@ -111,7 +111,7 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
   const handleCopy = (text: string, isScript = false) => {
     navigator.clipboard.writeText(text);
-    showNotification('Código copiado al portapapeles');
+    showNotification('Código copiado al portapapeles', 'success');
     if (isScript) {
       setCopiedScript(true);
       setTimeout(() => setCopiedScript(false), 2000);
@@ -133,7 +133,7 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
     navigator.clipboard.writeText(text);
     setCopiedDocenteGuide(true);
-    showNotification('Guion docente copiado');
+    showNotification('Guion docente copiado con éxito', 'success');
     setTimeout(() => setCopiedDocenteGuide(false), 2200);
   };
 

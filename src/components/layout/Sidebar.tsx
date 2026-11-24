@@ -5,9 +5,11 @@ import {
   Package,
   LogOut,
   Terminal,
+  Lock,
 } from 'lucide-react';
 import { StockModal } from '../ui/StockModal';
 import { ScriptModal } from '../ui/ScriptModal';
+import { Toast, useToastNotification } from '../ui/Toast';
 import type { UserSession, Product } from '../../types';
 
 interface SidebarProps {
@@ -29,9 +31,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [isStockOpen, setIsStockOpen] = useState(false);
   const [isScriptOpen, setIsScriptOpen] = useState(false);
+  const { toast, showNotification, clearToast } = useToastNotification();
 
   return (
     <>
+      <Toast message={toast} onClose={clearToast} />
       <aside className="relative w-72 min-w-[288px] max-w-[288px] shrink-0 h-full border-r border-white/[0.07] bg-[#080808] flex flex-col justify-between p-6 hidden lg:flex overflow-hidden z-20">
         {/* TOP SECTION: Brand Identity & Primary Views */}
         <div className="relative z-10 flex flex-col">
@@ -50,24 +54,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Primary Views (Sin contenedor blanco pesado ni puntito lateral) */}
           <nav className="space-y-2">
             <button
-              onClick={() => onViewChange('dashboard')}
-              className={`relative w-full flex items-center gap-3.5 px-5 py-4 rounded-2xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer active:scale-[0.96] group ${
+              onClick={() => {
+                if (user.role === 'ventas') {
+                  showNotification('Acceso restringido: Módulo exclusivo para Gerencia', 'error');
+                  return;
+                }
+                onViewChange('dashboard');
+              }}
+              className={`relative w-full flex items-center justify-between px-5 py-4 rounded-2xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer active:scale-[0.96] group ${
                 currentView === 'dashboard'
                   ? 'bg-[#151518] text-white border border-white/[0.10]'
+                  : user.role === 'ventas'
+                  ? 'text-[#52525B] hover:text-[#71717A] hover:bg-[#0c0c0e] border border-transparent'
                   : 'text-[#71717A] hover:text-white hover:bg-[#111113] border border-transparent'
               }`}
             >
-              {currentView === 'dashboard' && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-[#007AFF]" />
+              <div className="flex items-center gap-3.5">
+                {currentView === 'dashboard' && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-[#007AFF]" />
+                )}
+                <TrendingUp
+                  className={`w-5 h-5 transition-colors duration-300 ${
+                    currentView === 'dashboard'
+                      ? 'text-[#007AFF]'
+                      : 'text-[#71717A] group-hover:text-white'
+                  }`}
+                />
+                <span>Dashboard</span>
+              </div>
+              {user.role === 'ventas' && (
+                <Lock className="w-4 h-4 text-[#52525B] group-hover:text-[#71717A] transition-colors" />
               )}
-              <TrendingUp
-                className={`w-5 h-5 transition-colors duration-300 ${
-                  currentView === 'dashboard'
-                    ? 'text-[#007AFF]'
-                    : 'text-[#71717A] group-hover:text-white'
-                }`}
-              />
-              <span>Dashboard</span>
             </button>
 
             <button
@@ -93,18 +110,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         </div>
 
-        {/* BOTTOM SECTION: Script + Inventario + Divider Below + User Profile */}
+        {/* BOTTOM SECTION: Script (Solo Gerente) + Inventario + Divider Below + User Profile */}
         <div className="mt-auto relative z-10 space-y-2.5">
-          {/* Script Button (Above Inventario) */}
-          <button
-            onClick={() => setIsScriptOpen(true)}
-            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-[#A1A1A6] hover:text-white bg-[#0f0f12] hover:bg-[#16161a] text-base font-semibold border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 ease-spring cursor-pointer active:scale-[0.96] group"
-          >
-            <span className="flex items-center gap-3.5">
-              <Terminal className="w-5 h-5 text-[#71717A] group-hover:text-[#007AFF] transition-colors duration-300" />
-              <span>Script</span>
-            </span>
-          </button>
+          {/* Script Button (Exclusivo para Gerencia) */}
+          {user.role === 'gerencia' && (
+            <button
+              onClick={() => setIsScriptOpen(true)}
+              className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-[#A1A1A6] hover:text-white bg-[#0f0f12] hover:bg-[#16161a] text-base font-semibold border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 ease-spring cursor-pointer active:scale-[0.96] group"
+            >
+              <span className="flex items-center gap-3.5">
+                <Terminal className="w-5 h-5 text-[#71717A] group-hover:text-[#007AFF] transition-colors duration-300" />
+                <span>Script</span>
+              </span>
+            </button>
+          )}
 
           {/* Inventario Button */}
           <button

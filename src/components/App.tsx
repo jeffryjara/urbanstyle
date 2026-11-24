@@ -3,14 +3,15 @@ import { Login } from './Login';
 import { Sidebar } from './layout/Sidebar';
 import { Dashboard } from './Dashboard';
 import { Pos } from './Pos';
+import { SalesHistory } from './SalesHistory';
 import { SplashScreen } from './ui/SplashScreen';
 import { StockModal } from './ui/StockModal';
 import { ScriptModal } from './ui/ScriptModal';
 import { Toast, useToastNotification } from './ui/Toast';
-import type { UserSession, Product, AuditRecord } from '../types';
+import type { UserSession, Product, AuditRecord, ActiveView } from '../types';
 import { INITIAL_USERS, INITIAL_PRODUCTS, INITIAL_AUDIT_RECORDS } from '../data/initialData';
 import { initSqlEngine, subscribeToDatabase, syncSqlEngineState } from '../utils/sqlEngine';
-import { LogOut, Package, Terminal, TrendingUp, Store, Menu, X, Lock } from 'lucide-react';
+import { LogOut, Package, Terminal, TrendingUp, Store, Menu, X, Lock, Receipt } from 'lucide-react';
 
 // Helper to read persisted session synchronously from localStorage on initial render
 const getInitialSession = (): UserSession | null => {
@@ -29,10 +30,44 @@ const getInitialSession = (): UserSession | null => {
   return null;
 };
 
+// Helper to read persisted products synchronously from localStorage
+const getInitialProducts = (): Product[] => {
+  if (typeof window === 'undefined') return INITIAL_PRODUCTS;
+  try {
+    const stored = localStorage.getItem('urbanstyle_products');
+    if (stored) {
+      const parsed = JSON.parse(stored) as Product[];
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch {
+    // Fallback
+  }
+  return INITIAL_PRODUCTS;
+};
+
+// Helper to read persisted sales synchronously from localStorage
+const getInitialAuditRecords = (): AuditRecord[] => {
+  if (typeof window === 'undefined') return INITIAL_AUDIT_RECORDS;
+  try {
+    const stored = localStorage.getItem('urbanstyle_sales');
+    if (stored) {
+      const parsed = JSON.parse(stored) as AuditRecord[];
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch {
+    // Fallback
+  }
+  return INITIAL_AUDIT_RECORDS;
+};
+
 export const App: React.FC = () => {
   // Session state: read synchronously from localStorage to eliminate any flash of login on reload
   const [currentUser, setCurrentUser] = useState<UserSession | null>(getInitialSession);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'pos'>(() => {
+  const [currentView, setCurrentView] = useState<ActiveView>(() => {
     const session = getInitialSession();
     return session?.role === 'ventas' ? 'pos' : 'dashboard';
   });
@@ -44,9 +79,9 @@ export const App: React.FC = () => {
   const [isMobileScriptOpen, setIsMobileScriptOpen] = useState(false);
   const { toast, showNotification, clearToast } = useToastNotification();
 
-  // Reactive database state connected to SQL Engine
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
-  const [auditRecords, setAuditRecords] = useState<AuditRecord[]>(INITIAL_AUDIT_RECORDS);
+  // Reactive database state connected to SQL Engine and persisted
+  const [products, setProducts] = useState<Product[]>(getInitialProducts);
+  const [auditRecords, setAuditRecords] = useState<AuditRecord[]>(getInitialAuditRecords);
 
   // Apple Rubber-Band Overscroll State
   const mainScrollRef = useRef<HTMLElement | null>(null);
@@ -56,13 +91,19 @@ export const App: React.FC = () => {
   const touchStartYRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // 1. Initialize in-memory SQL database
-    initSqlEngine(INITIAL_PRODUCTS, INITIAL_AUDIT_RECORDS);
+    // 1. Initialize in-memory SQL database with current (or persisted) state
+    initSqlEngine(products, auditRecords);
 
     // 2. Subscribe to live SQL mutations (INSERT, UPDATE, DELETE from Script console)
     const unsubscribe = subscribeToDatabase((state) => {
       setProducts([...state.products]);
       setAuditRecords([...state.auditRecords]);
+      try {
+        localStorage.setItem('urbanstyle_products', JSON.stringify(state.products));
+        localStorage.setItem('urbanstyle_sales', JSON.stringify(state.auditRecords));
+      } catch {
+        // ignore
+      }
     });
 
     return () => {
@@ -71,9 +112,30 @@ export const App: React.FC = () => {
     };
   }, []);
 
+  // Sync products and sales to localStorage whenever modified
+  useEffect(() => {
+    try {
+      localStorage.setItem('urbanstyle_products', JSON.stringify(products));
+    } catch {
+      // ignore
+    }
+  }, [products]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('urbanstyle_sales', JSON.stringify(auditRecords));
+    } catch {
+      // ignore
+    }
+  }, [auditRecords]);
+
   // Reset scroll position when switching views so top-to-bottom bounce is crisp
-  const handleViewChange = (nextView: 'dashboard' | 'pos') => {
+  const handleViewChange = (nextView: ActiveView) => {
     if (nextView === currentView) return;
+    if (nextView === 'dashboard' && currentUser?.role === 'ventas') {
+      showNotification('Acceso restringido: Módulo exclusivo para Gerencia', 'error');
+      return;
+    }
     setCurrentView(nextView);
     setOverscrollY(0);
     if (mainScrollRef.current) {
@@ -138,10 +200,22 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleAddSale = (newRecord: AuditRecord) => {
-    const updated = [newRecord, ...auditRecords];
-    setAuditRecords(updated);
-    syncSqlEngineState(products, updated);
+  const handleAddSale = (newRecord: AuditRecord, updatedProducts?: Product[]) => {
+    const updatedRecords = [newRecord, ...auditRecords];
+    const finalProducts = updatedProducts || products;
+    setAuditRecords(updatedRecords);
+    if (updatedProducts) {
+      setProducts(updatedProducts);
+    }
+    syncSqlEngineState(finalProducts, updatedRecords);
+    try {
+      localStorage.setItem('urbanstyle_sales', JSON.stringify(updatedRecords));
+      if (updatedProducts) {
+        localStorage.setItem('urbanstyle_products', JSON.stringify(updatedProducts));
+      }
+    } catch {
+      // ignore
+    }
   };
 
   const handleLoginSuccess = (session: UserSession) => {
@@ -204,6 +278,17 @@ export const App: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleViewChange(currentView === 'sales' ? 'pos' : 'sales')}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all duration-300 ease-spring active:scale-95 cursor-pointer ${
+              currentView === 'sales'
+                ? 'bg-[#007AFF] text-white border-[#007AFF]'
+                : 'bg-[#18181b] border-white/10 text-white'
+            }`}
+          >
+            {currentView === 'sales' ? 'Catálogo' : 'Mis Ventas'}
+          </button>
+
           {currentUser.role === 'gerencia' && (
             <button
               onClick={() => handleViewChange(currentView === 'dashboard' ? 'pos' : 'dashboard')}
@@ -274,6 +359,21 @@ export const App: React.FC = () => {
                 >
                   <Store className="w-5 h-5" />
                   <span>Catálogo (POS)</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    handleViewChange('sales');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-base font-bold transition-all cursor-pointer ${
+                    currentView === 'sales'
+                      ? 'bg-[#007AFF] text-white shadow-lg'
+                      : 'text-[#8E8E93] hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Receipt className="w-5 h-5" />
+                  <span>Mis Ventas</span>
                 </button>
 
                 <button
@@ -392,12 +492,19 @@ export const App: React.FC = () => {
                   auditRecords={auditRecords}
                   products={products}
                 />
-              ) : (
+              ) : currentView === 'pos' ? (
                 <Pos
                   user={currentUser}
                   onNavigateToDashboard={() => handleViewChange('dashboard')}
                   products={products}
                   onAddSale={handleAddSale}
+                />
+              ) : (
+                <SalesHistory
+                  user={currentUser}
+                  auditRecords={auditRecords}
+                  onNavigateToPos={() => handleViewChange('pos')}
+                  products={products}
                 />
               )}
             </div>

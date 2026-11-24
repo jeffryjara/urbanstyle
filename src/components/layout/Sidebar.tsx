@@ -6,17 +6,18 @@ import {
   LogOut,
   Terminal,
   Lock,
+  Receipt,
 } from 'lucide-react';
 import { StockModal } from '../ui/StockModal';
 import { ScriptModal } from '../ui/ScriptModal';
 import { Toast, useToastNotification } from '../ui/Toast';
-import type { UserSession, Product } from '../../types';
+import type { UserSession, Product, ActiveView } from '../../types';
 
 interface SidebarProps {
   user: UserSession;
   onLogout: () => void;
-  currentView: 'dashboard' | 'pos';
-  onViewChange: (view: 'dashboard' | 'pos') => void;
+  currentView: ActiveView;
+  onViewChange: (view: ActiveView) => void;
   products?: Product[];
   onDatabaseMutated?: () => void;
 }
@@ -106,6 +107,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               />
               <span>Catálogo</span>
+            </button>
+
+            <button
+              onClick={() => onViewChange('sales')}
+              className={`relative w-full flex items-center gap-3.5 px-5 py-4 rounded-2xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer active:scale-[0.96] group ${
+                currentView === 'sales'
+                  ? 'bg-[#151518] text-white border border-white/[0.10]'
+                  : 'text-[#71717A] hover:text-white hover:bg-[#111113] border border-transparent'
+              }`}
+            >
+              {currentView === 'sales' && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-[#007AFF]" />
+              )}
+              <Receipt
+                className={`w-5 h-5 transition-colors duration-300 ${
+                  currentView === 'sales'
+                    ? 'text-[#007AFF]'
+                    : 'text-[#71717A] group-hover:text-white'
+                }`}
+              />
+              <span>Mis Ventas</span>
             </button>
           </nav>
         </div>

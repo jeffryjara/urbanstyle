@@ -31,7 +31,7 @@ interface PosProps {
   user: UserSession;
   onNavigateToDashboard: () => void;
   products?: Product[];
-  onAddSale?: (record: AuditRecord) => void;
+  onAddSale?: (record: AuditRecord, updatedProducts: Product[]) => void;
 }
 
 type FilterCategory = 'todos' | 'adidas' | 'nike' | 'puma' | 'reebok' | 'new-balance' | 'vans' | 'converse' | 'talla-40' | 'talla-42' | 'nuevos';
@@ -53,19 +53,40 @@ export const Pos: React.FC<PosProps> = ({
     return initial;
   });
 
-  // Cart State
-  const [cart, setCart] = useState<CartItem[]>([
-    {
-      product: INITIAL_PRODUCTS[0],
-      selectedSize: 42,
-      quantity: 1,
-    },
-    {
-      product: INITIAL_PRODUCTS[1],
-      selectedSize: 40,
-      quantity: 1,
-    },
-  ]);
+  // Cart State with LocalStorage Persistence
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const saved = localStorage.getItem('urbanstyle_cart');
+      if (saved) {
+        const parsed = JSON.parse(saved) as CartItem[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed
+            .map((item) => {
+              const live = products.find((p) => p.id === item.product.id) || item.product;
+              return {
+                ...item,
+                product: live,
+                quantity: Math.min(item.quantity, live.stock),
+              };
+            })
+            .filter((item) => item.product.stock > 0 && item.quantity > 0);
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  });
+
+  // Sync cart to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('urbanstyle_cart', JSON.stringify(cart));
+    } catch {
+      // ignore
+    }
+  }, [cart]);
 
   const [documentType, setDocumentType] = useState<'Boleta' | 'Factura'>('Boleta');
   const [clientDoc, setClientDoc] = useState('00000000');
@@ -119,55 +140,81 @@ export const Pos: React.FC<PosProps> = ({
   };
 
   const handleAddToCart = (product: Product) => {
-    if (product.stock <= 0) {
-      showNotification(`Agotado: Sin existencias para ${product.name}`, 'warning');
+    const liveProduct = products.find((p) => p.id === product.id) || product;
+
+    if (liveProduct.stock <= 0) {
+      showNotification(`Agotado: Sin existencias para ${liveProduct.name}`, 'warning');
       return;
     }
-    const size = selectedSizes[product.id] || product.sizes[0] || 40;
+    const size = selectedSizes[liveProduct.id] || liveProduct.sizes[0] || 40;
+
+    // Check total already in cart for this product
+    const currentInCart = cart
+      .filter((item) => item.product.id === liveProduct.id)
+      .reduce((sum, item) => sum + item.quantity, 0);
+
+    if (currentInCart >= liveProduct.stock) {
+      showNotification(`Stock máximo alcanzado: solo hay ${liveProduct.stock} disponibles`, 'warning');
+      return;
+    }
 
     setCart((prev) => {
       const existingIndex = prev.findIndex(
-        (item) => item.product.id === product.id && item.selectedSize === size
+        (item) => item.product.id === liveProduct.id && item.selectedSize === size
       );
 
       if (existingIndex > -1) {
         const updated = [...prev];
-        if (updated[existingIndex].quantity < product.stock) {
-          updated[existingIndex].quantity += 1;
-          showNotification(`${product.name} (Talla ${size}) agregado`, 'success');
-        } else {
-          showNotification(`Stock máximo alcanzado: solo hay ${product.stock} disponibles`, 'warning');
-        }
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          product: liveProduct,
+          quantity: updated[existingIndex].quantity + 1,
+        };
+        showNotification(`${liveProduct.name} (Talla ${size}) agregado`, 'success');
         return updated;
       } else {
-        showNotification(`${product.name} (Talla ${size}) agregado`, 'success');
-        return [...prev, { product, selectedSize: size, quantity: 1 }];
+        showNotification(`${liveProduct.name} (Talla ${size}) agregado`, 'success');
+        return [...prev, { product: liveProduct, selectedSize: size, quantity: 1 }];
       }
     });
   };
 
   const handleUpdateQuantity = (productId: string, size: number, delta: number) => {
+    const liveProduct = products.find((p) => p.id === productId);
+    const availableStock = liveProduct ? liveProduct.stock : 0;
+
     setCart((prev) => {
+      const currentInCart = prev
+        .filter((item) => item.product.id === productId)
+        .reduce((sum, item) => sum + item.quantity, 0);
+
+      if (delta > 0 && currentInCart + delta > availableStock) {
+        showNotification(`Stock máximo: solo quedan ${availableStock} unidades`, 'warning');
+        return prev;
+      }
+
       return prev
         .map((item) => {
           if (item.product.id === productId && item.selectedSize === size) {
             const newQty = item.quantity + delta;
-            if (newQty > item.product.stock) {
-              showNotification(`Stock máximo: ${item.product.stock} unidades en existencia`, 'warning');
-              return item;
+            if (newQty <= 0) {
+              showNotification('Artículo removido de la orden', 'info');
+              return null;
             }
             if (delta > 0) {
               showNotification(`${item.product.name} (Talla ${size}) agregado`, 'success');
-            } else if (newQty > 0) {
-              showNotification(`${item.product.name} actualizado`, 'info');
             } else {
-              showNotification('Artículo removido de la orden', 'info');
+              showNotification(`${item.product.name} actualizado`, 'info');
             }
-            return { ...item, quantity: newQty };
+            return {
+              ...item,
+              product: liveProduct || item.product,
+              quantity: newQty,
+            };
           }
           return item;
         })
-        .filter((item) => item.quantity > 0);
+        .filter((item): item is CartItem => item !== null);
     });
   };
 
@@ -187,6 +234,36 @@ export const Pos: React.FC<PosProps> = ({
       return;
     }
 
+    // Strict Stock Validation before finalizing sale
+    for (const item of cart) {
+      const prod = products.find((p) => p.id === item.product.id);
+      if (!prod || prod.stock <= 0) {
+        showNotification(`Venta denegada: ${item.product.name} está agotado`, 'error');
+        return;
+      }
+      const totalRequested = cart
+        .filter((c) => c.product.id === item.product.id)
+        .reduce((sum, c) => sum + c.quantity, 0);
+
+      if (totalRequested > prod.stock) {
+        showNotification(`Stock insuficiente: Solo quedan ${prod.stock} pares de ${prod.name}`, 'warning');
+        return;
+      }
+    }
+
+    // Deduct stock dynamically for all products sold
+    const updatedProducts = products.map((prod) => {
+      const soldItems = cart.filter((item) => item.product.id === prod.id);
+      const totalSold = soldItems.reduce((sum, item) => sum + item.quantity, 0);
+      if (totalSold > 0) {
+        return {
+          ...prod,
+          stock: Math.max(0, prod.stock - totalSold),
+        };
+      }
+      return prod;
+    });
+
     try {
       confetti({
         particleCount: 70,
@@ -198,19 +275,33 @@ export const Pos: React.FC<PosProps> = ({
       // ignore
     }
 
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const totalPares = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const summary = cart.map((i) => `${i.product.name} (T.${i.selectedSize}) x${i.quantity}`).join(', ');
+
     if (onAddSale) {
       const newRecord: AuditRecord = {
         id: `TR-${Math.floor(Math.random() * 800) + 9100}`,
-        time: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
+        date: dateStr,
+        time: timeStr,
         client: clientName || 'Consumidor Final',
+        clientDoc: clientDoc,
         channel: 'Tienda física',
         payment: paymentMethod === 'Tarjeta' ? 'POS Débito' : paymentMethod === 'Yape' ? 'Yape QR' : paymentMethod,
         total: total,
-        sunatNumber: documentType === 'Factura' ? `F001-${String(Math.floor(Math.random() * 900) + 10).padStart(8, '0')}` : `B001-${String(Math.floor(Math.random() * 900) + 10).padStart(8, '0')}`,
+        sunatNumber: documentType === 'Factura'
+          ? `F001-${String(Math.floor(Math.random() * 900) + 10).padStart(8, '0')}`
+          : `B001-${String(Math.floor(Math.random() * 900) + 10).padStart(8, '0')}`,
         type: documentType,
         status: 'Procesado',
+        sellerName: user.name,
+        sellerRole: user.role,
+        itemsCount: totalPares,
+        itemsSummary: summary,
       };
-      onAddSale(newRecord);
+      onAddSale(newRecord, updatedProducts);
     }
 
     setIsInvoiceModalOpen(true);
@@ -221,6 +312,11 @@ export const Pos: React.FC<PosProps> = ({
     const currentNum = parseInt(orderNumber.replace('#ORD-', ''), 10) || 8492;
     setOrderNumber(`#ORD-${currentNum + 1}`);
     setCart([]);
+    try {
+      localStorage.removeItem('urbanstyle_cart');
+    } catch {
+      // ignore
+    }
     showNotification('Venta completada con éxito');
   };
 
@@ -321,12 +417,16 @@ export const Pos: React.FC<PosProps> = ({
             ) : (
               filteredProducts.map((product) => {
                 const currentSelectedSize = selectedSizes[product.id] || product.sizes[0];
+                const isOutOfStock = product.stock <= 0;
+                const isLowStock = product.stock > 0 && product.stock <= 4;
 
                 return (
                   <GlassCard
                     key={product.id}
-                    hoverEffect
-                    className="p-5 flex flex-col justify-between group"
+                    hoverEffect={!isOutOfStock}
+                    className={`p-5 flex flex-col justify-between group ${
+                      isOutOfStock ? 'opacity-70 border-white/[0.04]' : ''
+                    }`}
                   >
                     <div>
                       {/* Clean Image Frame */}
@@ -334,13 +434,25 @@ export const Pos: React.FC<PosProps> = ({
                         <img
                           src={product.image}
                           alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-spring"
+                          className={`w-full h-full object-cover transition-transform duration-700 ease-spring ${
+                            isOutOfStock ? 'grayscale-[40%]' : 'group-hover:scale-105'
+                          }`}
                           loading="lazy"
                         />
                         <div className="absolute top-3 right-3">
-                          <span className="px-3 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-xs font-bold text-white">
-                            {product.stock} disp.
-                          </span>
+                          {isOutOfStock ? (
+                            <span className="px-3 py-1 rounded-full bg-red-500/20 backdrop-blur-md border border-red-500/40 text-xs font-bold text-[#FF453A]">
+                              Agotado
+                            </span>
+                          ) : isLowStock ? (
+                            <span className="px-3 py-1 rounded-full bg-amber-500/20 backdrop-blur-md border border-amber-500/40 text-xs font-bold text-[#FF9F0A]">
+                              ¡Últimos {product.stock}!
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-xs font-bold text-white">
+                              {product.stock} disp.
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -358,10 +470,13 @@ export const Pos: React.FC<PosProps> = ({
                           <button
                             key={size}
                             onClick={() => handleSelectSize(product.id, size)}
-                            className={`w-11 h-11 rounded-xl text-sm font-bold flex items-center justify-center transition-all duration-300 ease-spring cursor-pointer active:scale-90 ${
-                              currentSelectedSize === size
-                                ? 'bg-white text-black shadow-md'
-                                : 'bg-[#161616] text-[#8E8E93] hover:text-white hover:bg-[#222222] border border-white/[0.07]'
+                            disabled={isOutOfStock}
+                            className={`w-11 h-11 rounded-xl text-sm font-bold flex items-center justify-center transition-all duration-300 ease-spring ${
+                              isOutOfStock
+                                ? 'bg-[#121214] text-[#52525B] cursor-not-allowed border border-white/[0.04]'
+                                : currentSelectedSize === size
+                                ? 'bg-white text-black shadow-md cursor-pointer active:scale-90'
+                                : 'bg-[#161616] text-[#8E8E93] hover:text-white hover:bg-[#222222] border border-white/[0.07] cursor-pointer active:scale-90'
                             }`}
                           >
                             {size}
@@ -376,15 +491,24 @@ export const Pos: React.FC<PosProps> = ({
                         S/ {product.price.toFixed(0)}
                       </span>
 
-                      <GlassButton
-                        variant="primary"
-                        size="md"
-                        icon={<Plus className="w-4.5 h-4.5" />}
-                        onClick={() => handleAddToCart(product)}
-                        className="rounded-2xl px-5 py-2.5 text-base font-bold"
-                      >
-                        Agregar
-                      </GlassButton>
+                      {isOutOfStock ? (
+                        <button
+                          disabled
+                          className="rounded-2xl px-5 py-2.5 text-sm font-bold bg-[#18181b] text-[#71717A] border border-white/[0.08] cursor-not-allowed opacity-60"
+                        >
+                          Agotado
+                        </button>
+                      ) : (
+                        <GlassButton
+                          variant="primary"
+                          size="md"
+                          icon={<Plus className="w-4.5 h-4.5" />}
+                          onClick={() => handleAddToCart(product)}
+                          className="rounded-2xl px-5 py-2.5 text-base font-bold"
+                        >
+                          Agregar
+                        </GlassButton>
+                      )}
                     </div>
                   </GlassCard>
                 );

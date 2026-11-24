@@ -37,16 +37,24 @@ export interface CartItem {
 
 export type PaymentMethod = 'Efectivo' | 'Tarjeta' | 'Yape' | 'Plin' | 'Transferencia';
 
+export type ActiveView = 'dashboard' | 'pos' | 'sales';
+
 export interface AuditRecord {
   id: string;
+  date?: string;
   time: string;
   client: string;
+  clientDoc?: string;
   channel: 'Tienda física' | 'WhatsApp' | 'Instagram' | 'TikTok' | 'Facebook' | 'Web' | 'B2B Corporativo';
   payment: 'Efectivo' | 'Tarjeta' | 'Yape' | 'Plin' | 'Transferencia' | 'POS Débito' | 'Yape QR' | 'Transferencia BCP';
   total: number;
   sunatNumber: string;
   type: 'Boleta' | 'Factura' | 'Nota de Crédito';
   status: 'Procesado' | 'Sincronizado' | 'Anulado';
+  sellerName?: string;
+  sellerRole?: UserRole;
+  itemsCount?: number;
+  itemsSummary?: string;
 }
 
 export interface ETLLog {

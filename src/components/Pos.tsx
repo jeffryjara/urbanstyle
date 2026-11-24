@@ -255,7 +255,7 @@ export const Pos: React.FC<PosProps> = ({
             </div>
 
             {/* Filter Pills */}
-            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 custom-scrollbar">
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar">
               {[
                 { id: 'todos', label: `Todos (${products.length})` },
                 { id: 'adidas', label: 'Adidas' },

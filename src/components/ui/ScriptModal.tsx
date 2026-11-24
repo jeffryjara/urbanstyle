@@ -14,10 +14,15 @@ import {
   Zap,
   CheckCircle2,
   AlertTriangle,
+  GraduationCap,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { GlassButton } from './GlassButton';
 import { executeSQL } from '../../utils/sqlEngine';
 import { CLASSMATE_SCRIPTS } from '../../data/classmateScripts';
+import { SQL_PRESETS, type SqlPreset } from '../../data/sqlPresets';
 import type { QueryResult } from '../../types';
 
 interface ScriptModalProps {
@@ -34,20 +39,27 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
   const [activeTab, setActiveTab] = useState<'console' | 'scripts'>('console');
 
   // Interactive Console state
-  const [sqlQuery, setSqlQuery] = useState<string>('SELECT * FROM vw_StockActual;');
+  const [sqlQuery, setSqlQuery] = useState<string>(SQL_PRESETS[0].sql);
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const [copiedQuery, setCopiedQuery] = useState<boolean>(false);
 
+  // Academic presets & Teacher explanation guide
+  const [selectedPresetId, setSelectedPresetId] = useState<string>(SQL_PRESETS[0].id);
+  const [showDocenteGuide, setShowDocenteGuide] = useState<boolean>(true);
+  const [copiedDocenteGuide, setCopiedDocenteGuide] = useState<boolean>(false);
+
   // Script viewer state
   const [selectedScriptId, setSelectedScriptId] = useState<string>('script-01');
-  const [scriptSearch, setScriptSearch] = useState<string>('');
   const [copiedScript, setCopiedScript] = useState<boolean>(false);
+
+  // Current active preset object
+  const activePreset = SQL_PRESETS.find((p) => p.id === selectedPresetId) || SQL_PRESETS[0];
 
   // Execute initial query when opened
   useEffect(() => {
     if (isOpen && !queryResult) {
-      handleRunQuery('SELECT * FROM vw_StockActual;');
+      handleRunQuery(SQL_PRESETS[0].sql);
     }
   }, [isOpen]);
 
@@ -62,10 +74,16 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
       setQueryResult(res);
       setIsExecuting(false);
 
-      if (res.operation === 'INSERT' || res.operation === 'UPDATE' || res.operation === 'DELETE') {
+      if (res.operation === 'INSERT' || res.operation === 'UPDATE' || res.operation === 'DELETE' || res.operation === 'EXEC') {
         if (onDatabaseMutated) onDatabaseMutated();
       }
     }, 120);
+  };
+
+  const handleSelectPreset = (preset: SqlPreset) => {
+    setSelectedPresetId(preset.id);
+    setSqlQuery(preset.sql);
+    handleRunQuery(preset.sql);
   };
 
   const handleCopy = (text: string, isScript = false) => {
@@ -79,7 +97,22 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
     }
   };
 
-  const selectedScript = CLASSMATE_SCRIPTS.find(s => s.id === selectedScriptId) || CLASSMATE_SCRIPTS[0];
+  const handleCopyDocenteGuide = (preset: SqlPreset) => {
+    const text = `=== EXPLICACIÓN PARA EL DOCENTE: ${preset.title} ===\n` +
+      `Categoría: ${preset.category}\n` +
+      `Fundamento Teórico: ${preset.theoryConcept}\n\n` +
+      `Guion para Explicar al Docente:\n${preset.academicDocenteNote}\n\n` +
+      `Desglose Línea por Línea:\n` +
+      preset.lineByLine.map((l) => `[Línea ${l.lineNum}] ${l.code}\n-> ${l.explanation}`).join('\n\n') +
+      `\n\nPreguntas Típicas del Docente y Respuestas:\n` +
+      preset.teacherQuestions.map((q) => `P: ${q.question}\nR: ${q.answer}`).join('\n\n');
+
+    navigator.clipboard.writeText(text);
+    setCopiedDocenteGuide(true);
+    setTimeout(() => setCopiedDocenteGuide(false), 2200);
+  };
+
+  const selectedScript = CLASSMATE_SCRIPTS.find((s) => s.id === selectedScriptId) || CLASSMATE_SCRIPTS[0];
 
   const handleLoadScriptToConsole = (sqlSnippet: string) => {
     setSqlQuery(sqlSnippet);
@@ -89,17 +122,17 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-xl animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-xl animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-6xl h-[90vh] flex flex-col rounded-3xl bg-[#0d0e15]/95 border border-white/10 shadow-[0_30px_90px_rgba(0,0,0,0.95)] overflow-hidden animate-scale-in"
+        className="relative w-full max-w-6xl h-[92vh] flex flex-col rounded-3xl bg-[#0b0c13]/98 border border-white/10 shadow-[0_30px_90px_rgba(0,0,0,0.95)] overflow-hidden animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* MODAL HEADER */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-apple-emerald/15 border border-apple-emerald/30 flex items-center justify-center text-apple-emerald">
+            <div className="w-10 h-10 rounded-2xl bg-apple-emerald/15 border border-apple-emerald/30 flex items-center justify-center text-apple-emerald shadow-sm">
               <Terminal className="w-5 h-5" />
             </div>
             <div>
@@ -154,95 +187,44 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
           </div>
         </div>
 
-        {/* TAB 1: CONSOLA SQL INTERACTIVA */}
+        {/* TAB 1: CONSOLA SQL INTERACTIVA CON GUÍA DOCENTE */}
         {activeTab === 'console' && (
-          <div className="flex-1 flex flex-col min-h-0 p-5 space-y-4 overflow-hidden">
-            {/* Quick Action Preset Chips */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 shrink-0 custom-scrollbar">
+          <div className="flex-1 flex flex-col min-h-0 p-4 sm:p-5 space-y-3.5 overflow-hidden">
+            {/* 11 Quick Action Presets Chips with Category Badges (No Scrollbar) */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 shrink-0 no-scrollbar">
               <span className="text-[11px] font-mono text-[#86868B] uppercase shrink-0 mr-1 flex items-center gap-1">
-                <Database className="w-3 h-3 text-apple-blue" />
-                Presets:
+                <Database className="w-3.5 h-3.5 text-apple-blue" />
+                Presets Académicos:
               </span>
 
-              <button
-                onClick={() => {
-                  const q = 'SELECT * FROM vw_StockActual;';
-                  setSqlQuery(q);
-                  handleRunQuery(q);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-xs font-mono text-[#F5F5F7] border border-white/10 transition-colors shrink-0 cursor-pointer"
-              >
-                vw_StockActual
-              </button>
-
-              <button
-                onClick={() => {
-                  const q = "INSERT INTO VarianteProducto (NombreModelo, NombreMarca, Categoria, Talla, Precio, Stock)\nVALUES ('Ultraboost Light 2026', 'Adidas', 'Deportiva / Running', 42, 599.90, 20);";
-                  setSqlQuery(q);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-apple-emerald/10 hover:bg-apple-emerald/20 text-xs font-mono text-apple-emerald border border-apple-emerald/25 transition-colors shrink-0 cursor-pointer flex items-center gap-1.5"
-              >
-                <Sparkles className="w-3 h-3" />
-                INSERT Nueva Zapatilla
-              </button>
-
-              <button
-                onClick={() => {
-                  const q = "UPDATE VarianteProducto\nSET Stock = Stock + 15\nWHERE NombreMarca = 'Adidas';";
-                  setSqlQuery(q);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-xs font-mono text-apple-blueLight border border-white/10 transition-colors shrink-0 cursor-pointer"
-              >
-                UPDATE Stock +15 (Adidas)
-              </button>
-
-              <button
-                onClick={() => {
-                  const q = 'SELECT * FROM vw_VentasDetalladas;';
-                  setSqlQuery(q);
-                  handleRunQuery(q);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-xs font-mono text-[#F5F5F7] border border-white/10 transition-colors shrink-0 cursor-pointer"
-              >
-                vw_VentasDetalladas
-              </button>
-
-              <button
-                onClick={() => {
-                  const q = 'SELECT * FROM dw.FactVentas;';
-                  setSqlQuery(q);
-                  handleRunQuery(q);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-xs font-mono text-[#F5F5F7] border border-white/10 transition-colors shrink-0 cursor-pointer"
-              >
-                dw.FactVentas
-              </button>
-
-              <button
-                onClick={() => {
-                  const q = 'SELECT * FROM Auditoria ORDER BY IdAuditoria DESC;';
-                  setSqlQuery(q);
-                  handleRunQuery(q);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-xs font-mono text-[#F5F5F7] border border-white/10 transition-colors shrink-0 cursor-pointer"
-              >
-                Auditoría Triggers
-              </button>
-
-              <button
-                onClick={() => {
-                  const q = 'DELETE FROM Comprobante WHERE IdComprobante = 1;';
-                  setSqlQuery(q);
-                  handleRunQuery(q);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-xs font-mono text-red-400 border border-red-500/20 transition-colors shrink-0 cursor-pointer"
-              >
-                Probar Inmutabilidad (DELETE)
-              </button>
+              {SQL_PRESETS.map((preset) => {
+                const isSelected = preset.id === selectedPresetId;
+                return (
+                  <button
+                    key={preset.id}
+                    onClick={() => handleSelectPreset(preset)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
+                      isSelected
+                        ? 'bg-apple-blue text-white border-apple-blue shadow-apple-glow'
+                        : preset.badgeColor === 'emerald'
+                        ? 'bg-apple-emerald/10 text-apple-emerald border-apple-emerald/25 hover:bg-apple-emerald/20'
+                        : preset.badgeColor === 'red'
+                        ? 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20'
+                        : preset.badgeColor === 'purple'
+                        ? 'bg-purple-500/10 text-purple-300 border-purple-500/20 hover:bg-purple-500/20'
+                        : preset.badgeColor === 'amber'
+                        ? 'bg-amber-500/10 text-amber-300 border-amber-500/20 hover:bg-amber-500/20'
+                        : 'bg-white/[0.04] text-[#F5F5F7] border-white/10 hover:bg-white/[0.08]'
+                    }`}
+                  >
+                    <span>{preset.title}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* SQL EDITOR BOX */}
-            <div className="relative rounded-2xl bg-[#070709] border border-white/10 overflow-hidden shrink-0 flex flex-col">
+            <div className="relative rounded-2xl bg-[#06070a] border border-white/10 overflow-hidden shrink-0 flex flex-col">
               <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/[0.02]">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1.5">
@@ -287,13 +269,25 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
                 }}
                 rows={3}
                 placeholder="Escribe tu consulta SQL aquí (ej: SELECT * FROM VarianteProducto)..."
-                className="w-full p-4 font-mono text-sm text-apple-emerald bg-transparent resize-none focus:outline-none placeholder-[#636366] leading-relaxed selection:bg-apple-blue/30"
+                className="w-full p-3.5 font-mono text-sm text-apple-emerald bg-transparent resize-none focus:outline-none placeholder-[#636366] leading-relaxed selection:bg-apple-blue/30"
               />
 
-              <div className="flex items-center justify-between px-4 py-2.5 border-t border-white/5 bg-white/[0.02]">
-                <span className="text-[11px] text-[#86868B]">
-                  Atajo: <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-white text-[10px]">Ctrl + Enter</kbd> para ejecutar
-                </span>
+              <div className="flex items-center justify-between px-4 py-2 border-t border-white/5 bg-white/[0.02]">
+                <div className="flex items-center gap-3">
+                  <span className="text-[11px] text-[#86868B]">
+                    Atajo: <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-white text-[10px]">Ctrl + Enter</kbd> para ejecutar
+                  </span>
+
+                  {/* Toggle Academic Guide Button */}
+                  <button
+                    onClick={() => setShowDocenteGuide(!showDocenteGuide)}
+                    className="text-xs font-semibold text-apple-blue hover:text-apple-blueLight flex items-center gap-1.5 cursor-pointer ml-2"
+                  >
+                    <GraduationCap className="w-4 h-4" />
+                    <span>{showDocenteGuide ? 'Ocultar Explicación para el Docente' : 'Ver Explicación para el Docente'}</span>
+                    {showDocenteGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
 
                 <GlassButton
                   variant="emerald"
@@ -307,10 +301,92 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
               </div>
             </div>
 
+            {/* ACADEMIC EXPLANATION PANEL FOR THE TEACHER (LINE-BY-LINE & Q&A) */}
+            {showDocenteGuide && activePreset && (
+              <div className="rounded-2xl bg-white/[0.025] border border-white/10 p-4 shrink-0 max-h-48 overflow-y-auto custom-scrollbar no-scrollbar transition-all space-y-3">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-apple-blue/15 border border-apple-blue/30 flex items-center justify-center text-apple-blue">
+                      <BookOpen className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                        <span>Fundamento Académico: {activePreset.title}</span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-apple-blue/20 text-apple-blueLight border border-apple-blue/30">
+                          {activePreset.category}
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-[#A1A1A6]">
+                        {activePreset.theoryConcept}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleCopyDocenteGuide(activePreset)}
+                    className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-medium text-[#F5F5F7] border border-white/10 flex items-center gap-1.5 cursor-pointer transition-colors"
+                    title="Copiar todo el guion para exponer al profesor"
+                  >
+                    {copiedDocenteGuide ? <Check className="w-3.5 h-3.5 text-apple-emerald" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedDocenteGuide ? 'Guion Copiado' : 'Copiar Guion para Exposición'}</span>
+                  </button>
+                </div>
+
+                {/* What to tell the professor directly */}
+                <div className="p-3 rounded-xl bg-apple-blue/5 border border-apple-blue/15 text-xs text-white leading-relaxed">
+                  <span className="font-bold text-apple-blueLight block mb-1">🗣️ Qué decirle al Docente:</span>
+                  <p className="text-[#E5E5EA]">{activePreset.academicDocenteNote}</p>
+                </div>
+
+                {/* Line by line breakdown */}
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#86868B] block mb-1.5">
+                    📋 Desglose Línea por Línea:
+                  </span>
+                  <div className="space-y-1.5">
+                    {activePreset.lineByLine.map((item, idx) => (
+                      <div key={idx} className="p-2 rounded-xl bg-black/40 border border-white/5 flex flex-col sm:flex-row sm:items-start gap-2 text-xs">
+                        <span className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-[10px] text-white shrink-0">
+                          Línea {item.lineNum}
+                        </span>
+                        <code className="font-mono text-apple-emerald shrink-0 max-w-xs truncate">
+                          {item.code}
+                        </code>
+                        <span className="text-[#A1A1A6] text-xs">
+                          {item.explanation}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Teacher Q&A */}
+                {activePreset.teacherQuestions && activePreset.teacherQuestions.length > 0 && (
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#86868B] block mb-1.5">
+                      ❓ Preguntas Clave que puede hacer el Docente:
+                    </span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {activePreset.teacherQuestions.map((q, idx) => (
+                        <div key={idx} className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-xs">
+                          <span className="font-bold text-white block mb-1">
+                            {q.question}
+                          </span>
+                          <p className="text-[#86868B] text-[11px] leading-relaxed">
+                            {q.answer}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* LIVE QUERY RESULT GRID */}
-            <div className="flex-1 flex flex-col min-h-0 rounded-2xl bg-[#070709] border border-white/10 overflow-hidden">
+            <div className="flex-1 flex flex-col min-h-0 rounded-2xl bg-[#06070a] border border-white/10 overflow-hidden">
               {/* Result Meta Bar */}
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 bg-white/[0.02] shrink-0">
+              <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/[0.02] shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5">
                     {queryResult?.isError ? (
@@ -353,12 +429,12 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
                 </div>
               )}
 
-              {/* Table Result Display */}
-              <div className="flex-1 overflow-auto custom-scrollbar">
+              {/* Table Result Display (no-scrollbar on horizontal axis, sleek custom-scrollbar on vertical) */}
+              <div className="flex-1 overflow-x-auto no-scrollbar overflow-y-auto custom-scrollbar">
                 {queryResult && queryResult.columns.length > 0 ? (
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="border-b border-white/10 bg-white/[0.03] sticky top-0 z-10">
+                      <tr className="border-b border-white/10 bg-white/[0.03] sticky top-0 z-10 backdrop-blur-md">
                         {queryResult.columns.map((col, idx) => (
                           <th
                             key={idx}
@@ -443,7 +519,7 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
             </div>
 
             {/* Script Viewer & Action Bar */}
-            <div className="flex-1 flex flex-col min-h-0 bg-[#070709] overflow-hidden">
+            <div className="flex-1 flex flex-col min-h-0 bg-[#06070a] overflow-hidden">
               <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 bg-white/[0.02] shrink-0">
                 <div>
                   <h4 className="text-sm font-bold text-white font-display">

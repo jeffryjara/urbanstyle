@@ -413,7 +413,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Table Container */}
-        <div className="overflow-x-auto custom-scrollbar">
+        <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
               <tr className="border-b border-white/10 text-[#86868B] font-bold uppercase text-xs tracking-wider">

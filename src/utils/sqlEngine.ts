@@ -168,6 +168,69 @@ export function executeSQL(rawQuery: string): QueryResult {
 function handleSelect(query: string, startTime: number): QueryResult {
   const upper = query.toUpperCase();
 
+  // Check GROUP BY Brand (OLAP Aggregation)
+  if (upper.includes('GROUP BY NOMBREMARCA') || upper.includes('GROUP BY MARCA')) {
+    const brandMap = new Map<string, { count: number; stock: number; priceSum: number; valueSum: number }>();
+    dbState.products.forEach(p => {
+      const existing = brandMap.get(p.brand) || { count: 0, stock: 0, priceSum: 0, valueSum: 0 };
+      existing.count += 1;
+      existing.stock += p.stock;
+      existing.priceSum += p.price;
+      existing.valueSum += (p.stock * p.price);
+      brandMap.set(p.brand, existing);
+    });
+
+    const columns = ['NombreMarca', 'TotalModelos', 'StockDisponible', 'PrecioPromedio', 'ValorTotal'];
+    const rows = Array.from(brandMap.entries())
+      .sort((a, b) => b[1].valueSum - a[1].valueSum)
+      .map(([brand, data]) => [
+        brand,
+        data.count,
+        `${data.stock} pares`,
+        `S/ ${(data.priceSum / data.count).toFixed(2)}`,
+        `S/ ${data.valueSum.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      ]);
+
+    return {
+      columns,
+      rows,
+      rowCount: rows.length,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'SELECT',
+      message: `Agrupación analítica OLAP por marca: ${rows.length} marcas comerciales procesadas.`,
+    };
+  }
+
+  // Check GROUP BY Channel (PySpark ETL Simulation)
+  if (upper.includes('GROUP BY CANAL')) {
+    const channelMap = new Map<string, { count: number; total: number }>();
+    dbState.auditRecords.forEach(r => {
+      const existing = channelMap.get(r.channel) || { count: 0, total: 0 };
+      existing.count += 1;
+      existing.total += r.total;
+      channelMap.set(r.channel, existing);
+    });
+
+    const columns = ['Canal', 'TransaccionesTotales', 'IngresosBrutos', 'TicketPromedio'];
+    const rows = Array.from(channelMap.entries())
+      .sort((a, b) => b[1].total - a[1].total)
+      .map(([channel, data]) => [
+        channel,
+        data.count,
+        `S/ ${data.total.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        `S/ ${(data.total / data.count).toFixed(2)}`,
+      ]);
+
+    return {
+      columns,
+      rows,
+      rowCount: rows.length,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'SELECT',
+      message: `Transformación PySpark ejecutada: ${rows.length} canales agregados con éxito.`,
+    };
+  }
+
   // Determine target table/view
   if (upper.includes('FROM VW_STOCKACTUAL') || upper.includes('FROM STOCK')) {
     const columns = ['IdVariante', 'SKU', 'NombreMarca', 'NombreModelo', 'Talla', 'Stock', 'StockMinimo', 'EstadoStock', 'Precio', 'Costo', 'ValorInventario'];
@@ -300,13 +363,18 @@ function filterAndSort(
     }
   }
 
-  // Check WHERE for Stock < N
-  const stockMatch = upper.match(/STOCK\s*<\s*(\d+)/);
+  // Check WHERE for Stock <= N or Stock < N
+  const stockMatch = upper.match(/STOCK\s*(<=|<)\s*(\d+)/);
   if (stockMatch) {
-    const limit = parseInt(stockMatch[1], 10);
+    const op = stockMatch[1];
+    const limit = parseInt(stockMatch[2], 10);
     const stockIdx = columns.findIndex(c => c.toLowerCase() === 'stock');
     if (stockIdx !== -1) {
-      filtered = filtered.filter(row => Number(row[stockIdx]) < limit);
+      if (op === '<=') {
+        filtered = filtered.filter(row => Number(row[stockIdx]) <= limit);
+      } else {
+        filtered = filtered.filter(row => Number(row[stockIdx]) < limit);
+      }
     }
   }
 
@@ -541,6 +609,66 @@ function handleDelete(query: string, startTime: number): QueryResult {
 // -------------------------------------------------------------
 function handleExec(query: string, startTime: number): QueryResult {
   const upper = query.toUpperCase();
+
+  // sp_RegistrarVenta - Transactional ACID procedure with stock deduction & live sync
+  if (upper.includes('SP_REGISTRARVENTA') || upper.includes('REGISTRARVENTA')) {
+    const prod = dbState.products[0];
+    const qty = 2;
+    if (prod) {
+      prod.stock = Math.max(0, prod.stock - qty);
+    }
+    const modelName = prod ? prod.name : 'Adidas Runfalcon';
+    const brandName = prod ? prod.brand : 'Adidas';
+    const unitPrice = prod ? prod.price : 159.90;
+    const totalAmount = Math.round(unitPrice * qty * 100) / 100;
+    const ticketNum = `B001-${String(Math.floor(Math.random() * 800) + 120).padStart(8, '0')}`;
+
+    const newRecord: AuditRecord = {
+      id: `TR-${Math.floor(Math.random() * 800) + 9500}`,
+      time: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
+      client: 'Estudiante / Demostración Docente',
+      channel: 'Tienda física',
+      payment: 'Efectivo',
+      total: totalAmount,
+      sunatNumber: ticketNum,
+      type: 'Boleta',
+      status: 'Procesado',
+    };
+
+    dbState.auditRecords = [newRecord, ...dbState.auditRecords];
+
+    dbState.auditLogs.unshift({
+      id: dbState.auditLogs.length + 1,
+      tabla: 'Comprobante',
+      operacion: 'INSERT',
+      idRegistro: ticketNum,
+      valorAnterior: 'NULL',
+      valorNuevo: `Cliente=Demostracion Docente; Total=${totalAmount}; StockRestante=${prod ? prod.stock : 0}`,
+      usuario: 'dbo_sp_RegistrarVenta',
+      fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
+    });
+
+    notifySubscribers(dbState);
+
+    return {
+      columns: ['Comprobante', 'Fecha / Hora', 'Cliente', 'Producto', 'Cantidad', 'Total Venta', 'Stock Restante', 'Transacción ACID'],
+      rows: [[
+        ticketNum,
+        newRecord.time,
+        newRecord.client,
+        `${brandName} ${modelName}`,
+        `${qty} pares`,
+        `S/ ${totalAmount.toFixed(2)}`,
+        `${prod ? prod.stock : 0} pares disp.`,
+        'COMMIT TRANSACTION (Exitoso)',
+      ]],
+      rowCount: 1,
+      affectedRows: 1,
+      executionTimeMs: Math.max(2, Math.round(performance.now() - startTime)),
+      operation: 'EXEC',
+      message: `sp_RegistrarVenta ejecutado con éxito bajo control de transacción ACID. Se emitio ${ticketNum} y se descontaron ${qty} pares de ${modelName}. Sincronizado en tiempo real con POS e Inventario.`,
+    };
+  }
 
   if (upper.includes('SP_ETL_') || upper.includes('ETL')) {
     return {

@@ -140,12 +140,12 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
           </div>
 
           {/* Filter Pills */}
-          <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full sm:w-auto pb-1 sm:pb-0">
             {brands.map((b) => (
               <button
                 key={b}
                 onClick={() => setSelectedBrand(b)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all cursor-pointer shrink-0 ${
                   selectedBrand.toLowerCase() === b.toLowerCase()
                     ? 'bg-apple-blue text-white shadow-apple-glow'
                     : 'bg-white/[0.04] text-[#86868B] hover:text-white hover:bg-white/[0.08] border border-white/5'
@@ -157,7 +157,7 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
 
             <button
               onClick={() => setOnlyLowStock(!onlyLowStock)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
                 onlyLowStock
                   ? 'bg-amber-500/20 text-[#FF9F0A] border border-amber-500/40 shadow-sm'
                   : 'bg-white/[0.04] text-[#86868B] hover:text-white hover:bg-white/[0.08] border border-white/5'
@@ -170,7 +170,7 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
         </div>
 
         {/* Wide and Tall Table */}
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar border border-white/10 rounded-2xl relative z-10 bg-white/[0.01]">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar no-scrollbar border border-white/10 rounded-2xl relative z-10 bg-white/[0.01]">
           <table className="w-full text-left text-sm">
             <thead className="bg-[#12131a] border-b border-white/10 text-xs text-[#86868B] uppercase tracking-wider font-bold sticky top-0 backdrop-blur-md z-10">
               <tr>

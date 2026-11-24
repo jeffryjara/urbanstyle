@@ -44,9 +44,9 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
   const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const [copiedQuery, setCopiedQuery] = useState<boolean>(false);
 
-  // Academic presets & Teacher explanation guide
+  // Academic presets & Teacher explanation guide (collapsed by default for ultra-clean layout)
   const [selectedPresetId, setSelectedPresetId] = useState<string>(SQL_PRESETS[0].id);
-  const [showDocenteGuide, setShowDocenteGuide] = useState<boolean>(true);
+  const [showDocenteGuide, setShowDocenteGuide] = useState<boolean>(false);
   const [copiedDocenteGuide, setCopiedDocenteGuide] = useState<boolean>(false);
 
   // Script viewer state
@@ -122,99 +122,69 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-xl animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-xl animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-6xl h-[92vh] flex flex-col rounded-3xl bg-[#0b0c13]/98 border border-white/10 shadow-[0_30px_90px_rgba(0,0,0,0.95)] overflow-hidden animate-scale-in"
+        className="relative w-full max-w-6xl h-[90vh] flex flex-col rounded-[34px] bg-[#0b0c12] border border-white/[0.08] shadow-[0_40px_100px_rgba(0,0,0,0.95)] overflow-hidden animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* MODAL HEADER */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02] shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-apple-emerald/15 border border-apple-emerald/30 flex items-center justify-center text-apple-emerald shadow-sm">
-              <Terminal className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h3 className="text-lg font-bold font-display text-white tracking-tight">
-                  Urban Style — SQL & Analytics Studio
-                </h3>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-apple-emerald/15 text-apple-emerald border border-apple-emerald/25">
-                  Live Engine
-                </span>
-              </div>
-              <p className="text-xs text-[#86868B] mt-0.5">
-                Motor relacional reactivo en vivo & repositorio completo de scripts SQL y PySpark
-              </p>
-            </div>
-          </div>
+        {/* MINIMALIST MODAL HEADER */}
+        <div className="flex items-center justify-between px-7 py-5 border-b border-white/[0.07] shrink-0">
+          <h3 className="text-2xl md:text-3xl font-extrabold font-display text-white tracking-tight">
+            SQL Studio
+          </h3>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3.5">
             {/* View Mode Tabs */}
-            <div className="flex items-center p-1 rounded-2xl bg-white/5 border border-white/10">
+            <div className="flex items-center p-1.5 rounded-full bg-[#14151e] border border-white/[0.07]">
               <button
                 onClick={() => setActiveTab('console')}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 ease-spring cursor-pointer ${
                   activeTab === 'console'
-                    ? 'bg-apple-blue text-white shadow-sm'
+                    ? 'bg-white text-black shadow-md'
                     : 'text-[#86868B] hover:text-white'
                 }`}
               >
-                <Zap className="w-3.5 h-3.5" />
-                <span>Consola SQL en Vivo</span>
+                Consola
               </button>
               <button
                 onClick={() => setActiveTab('scripts')}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 ease-spring cursor-pointer ${
                   activeTab === 'scripts'
-                    ? 'bg-apple-blue text-white shadow-sm'
+                    ? 'bg-white text-black shadow-md'
                     : 'text-[#86868B] hover:text-white'
                 }`}
               >
-                <FileCode className="w-3.5 h-3.5" />
-                <span>Scripts del Proyecto</span>
+                Scripts
               </button>
             </div>
 
             <button
               onClick={onClose}
-              className="p-2 rounded-full text-[#86868B] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-              title="Cerrar modal"
+              className="p-2.5 rounded-full bg-white/[0.05] text-[#86868B] hover:text-white hover:bg-white/10 transition-all duration-300 ease-spring cursor-pointer"
+              title="Cerrar"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* TAB 1: CONSOLA SQL INTERACTIVA CON GUÍA DOCENTE */}
+        {/* TAB 1: CONSOLA SQL INTERACTIVA */}
         {activeTab === 'console' && (
-          <div className="flex-1 flex flex-col min-h-0 p-4 sm:p-5 space-y-3.5 overflow-hidden">
-            {/* 11 Quick Action Presets Chips with Category Badges (No Scrollbar) */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 shrink-0 no-scrollbar">
-              <span className="text-[11px] font-mono text-[#86868B] uppercase shrink-0 mr-1 flex items-center gap-1">
-                <Database className="w-3.5 h-3.5 text-apple-blue" />
-                Presets Académicos:
-              </span>
-
+          <div className="flex-1 flex flex-col min-h-0 p-6 space-y-4 overflow-hidden">
+            {/* Quick Action Presets Chips */}
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 shrink-0 no-scrollbar">
               {SQL_PRESETS.map((preset) => {
                 const isSelected = preset.id === selectedPresetId;
                 return (
                   <button
                     key={preset.id}
                     onClick={() => handleSelectPreset(preset)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-all shrink-0 cursor-pointer flex items-center gap-1.5 border ${
+                    className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 ease-spring shrink-0 cursor-pointer border ${
                       isSelected
                         ? 'bg-apple-blue text-white border-apple-blue shadow-apple-glow'
-                        : preset.badgeColor === 'emerald'
-                        ? 'bg-apple-emerald/10 text-apple-emerald border-apple-emerald/25 hover:bg-apple-emerald/20'
-                        : preset.badgeColor === 'red'
-                        ? 'bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20'
-                        : preset.badgeColor === 'purple'
-                        ? 'bg-purple-500/10 text-purple-300 border-purple-500/20 hover:bg-purple-500/20'
-                        : preset.badgeColor === 'amber'
-                        ? 'bg-amber-500/10 text-amber-300 border-amber-500/20 hover:bg-amber-500/20'
-                        : 'bg-white/[0.04] text-[#F5F5F7] border-white/10 hover:bg-white/[0.08]'
+                        : 'bg-[#13141c] text-[#A1A1A6] border-white/[0.06] hover:text-white hover:bg-[#191a24]'
                     }`}
                   >
                     <span>{preset.title}</span>
@@ -224,40 +194,7 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
             </div>
 
             {/* SQL EDITOR BOX */}
-            <div className="relative rounded-2xl bg-[#06070a] border border-white/10 overflow-hidden shrink-0 flex flex-col">
-              <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/[0.02]">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500/60" />
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/60" />
-                  </div>
-                  <span className="text-[11px] font-mono text-[#86868B] ml-2">
-                    UrbanStylosDB & UrbanStylosDW (T-SQL Session)
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleCopy(sqlQuery)}
-                    className="p-1 rounded text-[#86868B] hover:text-white transition-colors cursor-pointer text-xs flex items-center gap-1"
-                    title="Copiar consulta"
-                  >
-                    {copiedQuery ? <Check className="w-3.5 h-3.5 text-apple-emerald" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedQuery ? 'Copiado' : 'Copiar'}</span>
-                  </button>
-
-                  <button
-                    onClick={() => setSqlQuery('')}
-                    className="p-1 rounded text-[#86868B] hover:text-white transition-colors cursor-pointer text-xs flex items-center gap-1"
-                    title="Limpiar consulta"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Limpiar</span>
-                  </button>
-                </div>
-              </div>
-
+            <div className="relative rounded-2xl bg-[#07080c] border border-white/[0.08] overflow-hidden shrink-0 flex flex-col">
               <textarea
                 value={sqlQuery}
                 onChange={(e) => setSqlQuery(e.target.value)}
@@ -268,35 +205,38 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
                   }
                 }}
                 rows={3}
-                placeholder="Escribe tu consulta SQL aquí (ej: SELECT * FROM VarianteProducto)..."
-                className="w-full p-3.5 font-mono text-sm text-apple-emerald bg-transparent resize-none focus:outline-none placeholder-[#636366] leading-relaxed selection:bg-apple-blue/30"
+                placeholder="SELECT * FROM VarianteProducto..."
+                className="w-full p-5 font-mono text-base text-apple-emerald bg-transparent resize-none focus:outline-none placeholder-[#636366] leading-relaxed selection:bg-apple-blue/30"
               />
 
-              <div className="flex items-center justify-between px-4 py-2 border-t border-white/5 bg-white/[0.02]">
-                <div className="flex items-center gap-3">
-                  <span className="text-[11px] text-[#86868B]">
-                    Atajo: <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-white text-[10px]">Ctrl + Enter</kbd> para ejecutar
-                  </span>
-
-                  {/* Toggle Academic Guide Button */}
+              <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.06] bg-white/[0.02]">
+                <div className="flex items-center gap-4">
                   <button
                     onClick={() => setShowDocenteGuide(!showDocenteGuide)}
-                    className="text-xs font-semibold text-apple-blue hover:text-apple-blueLight flex items-center gap-1.5 cursor-pointer ml-2"
+                    className="text-sm font-bold text-apple-blue hover:text-apple-blueLight flex items-center gap-1.5 cursor-pointer transition-colors"
                   >
-                    <GraduationCap className="w-4 h-4" />
-                    <span>{showDocenteGuide ? 'Ocultar Explicación para el Docente' : 'Ver Explicación para el Docente'}</span>
-                    {showDocenteGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    <GraduationCap className="w-4.5 h-4.5" />
+                    <span>{showDocenteGuide ? 'Ocultar Guía Docente' : 'Guía Docente'}</span>
+                    {showDocenteGuide ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  <button
+                    onClick={() => handleCopy(sqlQuery)}
+                    className="text-sm font-semibold text-[#86868B] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    {copiedQuery ? <Check className="w-4 h-4 text-apple-emerald" /> : <Copy className="w-4 h-4" />}
+                    <span>{copiedQuery ? 'Copiado' : 'Copiar'}</span>
                   </button>
                 </div>
 
                 <GlassButton
                   variant="emerald"
                   size="sm"
-                  icon={<Play className="w-3.5 h-3.5 fill-current" />}
+                  icon={<Play className="w-4 h-4 fill-current" />}
                   onClick={() => handleRunQuery()}
                   disabled={isExecuting}
                 >
-                  {isExecuting ? 'Ejecutando...' : 'Ejecutar Consulta'}
+                  {isExecuting ? 'Ejecutando...' : 'Ejecutar'}
                 </GlassButton>
               </div>
             </div>

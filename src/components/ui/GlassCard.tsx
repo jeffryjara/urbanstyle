@@ -14,7 +14,7 @@ export const GlassCard: React.FC<GlassCardProps> = ({
 }) => {
   return (
     <div
-      className={`glass-panel rounded-2xl md:rounded-3xl p-5 md:p-6 overflow-hidden ${
+      className={`glass-panel rounded-[26px] md:rounded-[30px] p-6 md:p-8 overflow-hidden ${
         hoverEffect ? 'glass-panel-hover' : ''
       } ${className}`}
       {...props}

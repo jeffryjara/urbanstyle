@@ -23,19 +23,19 @@ export function SegmentedControl<T extends string = string>({
   size = 'md',
 }: SegmentedControlProps<T>) {
   const sizeClasses = {
-    sm: 'text-xs p-1 gap-1',
-    md: 'text-xs md:text-sm p-1 md:p-1.5 gap-1 md:gap-1.5',
+    sm: 'text-sm p-1 gap-1',
+    md: 'text-sm md:text-base p-1.5 gap-1.5',
   };
 
   const itemSizeClasses = {
-    sm: 'px-3 py-1',
-    md: 'px-4 py-1.5',
+    sm: 'px-4 py-1.5',
+    md: 'px-5 py-2',
   };
 
   return (
     <div
       role="tablist"
-      className={`inline-flex items-center rounded-full bg-white/[0.06] border border-white/10 overflow-hidden select-none isolate ${sizeClasses[size]} ${className}`}
+      className={`inline-flex items-center rounded-full bg-[#13141b] border border-white/[0.08] overflow-hidden select-none isolate ${sizeClasses[size]} ${className}`}
     >
       {options.map((option) => {
         const isActive = option.id === value;
@@ -45,10 +45,10 @@ export function SegmentedControl<T extends string = string>({
             role="tab"
             aria-selected={isActive}
             onClick={() => onChange(option.id)}
-            className={`relative flex items-center justify-center font-medium rounded-full transition-colors duration-200 ease-out cursor-pointer ${itemSizeClasses[size]} ${
+            className={`relative flex items-center justify-center rounded-full transition-all duration-300 ease-spring cursor-pointer ${itemSizeClasses[size]} ${
               isActive
-                ? 'bg-white/20 text-white font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.4),0_1px_0_rgba(255,255,255,0.25)_inset]'
-                : 'text-[#86868B] hover:text-[#F5F5F7] hover:bg-white/[0.05]'
+                ? 'bg-white text-black font-bold shadow-[0_4px_14px_rgba(0,0,0,0.45)]'
+                : 'text-[#86868B] font-medium hover:text-[#F5F5F7]'
             }`}
           >
             {option.icon && <span className="mr-1.5 inline-flex shrink-0">{option.icon}</span>}

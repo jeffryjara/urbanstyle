@@ -22,17 +22,17 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
   ...props
 }) => {
   const sizeClasses = {
-    sm: 'px-3 py-1.5 text-xs rounded-xl font-medium gap-1.5',
-    md: 'px-4 py-2 text-sm rounded-xl md:rounded-2xl font-medium gap-2',
-    lg: 'px-6 py-3 text-base rounded-2xl font-semibold gap-2.5',
+    sm: 'px-4 py-2 text-sm rounded-xl font-semibold gap-2',
+    md: 'px-5 py-2.5 text-base rounded-2xl font-semibold gap-2.5',
+    lg: 'px-7 py-4 text-lg rounded-2xl font-bold gap-3',
   };
 
   const variantClasses = {
-    primary: 'apple-btn-primary font-medium tracking-tight',
-    glass: 'glass-button font-medium',
-    ghost: 'text-[#86868B] hover:text-[#F5F5F7] hover:bg-white/5 active:scale-[0.98] transition-all duration-200',
-    emerald: 'bg-[#30D158] hover:bg-[#28b84c] text-black font-semibold shadow-apple-glow-emerald active:scale-[0.98] transition-all duration-200',
-    danger: 'bg-red-500/15 hover:bg-red-500/25 text-[#FF453A] border border-red-500/20 active:scale-[0.98] transition-all duration-200',
+    primary: 'apple-btn-primary tracking-tight',
+    glass: 'glass-button',
+    ghost: 'text-[#86868B] hover:text-[#F5F5F7] hover:bg-white/5 active:scale-[0.97] transition-all duration-300 ease-spring',
+    emerald: 'bg-[#30D158] hover:bg-[#28b84c] text-black font-bold shadow-apple-glow-emerald active:scale-[0.97] transition-all duration-300 ease-spring',
+    danger: 'bg-red-500/15 hover:bg-red-500/25 text-[#FF453A] border border-red-500/20 active:scale-[0.97] transition-all duration-300 ease-spring',
   };
 
   return (

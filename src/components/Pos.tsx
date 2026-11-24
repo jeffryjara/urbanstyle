@@ -205,9 +205,9 @@ export const Pos: React.FC<PosProps> = ({
       const newRecord: AuditRecord = {
         id: `TR-${Math.floor(Math.random() * 800) + 9100}`,
         time: new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }),
-        client: customerName || 'Clientes Varios',
-        channel: 'Tienda física',
-        payment: selectedPayment === 'Tarjeta' ? 'POS Débito' : selectedPayment === 'Yape' ? 'Yape QR' : selectedPayment,
+        client: clientName || 'Consumidor Final',
+        channel: 'Tienda Física',
+        payment: paymentMethod === 'Tarjeta' ? 'POS Débito' : paymentMethod === 'Yape' ? 'Yape QR' : paymentMethod,
         total: total,
         sunatNumber: documentType === 'Factura' ? `F001-${String(Math.floor(Math.random() * 900) + 10).padStart(8, '0')}` : `B001-${String(Math.floor(Math.random() * 900) + 10).padStart(8, '0')}`,
         type: documentType,
@@ -224,58 +224,60 @@ export const Pos: React.FC<PosProps> = ({
     const currentNum = parseInt(orderNumber.replace('#ORD-', ''), 10) || 8492;
     setOrderNumber(`#ORD-${currentNum + 1}`);
     setCart([]);
-    showNotification('Venta registrada con éxito. Lista para nueva orden.');
+    showNotification('Venta completada');
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Apple Liquid Glass Toast Notification */}
+    <div className="space-y-8 pb-8">
+      {/* Toast Notification */}
       <Toast message={notification} onClose={() => setNotification(null)} />
 
-      {/* Main POS Container: Catalog Grid + Right Checkout Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Center: Catalog & Products Grid (8 cols on lg) */}
-        <div className="lg:col-span-8 space-y-5">
-          {/* Top Title & Search Bar */}
-          <div className="space-y-3">
-            {/* Search Input with ⌘ K badge */}
-            <div className="relative flex items-center">
-              <Search className="w-5 h-5 text-[#86868B] absolute left-4 pointer-events-none" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar modelo, SKU o código..."
-                className="w-full pl-12 pr-16 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-base text-white placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
-              />
-              <span className="absolute right-3.5 px-2 py-0.5 rounded-lg bg-white/10 border border-white/10 text-xs font-mono text-[#A1A1A6]">
-                ⌘ K
-              </span>
+      {/* Main POS Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left/Center: Catalog (8 cols) */}
+        <div className="lg:col-span-8 space-y-6">
+          {/* Header & Oversized Search */}
+          <div className="space-y-5 stagger-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <h2 className="text-4xl md:text-5xl font-extrabold font-display tracking-tight text-white">
+                Catálogo
+              </h2>
+
+              <div className="relative flex items-center w-full sm:w-80 md:w-96">
+                <Search className="w-5 h-5 text-[#86868B] absolute left-5 pointer-events-none" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar calzado..."
+                  className="w-full pl-14 pr-16 py-3.5 rounded-full bg-[#101116] border border-white/[0.08] text-base font-medium text-white placeholder-[#636366] focus:outline-none focus:border-apple-blue transition-all duration-300 ease-spring"
+                />
+                <span className="absolute right-4 px-2.5 py-1 rounded-full bg-white/[0.06] text-xs font-mono text-[#86868B]">
+                  ⌘K
+                </span>
+              </div>
             </div>
 
-            {/* Filter Pills */}
+            {/* Minimalist Filter Pills */}
             <div className="flex items-center gap-2.5 overflow-x-auto pb-1 no-scrollbar">
               {[
-                { id: 'todos', label: `Todos (${products.length})` },
+                { id: 'todos', label: 'Todos' },
                 { id: 'adidas', label: 'Adidas' },
                 { id: 'nike', label: 'Nike' },
                 { id: 'puma', label: 'Puma' },
-                { id: 'reebok', label: 'Reebok' },
                 { id: 'new-balance', label: 'New Balance' },
                 { id: 'vans', label: 'Vans' },
                 { id: 'converse', label: 'Converse' },
-                { id: 'talla-40', label: 'Talla 40' },
-                { id: 'talla-42', label: 'Talla 42' },
-                { id: 'nuevos', label: '● Nuevos' },
+                { id: 'reebok', label: 'Reebok' },
               ].map((pill) => (
                 <button
                   key={pill.id}
                   onClick={() => setSelectedFilter(pill.id as FilterCategory)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                  className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap transition-all duration-300 ease-spring cursor-pointer active:scale-95 ${
                     selectedFilter === pill.id
-                      ? 'bg-apple-blue text-white shadow-apple-glow font-semibold'
-                      : 'bg-white/[0.04] text-[#86868B] hover:text-white hover:bg-white/[0.08] border border-white/5'
+                      ? 'bg-white text-black shadow-lg'
+                      : 'bg-[#101116] text-[#86868B] hover:text-white hover:bg-[#161820] border border-white/[0.06]'
                   }`}
                 >
                   {pill.label}
@@ -284,12 +286,12 @@ export const Pos: React.FC<PosProps> = ({
             </div>
           </div>
 
-          {/* Product Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {/* Product Cards Grid (Spacious 2-col on lg, 3-col on 2xl) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-6 stagger-2">
             {filteredProducts.length === 0 ? (
-              <div className="col-span-full py-16 text-center text-[#86868B]">
-                <Package className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                <p>No hay zapatillas que coincidan con la búsqueda.</p>
+              <div className="col-span-full py-20 text-center text-[#86868B]">
+                <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                <p className="text-lg font-medium">Sin resultados</p>
               </div>
             ) : (
               filteredProducts.map((product) => {
@@ -299,48 +301,42 @@ export const Pos: React.FC<PosProps> = ({
                   <GlassCard
                     key={product.id}
                     hoverEffect
-                    className="p-3.5 flex flex-col justify-between group"
+                    className="p-5 flex flex-col justify-between group"
                   >
                     <div>
-                      {/* Image Frame with SKU Tag & Real Stock Badge */}
-                      <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-black/50 border border-white/10 mb-3">
+                      {/* Clean Image Frame */}
+                      <div className="relative aspect-[16/11] rounded-[22px] overflow-hidden bg-[#0a0b0e] border border-white/[0.06] mb-4">
                         <img
                           src={product.image}
                           alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-spring"
                           loading="lazy"
                         />
-                        {/* SKU floating badge */}
-                        <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md border border-white/10 text-xs font-mono text-[#A1A1A6]">
-                          {product.sku}
-                        </div>
-
-                        {/* Stock indicator badge */}
-                        <div className="absolute bottom-2 left-2">
-                          <Badge variant="emerald" dot className="text-xs py-1 px-2.5 font-medium">
+                        <div className="absolute top-3 right-3">
+                          <span className="px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/10 text-xs font-bold text-[#30D158]">
                             {product.stock} disp.
-                          </Badge>
+                          </span>
                         </div>
                       </div>
 
-                      {/* Product Name & Brand */}
-                      <h4 className="text-sm md:text-base font-bold font-display text-white line-clamp-1">
+                      {/* Brand & Large Product Name */}
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#86868B] block">
+                        {product.brand}
+                      </span>
+                      <h4 className="text-xl font-extrabold font-display text-white line-clamp-1 mt-0.5">
                         {product.name}
                       </h4>
-                      <p className="text-xs text-[#86868B] mt-0.5 mb-2">
-                        {product.category}
-                      </p>
 
-                      {/* Size Selector Pills */}
-                      <div className="flex items-center gap-1.5 my-2.5">
+                      {/* Tactile Size Selector Pills */}
+                      <div className="flex items-center gap-2 my-4">
                         {product.sizes.map((size) => (
                           <button
                             key={size}
                             onClick={() => handleSelectSize(product.id, size)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                            className={`w-11 h-11 rounded-xl text-sm font-bold flex items-center justify-center transition-all duration-300 ease-spring cursor-pointer active:scale-90 ${
                               currentSelectedSize === size
-                                ? 'bg-apple-blue text-white shadow-sm font-semibold'
-                                : 'bg-white/5 text-[#86868B] hover:text-white hover:bg-white/10 border border-white/5'
+                                ? 'bg-apple-blue text-white shadow-apple-glow'
+                                : 'bg-white/[0.04] text-[#86868B] hover:text-white hover:bg-white/[0.09] border border-white/[0.06]'
                             }`}
                           >
                             {size}
@@ -349,20 +345,18 @@ export const Pos: React.FC<PosProps> = ({
                       </div>
                     </div>
 
-                    {/* Price & Add to Cart button */}
-                    <div className="pt-2.5 border-t border-white/5 flex items-center justify-between mt-2">
-                      <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-semibold text-[#86868B] tracking-wider">Precio inc. IGV</span>
-                        <span className="text-base md:text-lg font-extrabold font-display text-white">
-                          S/ {product.price.toFixed(2)}
-                        </span>
-                      </div>
+                    {/* Large Price & Add Button */}
+                    <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between">
+                      <span className="text-2xl font-extrabold font-display text-white tracking-tight">
+                        S/ {product.price.toFixed(0)}
+                      </span>
 
                       <GlassButton
                         variant="primary"
-                        size="sm"
-                        icon={<Plus className="w-4 h-4" />}
+                        size="md"
+                        icon={<Plus className="w-4.5 h-4.5" />}
                         onClick={() => handleAddToCart(product)}
+                        className="rounded-2xl px-5 py-2.5 text-base font-bold"
                       >
                         Agregar
                       </GlassButton>
@@ -374,34 +368,33 @@ export const Pos: React.FC<PosProps> = ({
           </div>
         </div>
 
-        {/* Right Checkout Panel: Terminal de Cobro Liquid Glass (4 cols on lg) */}
-        <div className="lg:col-span-4">
-          <GlassCard className="p-5 sticky top-20 space-y-4">
-            {/* Header: Orden & Ticket ID */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <span className="text-xs font-bold text-[#86868B] tracking-wider uppercase">
+        {/* Right Checkout Panel (4 cols) */}
+        <div className="lg:col-span-4 stagger-3">
+          <GlassCard className="p-6 md:p-7 sticky top-8 space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-extrabold font-display text-white tracking-tight">
                 Orden
-              </span>
-              <span className="font-mono text-sm md:text-base font-bold text-white bg-white/5 px-3 py-1 rounded-lg border border-white/10">
+              </h3>
+              <span className="font-mono text-base font-bold text-[#86868B]">
                 {orderNumber}
               </span>
             </div>
 
-            {/* Document Type Selector [Boleta] / [Factura] */}
-            <div className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-white/[0.04] border border-white/10">
+            {/* Boleta / Factura Toggle */}
+            <div className="grid grid-cols-2 gap-1.5 p-1.5 rounded-2xl bg-[#15161e] border border-white/[0.06]">
               <button
                 onClick={() => {
                   setDocumentType('Boleta');
                   setClientName('Consumidor Final');
                   setClientDoc('00000000');
                 }}
-                className={`py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                className={`py-2.5 rounded-xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer flex items-center justify-center gap-2 ${
                   documentType === 'Boleta'
-                    ? 'bg-white/15 text-white shadow-sm font-bold'
+                    ? 'bg-white text-black shadow-md'
                     : 'text-[#86868B] hover:text-white'
                 }`}
               >
-                <FileText className="w-4 h-4" />
                 Boleta
               </button>
               <button
@@ -410,172 +403,146 @@ export const Pos: React.FC<PosProps> = ({
                   setClientName('Inversiones Deportivas S.A.C.');
                   setClientDoc('20608941231');
                 }}
-                className={`py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                className={`py-2.5 rounded-xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer flex items-center justify-center gap-2 ${
                   documentType === 'Factura'
-                    ? 'bg-white/15 text-white shadow-sm font-bold'
+                    ? 'bg-white text-black shadow-md'
                     : 'text-[#86868B] hover:text-white'
                 }`}
               >
-                <Building className="w-4 h-4" />
                 Factura
               </button>
             </div>
 
-            {/* Customer Pill Selector */}
-            <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-apple-blue shrink-0">
-                  <UserCheck className="w-4 h-4" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-white truncate max-w-[140px]">
-                    {clientName}
-                  </span>
-                  <span className="text-xs text-[#86868B] font-mono">
-                    {documentType === 'Factura' ? 'RUC: ' : 'DNI: '}{clientDoc}
-                  </span>
-                </div>
+            {/* Customer Row */}
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between">
+              <div className="min-w-0 pr-2">
+                <span className="text-base font-bold text-white truncate block">
+                  {clientName}
+                </span>
+                <span className="text-xs text-[#86868B] font-mono">
+                  {documentType === 'Factura' ? 'RUC ' : 'DNI '}{clientDoc}
+                </span>
               </div>
 
               <button
                 type="button"
                 onClick={() => setIsEditCustomerOpen(true)}
-                className="text-xs font-semibold text-apple-blue hover:text-apple-blueLight px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors cursor-pointer"
+                className="text-sm font-bold text-apple-blue hover:text-apple-blueLight px-3.5 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] transition-all duration-300 ease-spring cursor-pointer shrink-0"
               >
-                Editar
+                Cambiar
               </button>
             </div>
 
-            {/* Selected Items List */}
-            <div>
-              <div className="flex justify-between items-center text-xs md:text-sm text-[#86868B] mb-2 font-semibold">
-                <span>Ítems Seleccionados</span>
-                <span>{cart.reduce((a, b) => a + b.quantity, 0)} artículos</span>
-              </div>
+            {/* Cart Items */}
+            <div className="max-h-60 overflow-y-auto custom-scrollbar space-y-2.5 pr-1">
+              {cart.length === 0 ? (
+                <div className="py-10 text-center text-[#86868B] text-base font-medium">
+                  Orden vacía
+                </div>
+              ) : (
+                cart.map((item) => (
+                  <div
+                    key={`${item.product.id}-${item.selectedSize}`}
+                    className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-between gap-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <span className="text-base font-bold text-white truncate block">
+                        {item.product.name}
+                      </span>
+                      <span className="text-xs font-semibold text-[#86868B]">
+                        Talla {item.selectedSize}
+                      </span>
+                    </div>
 
-              <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-2 pr-1">
-                {cart.length === 0 ? (
-                  <div className="py-6 text-center text-[#86868B] text-sm">
-                    Sin artículos en la orden
-                  </div>
-                ) : (
-                  cart.map((item) => (
-                    <div
-                      key={`${item.product.id}-${item.selectedSize}`}
-                      className="p-3 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-between gap-2"
-                    >
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-white truncate max-w-[120px]">
-                          {item.product.name}
-                        </span>
-                        <span className="text-xs text-[#86868B]">
-                          Talla: <strong className="text-white">{item.selectedSize}</strong> | SKU: {item.product.sku}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {/* Quantity controls */}
-                        <div className="flex items-center rounded-lg bg-black/40 border border-white/10 p-0.5">
-                          <button
-                            onClick={() => handleUpdateQuantity(item.product.id, item.selectedSize, -1)}
-                            className="p-1 text-[#86868B] hover:text-white cursor-pointer"
-                          >
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <span className="px-2 text-sm font-mono font-bold text-white">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => handleUpdateQuantity(item.product.id, item.selectedSize, 1)}
-                            className="p-1 text-[#86868B] hover:text-white cursor-pointer"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-
-                        {/* Price */}
-                        <span className="text-sm font-mono font-bold text-white shrink-0 min-w-[60px] text-right">
-                          S/ {(item.product.price * item.quantity).toFixed(2)}
-                        </span>
-
-                        {/* Delete button */}
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <div className="flex items-center rounded-xl bg-[#0b0c10] border border-white/10 p-1">
                         <button
-                          onClick={() => handleRemoveItem(item.product.id, item.selectedSize)}
-                          className="p-1 text-[#86868B] hover:text-[#FF453A] transition-colors cursor-pointer"
+                          onClick={() => handleUpdateQuantity(item.product.id, item.selectedSize, -1)}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg text-[#86868B] hover:text-white hover:bg-white/5 cursor-pointer transition-colors"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Minus className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="px-2.5 text-sm font-mono font-bold text-white">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => handleUpdateQuantity(item.product.id, item.selectedSize, 1)}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg text-[#86868B] hover:text-white hover:bg-white/5 cursor-pointer transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
 
-            {/* Official Payment Method Selector */}
-            <div>
-              <span className="text-xs md:text-sm font-semibold text-[#86868B] block mb-2">
-                Medio de Pago Oficial
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { id: 'Yape', label: 'Yape', icon: <QrCode className="w-4 h-4 text-[#BF5AF2]" /> },
-                  { id: 'Plin', label: 'Plin', icon: <QrCode className="w-4 h-4 text-[#5AC8FA]" /> },
-                  { id: 'Efectivo', label: 'Efectivo', icon: <Banknote className="w-4 h-4 text-[#30D158]" /> },
-                  { id: 'Tarjeta', label: 'Tarjeta', icon: <CreditCard className="w-4 h-4 text-apple-blue" /> },
-                ].map((m) => {
-                  const isSelected = paymentMethod === m.id;
-                  return (
-                    <button
-                      key={m.id}
-                      onClick={() => setPaymentMethod(m.id as PaymentMethod)}
-                      className={`p-3 rounded-2xl border text-sm font-medium flex items-center justify-between transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-white/10 border-apple-blue text-white shadow-sm font-semibold'
-                          : 'bg-white/[0.03] border-white/5 text-[#86868B] hover:text-white hover:bg-white/[0.06]'
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        {m.icon}
-                        {m.label}
+                      <span className="text-base font-display font-extrabold text-white min-w-[68px] text-right">
+                        S/ {(item.product.price * item.quantity).toFixed(0)}
                       </span>
-                      {isSelected && <Check className="w-4 h-4 text-apple-blue" />}
-                    </button>
-                  );
-                })}
-              </div>
+
+                      <button
+                        onClick={() => handleRemoveItem(item.product.id, item.selectedSize)}
+                        className="p-1.5 text-[#86868B] hover:text-[#FF453A] transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
-            {/* Amount Breakdown */}
-            <div className="pt-3 border-t border-white/10 space-y-2 text-sm">
-              <div className="flex justify-between text-[#86868B]">
-                <span>Subtotal (sin IGV):</span>
-                <span className="font-mono text-white font-medium">S/ {subtotal.toFixed(2)}</span>
+            {/* Payment Method Grid */}
+            <div className="grid grid-cols-2 gap-2.5">
+              {[
+                { id: 'Yape', label: 'Yape', icon: <QrCode className="w-4.5 h-4.5 text-[#BF5AF2]" /> },
+                { id: 'Plin', label: 'Plin', icon: <QrCode className="w-4.5 h-4.5 text-[#5AC8FA]" /> },
+                { id: 'Efectivo', label: 'Efectivo', icon: <Banknote className="w-4.5 h-4.5 text-[#30D158]" /> },
+                { id: 'Tarjeta', label: 'Tarjeta', icon: <CreditCard className="w-4.5 h-4.5 text-apple-blue" /> },
+              ].map((m) => {
+                const isSelected = paymentMethod === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => setPaymentMethod(m.id as PaymentMethod)}
+                    className={`p-3.5 rounded-2xl border text-base font-bold flex items-center justify-between transition-all duration-300 ease-spring cursor-pointer active:scale-95 ${
+                      isSelected
+                        ? 'bg-white/[0.1] border-apple-blue text-white'
+                        : 'bg-white/[0.02] border-white/[0.06] text-[#86868B] hover:text-white hover:bg-white/[0.05]'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2.5">
+                      {m.icon}
+                      {m.label}
+                    </span>
+                    {isSelected && <Check className="w-4.5 h-4.5 text-apple-blue" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Minimalist Total Block */}
+            <div className="pt-4 border-t border-white/[0.08] space-y-2">
+              <div className="flex justify-between text-sm font-medium text-[#86868B]">
+                <span>IGV (18%)</span>
+                <span className="font-mono text-white">S/ {igv.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-[#86868B]">
-                <span>IGV (18.00%):</span>
-                <span className="font-mono text-white font-medium">S/ {igv.toFixed(2)}</span>
-              </div>
-              <div className="pt-2 flex justify-between items-baseline text-white">
-                <span className="text-xs uppercase tracking-wider font-bold text-[#86868B]">
-                  Total a Pagar:
+              <div className="flex justify-between items-baseline pt-1">
+                <span className="text-base font-bold text-[#86868B]">
+                  Total
                 </span>
-                <span className="text-3xl md:text-4xl font-extrabold font-display tracking-tight text-white">
+                <span className="text-4xl xl:text-5xl font-extrabold font-display tracking-tight text-white">
                   S/ {total.toFixed(2)}
                 </span>
               </div>
             </div>
 
-            {/* Prominent Action Button: "Procesar Venta & Emitir Comprobante" */}
+            {/* Cobrar CTA Button */}
             <GlassButton
               variant="primary"
               size="lg"
               disabled={cart.length === 0}
-              icon={<Zap className="w-4 h-4" />}
               onClick={handleProcessSale}
-              className="w-full mt-2 text-base font-semibold py-3.5"
+              className="w-full py-4.5 text-lg font-extrabold rounded-2xl"
             >
-              Procesar Venta & Emitir Comprobante
+              Cobrar
             </GlassButton>
           </GlassCard>
         </div>
@@ -592,7 +559,7 @@ export const Pos: React.FC<PosProps> = ({
           setClientName(name);
           setClientDoc(doc);
           setDocumentType(type);
-          showNotification('Datos del cliente actualizados');
+          showNotification('Cliente actualizado');
         }}
       />
 

@@ -32,111 +32,99 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      <aside className="relative w-64 min-w-[256px] max-w-[256px] shrink-0 h-full border-r border-white/10 bg-[#090a0f]/95 backdrop-blur-2xl flex flex-col justify-between p-5 hidden lg:flex overflow-hidden z-20">
-        {/* Soft diffused ambient glow behind the sidebar */}
-        <div className="absolute -top-16 -left-16 w-44 h-44 bg-apple-blue/10 rounded-full blur-[70px] pointer-events-none" />
-        <div className="absolute -bottom-16 -right-16 w-44 h-44 bg-apple-purple/10 rounded-full blur-[80px] pointer-events-none" />
-
-        {/* TOP SECTION: Brand Identity & Views (Sin subtítulos de sección) */}
+      <aside className="relative w-72 min-w-[288px] max-w-[288px] shrink-0 h-full border-r border-white/[0.06] bg-[#0b0c10] flex flex-col justify-between p-6 hidden lg:flex overflow-hidden z-20">
+        {/* TOP SECTION: Brand Identity & Primary Views */}
         <div className="relative z-10 flex flex-col">
-          {/* Brand Identity: Logo directo sin contenedores adicionales, con esquinas redondeadas */}
-          <div className="flex items-center gap-3.5 pb-5 border-b border-white/10 mb-6">
+          {/* Brand Identity: Direct logo without extra containers, rounded corners */}
+          <div className="flex items-center gap-4 pb-7 border-b border-white/[0.06] mb-7 px-1">
             <img
               src="/logo-icon.png"
               alt="Urban Style"
-              className="w-10 h-10 rounded-2xl object-cover shrink-0 shadow-md"
+              className="w-11 h-11 rounded-2xl object-contain shrink-0"
             />
-            <div className="flex flex-col">
-              <span className="font-extrabold text-base font-display text-white tracking-tight leading-tight">
-                Urban Style
-              </span>
-              <span className="text-xs text-[#86868B] font-mono leading-tight mt-0.5">
-                RUC 10449598569
-              </span>
-            </div>
+            <span className="font-extrabold text-xl font-display text-white tracking-tight">
+              Urban Style
+            </span>
           </div>
 
-          {/* Vistas Principales (Dashboard y Terminal POS) */}
-          <nav className="space-y-1.5">
+          {/* Primary Views */}
+          <nav className="space-y-2">
             <button
               onClick={() => onViewChange('dashboard')}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 cursor-pointer ${
+              className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer active:scale-[0.98] ${
                 currentView === 'dashboard'
                   ? 'bg-apple-blue text-white shadow-apple-glow'
-                  : 'text-[#86868B] hover:text-white hover:bg-white/[0.04] border border-transparent'
+                  : 'text-[#86868B] hover:text-white hover:bg-white/[0.04]'
               }`}
             >
-              <span className="flex items-center gap-3">
-                <TrendingUp className="w-4.5 h-4.5" />
+              <span className="flex items-center gap-3.5">
+                <TrendingUp className="w-5 h-5" />
                 <span>Dashboard</span>
               </span>
               {currentView === 'dashboard' && (
-                <span className="w-2 h-2 rounded-full bg-white shadow-sm" />
+                <span className="w-2 h-2 rounded-full bg-white" />
               )}
             </button>
 
             <button
               onClick={() => onViewChange('pos')}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 cursor-pointer ${
+              className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer active:scale-[0.98] ${
                 currentView === 'pos'
                   ? 'bg-apple-blue text-white shadow-apple-glow'
-                  : 'text-[#86868B] hover:text-white hover:bg-white/[0.04] border border-transparent'
+                  : 'text-[#86868B] hover:text-white hover:bg-white/[0.04]'
               }`}
             >
-              <span className="flex items-center gap-3">
-                <Store className="w-4.5 h-4.5" />
+              <span className="flex items-center gap-3.5">
+                <Store className="w-5 h-5" />
                 <span>Terminal POS</span>
               </span>
               {currentView === 'pos' && (
-                <span className="w-2 h-2 rounded-full bg-white shadow-sm" />
+                <span className="w-2 h-2 rounded-full bg-white" />
               )}
             </button>
           </nav>
         </div>
 
-        {/* BOTTOM SECTION: Botón Script + Botón Inventario + Línea Divisoria Debajo + Perfil de Usuario */}
+        {/* BOTTOM SECTION: Script + Inventario + Divider Below + User Profile */}
         <div className="mt-auto relative z-10 space-y-2.5">
-          {/* Botón de Script (Colocado ENCIMA del botón Inventario) */}
+          {/* Script Button (Above Inventario) */}
           <button
             onClick={() => setIsScriptOpen(true)}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-sm font-medium border border-white/5 transition-all duration-200 cursor-pointer group"
+            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-[#A1A1A6] hover:text-white bg-white/[0.02] hover:bg-white/[0.06] text-base font-semibold border border-white/[0.05] transition-all duration-300 ease-spring cursor-pointer active:scale-[0.98] group"
           >
-            <span className="flex items-center gap-3">
-              <Terminal className="w-4.5 h-4.5 text-apple-emerald group-hover:scale-110 transition-transform" />
+            <span className="flex items-center gap-3.5">
+              <Terminal className="w-5 h-5 text-apple-emerald group-hover:scale-110 transition-transform duration-300 ease-spring" />
               <span>Script</span>
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-apple-emerald/10 text-apple-emerald border border-apple-emerald/20">
-              SQL / Spark
-            </span>
           </button>
 
-          {/* Botón de Inventario & Stock */}
+          {/* Inventario Button */}
           <button
             onClick={() => setIsStockOpen(true)}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[#A1A1A6] hover:text-white hover:bg-white/[0.05] text-sm font-medium border border-white/5 transition-all duration-200 cursor-pointer group"
+            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-[#A1A1A6] hover:text-white bg-white/[0.02] hover:bg-white/[0.06] text-base font-semibold border border-white/[0.05] transition-all duration-300 ease-spring cursor-pointer active:scale-[0.98] group"
           >
-            <span className="flex items-center gap-3">
-              <Package className="w-4.5 h-4.5 text-apple-blueLight group-hover:scale-110 transition-transform" />
-              <span>Inventario & Stock</span>
+            <span className="flex items-center gap-3.5">
+              <Package className="w-5 h-5 text-apple-blueLight group-hover:scale-110 transition-transform duration-300 ease-spring" />
+              <span>Inventario</span>
             </span>
           </button>
 
-          {/* Línea divisoria colocada DEBAJO del botón de Inventario */}
-          <div className="pt-2.5 border-t border-white/10">
-            {/* Tarjeta de Perfil de Usuario con Cerrar Sesión */}
-            <div className="flex items-center justify-between p-2.5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] transition-colors group">
-              <div className="flex items-center gap-3 min-w-0">
+          {/* Divider Line Below Inventario */}
+          <div className="pt-3.5 border-t border-white/[0.08]">
+            {/* User Profile Card */}
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] transition-all duration-300 ease-spring">
+              <div className="flex items-center gap-3.5 min-w-0">
                 <img
                   src={user.avatarUrl}
                   alt={user.name}
-                  className="w-9 h-9 rounded-full object-cover border border-white/20 shrink-0"
+                  className="w-10 h-10 rounded-full object-cover border border-white/15 shrink-0"
                 />
                 <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-semibold text-white truncate leading-tight">
-                    {user.name}
+                  <span className="text-base font-bold text-white truncate leading-tight">
+                    {user.name.split(' ')[0]}
                   </span>
-                  <span className="text-xs text-[#86868B] truncate leading-tight mt-0.5">
-                    {user.title}
+                  <span className="text-xs text-[#86868B] truncate leading-tight mt-0.5 font-medium">
+                    {user.role === 'gerencia' ? 'Gerencia' : 'Ventas'}
                   </span>
                 </div>
               </div>
@@ -144,16 +132,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={onLogout}
                 title="Cerrar Sesión"
-                className="p-2 rounded-xl text-[#86868B] hover:text-[#FF453A] hover:bg-red-500/10 transition-colors cursor-pointer shrink-0 ml-1"
+                className="p-2.5 rounded-xl text-[#86868B] hover:text-[#FF453A] hover:bg-red-500/10 transition-all duration-300 ease-spring cursor-pointer shrink-0 ml-1 active:scale-95"
               >
-                <LogOut className="w-4.5 h-4.5" />
+                <LogOut className="w-5 h-5" />
               </button>
             </div>
           </div>
         </div>
       </aside>
 
-      {/* Interactive Stock Modal with Viewport Centering */}
+      {/* Interactive Stock Modal */}
       <StockModal isOpen={isStockOpen} onClose={() => setIsStockOpen(false)} products={products} />
 
       {/* Interactive Script & SQL Studio Modal */}

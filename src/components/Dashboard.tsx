@@ -65,10 +65,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   // Dynamic KPI calculations based on timeframe
   const kpiData = {
-    hoy: { total: 'S/ 8,450.00', change: '+8.4%', topCount: 16, digitalPct: 58, storePct: 42, metaPct: '94.1%' },
-    semana: { total: 'S/ 48,920.00', change: '+11.7%', topCount: 88, digitalPct: 56, storePct: 44, metaPct: '91.5%' },
-    mes: { total: 'S/ 185,400.00', change: '+14.2%', topCount: 340, digitalPct: 54, storePct: 46, metaPct: '92.7%' },
-    anio: { total: 'S/ 1,480,200.00', change: '+22.6%', topCount: 2840, digitalPct: 52, storePct: 48, metaPct: '96.2%' },
+    hoy: { total: 'S/ 8,450', change: '+8.4%', topCount: 16, digitalPct: 58, storePct: 42, metaPct: '94%' },
+    semana: { total: 'S/ 48,920', change: '+11.7%', topCount: 88, digitalPct: 56, storePct: 44, metaPct: '91%' },
+    mes: { total: 'S/ 185,400', change: '+14.2%', topCount: 340, digitalPct: 54, storePct: 46, metaPct: '93%' },
+    anio: { total: 'S/ 1,480,200', change: '+22.6%', topCount: 2840, digitalPct: 52, storePct: 48, metaPct: '96%' },
   }[timeframe];
 
   const records = auditRecords || INITIAL_AUDIT_RECORDS;
@@ -92,23 +92,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return matchesDoc && matchesSearch;
   });
 
+  const firstName = user.name.split(' ')[0];
+
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-8 pb-8">
       {/* Toast Notification */}
       <Toast message={notification} onClose={() => setNotification(null)} />
 
-      {/* Welcome Headline & Timeframe Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
-        <div>
-          <h2 className="text-3xl md:text-4xl font-extrabold font-display tracking-tight text-white">
-            Bienvenido, {user.name}
-          </h2>
-          <p className="text-sm md:text-base text-[#86868B] mt-1 font-medium">
-            Resumen Ejecutivo Omnicanal de Calzado Deportivo
-          </p>
-        </div>
+      {/* Minimalist Oversized Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 stagger-1">
+        <h2 className="text-4xl md:text-5xl font-extrabold font-display tracking-tight text-white">
+          Hola, {firstName}
+        </h2>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3.5">
           <SegmentedControl
             options={timeframeOptions}
             value={timeframe}
@@ -118,150 +115,131 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <GlassButton
             variant="glass"
             size="md"
-            icon={<Download className="w-4 h-4" />}
-            onClick={() => showNotification('Reporte Ejecutivo BI exportado exitosamente.')}
+            icon={<Download className="w-4.5 h-4.5" />}
+            onClick={() => showNotification('Reporte exportado')}
           >
-            Exportar BI
+            Exportar
           </GlassButton>
         </div>
       </div>
 
-      {/* 3 Featured KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* KPI 1: Ingresos Totales */}
-        <GlassCard hoverEffect className="relative overflow-hidden p-6">
-          <div className="flex justify-between items-start">
-            <span className="text-sm font-semibold text-[#86868B]">Ingresos Totales</span>
-            <Badge variant="emerald" icon={<ArrowUpRight className="w-3.5 h-3.5" />}>
+      {/* 3 Minimalist Oversized Hero KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger-2">
+        {/* KPI 1: Ingresos */}
+        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[210px]">
+          <div className="flex justify-between items-center">
+            <span className="text-base font-semibold text-[#86868B]">Ingresos</span>
+            <Badge variant="emerald" icon={<ArrowUpRight className="w-4 h-4" />}>
               {kpiData.change}
             </Badge>
           </div>
 
-          <div className="mt-3">
-            <span className="text-3xl md:text-4xl font-extrabold font-display text-white tracking-tight">
+          <div className="my-4">
+            <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight block">
               {kpiData.total}
             </span>
           </div>
 
-          <div className="mt-4 pt-3.5 border-t border-white/5">
-            <div className="flex justify-between text-xs text-[#86868B] mb-2 font-medium">
-              <span>Meta: S/ 200,000</span>
-              <span className="font-mono text-apple-blue font-semibold">{kpiData.metaPct}</span>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm font-medium text-[#86868B]">
+              <span>Meta</span>
+              <span className="text-white font-bold">{kpiData.metaPct}</span>
             </div>
-            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+            <div className="w-full h-2.5 bg-white/[0.07] rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-apple-blue to-apple-blueLight rounded-full transition-all duration-500"
+                className="h-full bg-apple-blue rounded-full transition-all duration-700 ease-spring"
                 style={{ width: kpiData.metaPct }}
               />
             </div>
           </div>
         </GlassCard>
 
-        {/* KPI 2: Calzado Top Ventas */}
-        <GlassCard hoverEffect className="relative overflow-hidden p-6">
-          <div className="flex justify-between items-start">
-            <span className="text-sm font-semibold text-[#86868B]">Calzado Top Ventas</span>
-            <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-apple-blue">
-              <ShoppingBag className="w-4 h-4" />
-            </div>
+        {/* KPI 2: Más Vendido */}
+        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[210px]">
+          <div className="flex justify-between items-center">
+            <span className="text-base font-semibold text-[#86868B]">Más Vendido</span>
+            <span className="text-sm font-bold text-apple-blue">Ultraboost 22</span>
           </div>
 
-          <div className="mt-3 flex items-center justify-between">
-            <div>
-              <h4 className="text-lg font-bold font-display text-white truncate max-w-[170px]">
-                Adidas Ultraboost 22
-              </h4>
-              <div className="mt-1 flex items-baseline gap-1.5">
-                <span className="text-2xl md:text-3xl font-extrabold font-display text-white">
-                  {kpiData.topCount}
-                </span>
-                <span className="text-sm text-[#86868B] font-medium">unds</span>
-              </div>
+          <div className="my-4 flex items-center justify-between gap-4">
+            <div className="flex items-baseline gap-2.5">
+              <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
+                {kpiData.topCount}
+              </span>
+              <span className="text-lg text-[#86868B] font-semibold">pares</span>
             </div>
 
-            {/* Sneaker Thumbnail */}
-            <div className="w-18 h-14 rounded-2xl overflow-hidden border border-white/10 bg-black/40 shrink-0">
+            <div className="w-24 h-16 rounded-2xl overflow-hidden border border-white/10 bg-black/40 shrink-0">
               <img
-                src="https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&w=200&q=80"
+                src="https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&w=240&q=80"
                 alt="Ultraboost 22"
                 className="w-full h-full object-cover"
               />
             </div>
           </div>
 
-          <div className="mt-4 pt-3.5 border-t border-white/5 flex justify-between text-xs text-[#86868B] font-medium">
-            <span>Margen: <strong className="text-[#30D158]">42.8%</strong></span>
-            <span>Ticket Prom: <strong className="text-white font-mono">S/ 545.30</strong></span>
+          <div className="flex justify-between text-sm text-[#86868B] font-medium">
+            <span>Adidas Running</span>
+            <span className="text-[#30D158] font-bold">+42.8% margen</span>
           </div>
         </GlassCard>
 
-        {/* KPI 3: Distribución por Canal */}
-        <GlassCard hoverEffect className="relative overflow-hidden p-6">
-          <div className="flex justify-between items-start">
-            <span className="text-sm font-semibold text-[#86868B]">Distribución por Canal</span>
-            <span className="text-xs font-mono text-[#86868B] font-medium">1,648 ops</span>
+        {/* KPI 3: Canales */}
+        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[210px]">
+          <div className="flex justify-between items-center">
+            <span className="text-base font-semibold text-[#86868B]">Canales</span>
+            <span className="text-sm font-semibold text-[#86868B]">Digital / Tienda</span>
           </div>
 
-          {/* Dual Visual Bar */}
-          <div className="mt-4">
-            <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden flex">
+          <div className="my-4 flex items-baseline gap-3">
+            <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
+              {kpiData.digitalPct}%
+            </span>
+            <span className="text-2xl font-bold font-display text-[#636366]">
+              / {kpiData.storePct}%
+            </span>
+          </div>
+
+          <div className="space-y-2.5">
+            <div className="w-full h-3 bg-white/[0.07] rounded-full overflow-hidden flex gap-1">
               <div
-                className="h-full bg-apple-blue transition-all duration-500"
+                className="h-full bg-apple-blue rounded-full transition-all duration-700 ease-spring"
                 style={{ width: `${kpiData.digitalPct}%` }}
-                title={`Digital: ${kpiData.digitalPct}%`}
               />
               <div
-                className="h-full bg-white/20 transition-all duration-500"
+                className="h-full bg-white/25 rounded-full transition-all duration-700 ease-spring"
                 style={{ width: `${kpiData.storePct}%` }}
-                title={`Tienda: ${kpiData.storePct}%`}
               />
             </div>
-          </div>
-
-          <div className="mt-5 pt-3 border-t border-white/5 flex justify-between items-center text-sm">
-            <div className="flex flex-col">
-              <span className="flex items-center gap-2 text-white font-semibold">
-                <span className="w-2.5 h-2.5 rounded-full bg-apple-blue" />
-                {kpiData.digitalPct}% Digital
-              </span>
-              <span className="text-xs text-[#86868B] mt-0.5 font-medium">890 pedidos</span>
-            </div>
-
-            <div className="flex flex-col text-right">
-              <span className="flex items-center justify-end gap-2 text-white font-semibold">
-                <span className="w-2.5 h-2.5 rounded-full bg-white/40" />
-                {kpiData.storePct}% Tienda
-              </span>
-              <span className="text-xs text-[#86868B] mt-0.5 font-medium">758 compras</span>
+            <div className="flex justify-between text-sm font-medium text-[#86868B]">
+              <span className="text-white">Digital</span>
+              <span>Tienda Física</span>
             </div>
           </div>
         </GlassCard>
       </div>
 
-      {/* Middle Row: Monthly Sales Comparison Chart + Side Indicators */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Middle Row: Sales Chart + 3 Minimalist Metric Blocks */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 stagger-3">
         {/* Sales Chart (8 cols) */}
-        <GlassCard className="lg:col-span-8 p-5 md:p-6 flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-base font-bold font-display text-white">
-                Comparativa de Ventas Mensuales
-              </h3>
-              <p className="text-xs text-[#86868B]">Canales Digitales vs. Tienda Física</p>
-            </div>
+        <GlassCard className="lg:col-span-8 flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-2xl font-extrabold font-display text-white tracking-tight">
+              Ventas Anuales
+            </h3>
 
-            <div className="flex items-center gap-4 text-xs">
-              <span className="flex items-center gap-1.5 text-[#86868B]">
-                <span className="w-2.5 h-2.5 rounded-sm bg-apple-blue" /> Digital
+            <div className="flex items-center gap-5 text-sm font-semibold">
+              <span className="flex items-center gap-2 text-white">
+                <span className="w-3 h-3 rounded-full bg-apple-blue" /> Digital
               </span>
-              <span className="flex items-center gap-1.5 text-[#86868B]">
-                <span className="w-2.5 h-2.5 rounded-sm bg-white/20" /> Tienda
+              <span className="flex items-center gap-2 text-[#86868B]">
+                <span className="w-3 h-3 rounded-full bg-white/25" /> Tienda
               </span>
             </div>
           </div>
 
-          {/* Chart Visualizer */}
-          <div className="h-56 flex items-end justify-between gap-2 pt-6 pb-2 px-1 border-b border-white/10 relative">
+          {/* Minimalist Bar Chart Visualizer */}
+          <div className="h-64 flex items-end justify-between gap-3 pt-8 pb-2 px-2 relative">
             {MONTHLY_SALES_DATA.map((item) => {
               const maxVal = 65000;
               const digitalHeight = (item.digital / maxVal) * 100;
@@ -275,131 +253,90 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   onMouseLeave={() => setHoveredMonth(null)}
                   className="flex-1 flex flex-col items-center h-full justify-end cursor-pointer group relative"
                 >
-                  {/* Tooltip on Hover */}
                   {isHovered && (
-                    <div className="absolute -top-12 z-20 px-2.5 py-1.5 rounded-xl bg-black/90 border border-white/20 backdrop-blur-xl shadow-xl text-[10px] text-white whitespace-nowrap pointer-events-none animate-scale-in">
-                      <span className="font-bold text-apple-blue">{item.month}:</span> S/ {item.total.toLocaleString()}
-                      <div className="text-[#86868B] text-[9px]">
-                        Dig: S/ {item.digital.toLocaleString()} | Tie: S/ {item.store.toLocaleString()}
-                      </div>
+                    <div className="absolute -top-12 z-20 px-3.5 py-2 rounded-2xl bg-[#161822] border border-white/15 shadow-2xl text-xs text-white whitespace-nowrap pointer-events-none animate-scale-in">
+                      <span className="font-bold text-apple-blue mr-1.5">{item.month}</span>
+                      <span className="font-extrabold">S/ {item.total.toLocaleString()}</span>
                     </div>
                   )}
 
-                  {/* Bar Pair */}
-                  <div className="w-full flex items-end justify-center gap-1 h-full">
-                    {/* Store Bar */}
+                  <div className="w-full flex items-end justify-center gap-1.5 h-full">
                     <div
-                      className="w-1/2 max-w-[12px] bg-white/20 group-hover:bg-white/35 rounded-t-sm transition-all duration-300"
+                      className="w-1/2 max-w-[14px] bg-white/20 group-hover:bg-white/40 rounded-t-lg transition-all duration-500 ease-spring"
                       style={{ height: `${storeHeight}%` }}
                     />
-                    {/* Digital Bar */}
                     <div
-                      className="w-1/2 max-w-[12px] bg-apple-blue group-hover:bg-apple-blueLight rounded-t-sm transition-all duration-300 shadow-[0_0_10px_rgba(0,122,255,0.3)]"
+                      className="w-1/2 max-w-[14px] bg-apple-blue group-hover:bg-apple-blueLight rounded-t-lg transition-all duration-500 ease-spring"
                       style={{ height: `${digitalHeight}%` }}
                     />
                   </div>
 
-                  <span className={`text-[10px] mt-2 font-mono ${isHovered ? 'text-white font-bold' : 'text-[#86868B]'}`}>
+                  <span
+                    className={`text-xs mt-3 font-semibold transition-colors duration-200 ${
+                      isHovered ? 'text-white' : 'text-[#86868B]'
+                    }`}
+                  >
                     {item.month}
                   </span>
                 </div>
               );
             })}
           </div>
-
-          <div className="mt-3 flex justify-between items-center text-[11px] text-[#86868B]">
-            <span>Cifras consolidadas en Nuevos Soles (S/)</span>
-            <span className="font-mono text-apple-emerald font-medium">+18.4% Crecimiento Interanual</span>
-          </div>
         </GlassCard>
 
-        {/* Side Metric Widgets (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col gap-4">
-          {/* Conversion Rate with Circular Indicator */}
-          <GlassCard hoverEffect className="p-4 flex items-center justify-between">
-            <div>
-              <span className="text-[11px] font-semibold text-[#86868B] block">Conversión Digital</span>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-2xl font-bold font-display text-white">3.8%</span>
-                <span className="text-[10px] text-apple-emerald font-semibold">+0.6%</span>
-              </div>
-              <span className="text-[10px] text-[#86868B] mt-0.5 block">Embudo Web & WhatsApp</span>
+        {/* Side Metric Blocks (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col justify-between gap-5">
+          <GlassCard hoverEffect className="flex-1 flex items-center justify-between py-6 px-7">
+            <div className="space-y-1">
+              <span className="text-base font-semibold text-[#86868B] block">Conversión</span>
+              <Badge variant="emerald">+0.6%</Badge>
             </div>
-
-            <div className="relative w-12 h-12 shrink-0 flex items-center justify-center">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle cx="24" cy="24" r="18" stroke="rgba(255,255,255,0.1)" strokeWidth="3" fill="none" />
-                <circle
-                  cx="24"
-                  cy="24"
-                  r="18"
-                  stroke="#007AFF"
-                  strokeWidth="3"
-                  strokeDasharray="113"
-                  strokeDashoffset="75"
-                  strokeLinecap="round"
-                  fill="none"
-                />
-              </svg>
-              <span className="absolute text-[9px] font-bold text-white font-mono">+0.6%</span>
-            </div>
+            <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
+              3.8%
+            </span>
           </GlassCard>
 
-          {/* Delivery Average */}
-          <GlassCard hoverEffect className="p-4 flex items-center justify-between">
-            <div>
-              <span className="text-[11px] font-semibold text-[#86868B] block">Entrega Promedio</span>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-2xl font-bold font-display text-white">24h</span>
-                <span className="text-xs text-apple-emerald font-medium">Lima Metrop.</span>
-              </div>
-              <span className="text-[10px] text-[#86868B] mt-0.5 block">Logística Same/Next-Day</span>
+          <GlassCard hoverEffect className="flex-1 flex items-center justify-between py-6 px-7">
+            <div className="space-y-1">
+              <span className="text-base font-semibold text-[#86868B] block">Entrega</span>
+              <span className="text-sm font-medium text-[#30D158] block">Lima</span>
             </div>
-
-            <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-apple-blue shrink-0">
-              <Truck className="w-5 h-5" />
-            </div>
+            <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
+              24h
+            </span>
           </GlassCard>
 
-          {/* NPS Score */}
-          <GlassCard hoverEffect className="p-4 flex items-center justify-between">
-            <div>
-              <span className="text-[11px] font-semibold text-[#86868B] block">Índice NPS Clientes</span>
-              <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-2xl font-bold font-display text-white">94</span>
-                <span className="text-xs text-[#86868B]">/ 100</span>
-              </div>
+          <GlassCard hoverEffect className="flex-1 flex items-center justify-between py-6 px-7">
+            <div className="space-y-1">
+              <span className="text-base font-semibold text-[#86868B] block">Satisfacción</span>
+              <span className="text-sm font-medium text-[#86868B] block">NPS</span>
             </div>
-
-            <Badge variant="emerald" className="font-semibold text-xs px-3 py-1">
-              Excelente
-            </Badge>
+            <div className="flex items-baseline gap-1">
+              <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
+                94
+              </span>
+              <span className="text-lg font-bold text-[#636366]">/100</span>
+            </div>
           </GlassCard>
         </div>
       </div>
 
-      {/* Bottom Row: Real-time Audit Table */}
-      <GlassCard className="p-6 md:p-8 space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h3 className="text-lg md:text-xl font-bold font-display text-white">
-              Auditoría de Transacciones en Tiempo Real
-            </h3>
-            <p className="text-sm text-[#86868B] mt-0.5">
-              Sincronización continua de comprobantes electrónicos con SUNAT
-            </p>
-          </div>
+      {/* Bottom Row: Clean Minimalist Transactions Table */}
+      <GlassCard className="space-y-6 stagger-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <h3 className="text-2xl font-extrabold font-display text-white tracking-tight">
+            Transacciones
+          </h3>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Search input */}
+          <div className="flex flex-wrap items-center gap-3.5">
             <div className="relative flex items-center">
-              <Search className="w-4 h-4 text-[#86868B] absolute left-3.5 pointer-events-none" />
+              <Search className="w-5 h-5 text-[#86868B] absolute left-4 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar ticket o cliente..."
-                className="pl-10 pr-4 py-2 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all w-52 md:w-64"
+                placeholder="Buscar cliente o ticket..."
+                className="pl-12 pr-5 py-2.5 rounded-full bg-[#15161e] border border-white/[0.08] text-base text-white placeholder-[#636366] focus:outline-none focus:border-apple-blue transition-all duration-300 ease-spring w-64 md:w-72"
               />
             </div>
 
@@ -412,59 +349,50 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
 
-        {/* Table Container */}
+        {/* Spacious Minimalist Table (5 Key Columns) */}
         <div className="overflow-x-auto no-scrollbar">
-          <table className="w-full text-left text-sm border-collapse">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/10 text-[#86868B] font-bold uppercase text-xs tracking-wider">
-                <th className="py-3 px-3.5">ID</th>
-                <th className="py-3 px-3.5">Hora</th>
-                <th className="py-3 px-3.5">Cliente</th>
-                <th className="py-3 px-3.5">Canal</th>
-                <th className="py-3 px-3.5">Medio de Pago</th>
-                <th className="py-3 px-3.5 text-right">Total</th>
-                <th className="py-3 px-3.5">Comprobante SUNAT</th>
-                <th className="py-3 px-3.5 text-center">Estado</th>
+              <tr className="border-b border-white/[0.08] text-[#86868B] font-semibold text-sm">
+                <th className="py-4 px-4">Comprobante</th>
+                <th className="py-4 px-4">Cliente</th>
+                <th className="py-4 px-4">Canal</th>
+                <th className="py-4 px-4">Pago</th>
+                <th className="py-4 px-4 text-right">Monto</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-white/[0.05] text-base">
               {filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-[#86868B] text-sm">
-                    No se encontraron registros con los filtros seleccionados.
+                  <td colSpan={5} className="py-12 text-center text-[#86868B] text-base">
+                    Sin resultados
                   </td>
                 </tr>
               ) : (
                 filteredRecords.map((rec) => (
                   <tr
                     key={rec.id}
-                    className="hover:bg-white/[0.02] transition-colors duration-150"
+                    className="hover:bg-white/[0.02] transition-colors duration-200"
                   >
-                    <td className="py-3.5 px-3.5 font-mono text-apple-blue font-semibold text-xs">
-                      {rec.id}
+                    <td className="py-4.5 px-4">
+                      <span className="font-mono font-bold text-white block">
+                        {rec.sunatNumber}
+                      </span>
+                      <span className="text-xs text-[#86868B] font-mono">{rec.time}</span>
                     </td>
-                    <td className="py-3.5 px-3.5 text-[#86868B] text-xs">{rec.time}</td>
-                    <td className="py-3.5 px-3.5 text-white font-medium">{rec.client}</td>
-                    <td className="py-3.5 px-3.5 text-[#A1A1A6]">
-                      <span className="inline-flex items-center gap-1.5">
-                        {rec.channel === 'Tienda Física' && <Store className="w-3.5 h-3.5 text-white/60" />}
-                        {rec.channel === 'WhatsApp Store' && <MessageCircle className="w-3.5 h-3.5 text-[#30D158]" />}
-                        {rec.channel === 'Web' && <Globe className="w-3.5 h-3.5 text-apple-blue" />}
-                        {rec.channel === 'B2B Corporativo' && <Building2 className="w-3.5 h-3.5 text-[#BF5AF2]" />}
+                    <td className="py-4.5 px-4 text-white font-bold">{rec.client}</td>
+                    <td className="py-4.5 px-4 text-[#A1A1A6] font-medium">
+                      <span className="inline-flex items-center gap-2">
+                        {rec.channel === 'Tienda Física' && <Store className="w-4 h-4 text-white/60" />}
+                        {rec.channel === 'WhatsApp Store' && <MessageCircle className="w-4 h-4 text-[#30D158]" />}
+                        {rec.channel === 'Web' && <Globe className="w-4 h-4 text-apple-blue" />}
+                        {rec.channel === 'B2B Corporativo' && <Building2 className="w-4 h-4 text-[#BF5AF2]" />}
                         {rec.channel}
                       </span>
                     </td>
-                    <td className="py-3.5 px-3.5 text-[#86868B]">{rec.payment}</td>
-                    <td className="py-3.5 px-3.5 text-right font-mono font-bold text-white">
+                    <td className="py-4.5 px-4 text-[#86868B] font-medium">{rec.payment}</td>
+                    <td className="py-4.5 px-4 text-right font-display font-extrabold text-lg text-white">
                       S/ {rec.total.toFixed(2)}
-                    </td>
-                    <td className="py-3.5 px-3.5 font-mono text-xs text-apple-blueLight font-medium">
-                      {rec.sunatNumber}
-                    </td>
-                    <td className="py-3.5 px-3.5 text-center">
-                      <Badge variant="emerald" dot className="text-xs py-0.5 px-2.5">
-                        {rec.status}
-                      </Badge>
                     </td>
                   </tr>
                 ))
@@ -473,26 +401,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </table>
         </div>
 
-        {/* Table Footer Actions */}
-        <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[#86868B]">
-          <span>
-            Mostrando {filteredRecords.length} de {records.length} registros auditados
+        {/* Clean Table Footer */}
+        <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between gap-4">
+          <span className="text-sm font-medium text-[#86868B]">
+            {filteredRecords.length} registros
           </span>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3">
             <GlassButton
               variant="glass"
               size="md"
-              icon={<FileSpreadsheet className="w-4 h-4 text-apple-emerald" />}
-              onClick={() => showNotification('Libro de Ventas exportado en formato Excel.')}
+              icon={<FileSpreadsheet className="w-4.5 h-4.5 text-apple-emerald" />}
+              onClick={() => showNotification('Excel exportado')}
             >
               Excel
             </GlassButton>
             <GlassButton
               variant="primary"
               size="md"
-              icon={<FileText className="w-4 h-4" />}
-              onClick={() => showNotification('Estructura PLE 14.1 (Registro de Ventas e Ingresos) generada.')}
+              icon={<FileText className="w-4.5 h-4.5" />}
+              onClick={() => showNotification('PLE 14.1 generado')}
             >
               Declarar PLE
             </GlassButton>

@@ -33,14 +33,14 @@ export const Badge: React.FC<BadgeProps> = ({
 
   return (
     <span
-      className={`inline-flex items-center text-[11px] font-medium tracking-tight px-2.5 py-0.5 rounded-full border backdrop-blur-md ${variantStyles[variant]} ${className}`}
+      className={`inline-flex items-center text-xs md:text-sm font-semibold tracking-tight px-3.5 py-1 rounded-full border ${variantStyles[variant]} ${className}`}
     >
       {dot && (
         <span
-          className={`w-1.5 h-1.5 rounded-full mr-1.5 shrink-0 animate-pulse ${dotStyles[variant]}`}
+          className={`w-2 h-2 rounded-full mr-2 shrink-0 ${dotStyles[variant]}`}
         />
       )}
-      {icon && <span className="mr-1 inline-flex shrink-0">{icon}</span>}
+      {icon && <span className="mr-1.5 inline-flex shrink-0">{icon}</span>}
       {children}
     </span>
   );

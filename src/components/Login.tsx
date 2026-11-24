@@ -175,15 +175,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="relative min-h-[100dvh] w-full flex items-center justify-center p-6 md:p-12 bg-[#070709] overflow-hidden">
-      {/* Single subtle architectural ambient light */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-apple-blue/[0.06] rounded-full blur-[160px] pointer-events-none" />
-
-      {/* Main Minimalist Container */}
-      <div className="relative w-full max-w-5xl min-h-[600px] grid grid-cols-1 md:grid-cols-12 rounded-[36px] overflow-hidden border border-white/[0.07] bg-[#0d0e13] shadow-[0_40px_100px_rgba(0,0,0,0.85)] z-10 animate-scale-in">
+    <div className="relative min-h-[100dvh] w-full flex items-center justify-center p-6 md:p-12 bg-black overflow-hidden">
+      {/* Main Minimalist Neutral Container */}
+      <div className="relative w-full max-w-5xl min-h-[600px] grid grid-cols-1 md:grid-cols-12 rounded-[36px] overflow-hidden border border-white/[0.08] bg-[#0a0a0a] shadow-[0_40px_100px_rgba(0,0,0,0.95)] z-10 animate-scale-in">
         
         {/* Left Brand Showcase (5 cols) */}
-        <div className="md:col-span-5 p-10 md:p-14 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/[0.06] bg-[#101118]">
+        <div className="md:col-span-5 p-10 md:p-14 flex flex-col justify-between border-b md:border-b-0 md:border-r border-white/[0.07] bg-[#111111]">
           <img
             src="/logo-icon.png"
             alt="Urban Style"
@@ -196,18 +193,18 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               <br />
               Style.
             </h1>
-            <p className="mt-4 text-lg md:text-xl text-[#86868B] font-medium">
+            <p className="mt-4 text-lg md:text-xl text-[#8E8E93] font-medium">
               Calzado Deportivo
             </p>
           </div>
 
           <div className="text-sm text-[#636366] font-mono">
-            v2.6 • Lima, Perú
+            Lima, Perú
           </div>
         </div>
 
         {/* Right Authentication Form (7 cols) */}
-        <div className="md:col-span-7 p-10 md:p-16 flex flex-col justify-center bg-[#0b0c10]">
+        <div className="md:col-span-7 p-10 md:p-16 flex flex-col justify-center bg-[#0a0a0a]">
           <div className="mb-10">
             <h2 className="text-4xl md:text-5xl font-extrabold font-display text-white tracking-tight">
               Acceso
@@ -221,7 +218,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 Correo
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-5 text-[#86868B] pointer-events-none">
+                <span className="absolute left-5 text-[#8E8E93] pointer-events-none">
                   <AtSign className="w-5 h-5" />
                 </span>
                 <input
@@ -236,7 +233,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   className={`w-full pl-14 pr-14 py-4 rounded-2xl border text-lg font-medium text-[#F5F5F7] placeholder-[#636366] transition-all duration-300 ease-spring focus:outline-none ${
                     emailError
                       ? 'border-red-500/70 bg-red-500/[0.04]'
-                      : 'border-white/[0.08] bg-[#13141c] focus:border-apple-blue focus:bg-[#161822]'
+                      : 'border-white/[0.09] bg-[#141414] focus:border-white/40 focus:bg-[#1a1a1a]'
                   }`}
                 />
                 <button
@@ -245,10 +242,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     setShowEmailMenu(!showEmailMenu);
                     setShowPasswordMenu(false);
                   }}
-                  className="absolute right-4 text-[#86868B] hover:text-white transition-all duration-300 ease-spring cursor-pointer p-2 rounded-xl hover:bg-white/5"
+                  className="absolute right-4 text-[#8E8E93] hover:text-white transition-all duration-300 ease-spring cursor-pointer p-2 rounded-xl hover:bg-white/5"
                   title="Elegir cuenta"
                 >
-                  <ChevronDown className={`w-5 h-5 transition-transform duration-300 ease-spring ${showEmailMenu ? 'rotate-180 text-apple-blue' : ''}`} />
+                  <ChevronDown className={`w-5 h-5 transition-transform duration-300 ease-spring ${showEmailMenu ? 'rotate-180 text-white' : ''}`} />
                 </button>
               </div>
 
@@ -262,31 +259,27 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                       onClick={() => handleSelectAccount(acc.id as any)}
                       className={`w-full flex items-center justify-between p-3.5 rounded-xl text-left transition-all duration-200 ease-spring cursor-pointer ${
                         email === acc.email
-                          ? 'bg-apple-blue/20 text-white border border-apple-blue/30'
-                          : 'hover:bg-white/10 text-[#A1A1A6]'
+                          ? 'bg-white/15 text-white border border-white/25'
+                          : 'hover:bg-white/[0.07] text-[#A1A1A6]'
                       }`}
                     >
                       <div className="flex items-center gap-3.5">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-base ${
-                          acc.badgeColor === 'blue' ? 'bg-apple-blue/20 text-apple-blue' : 'bg-apple-emerald/20 text-apple-emerald'
-                        }`}>
+                        <div className="w-10 h-10 rounded-xl bg-white/10 text-white flex items-center justify-center font-bold text-base">
                           {acc.letter}
                         </div>
                         <div>
                           <div className="flex items-center gap-2.5">
                             <span className="text-base font-bold text-white">{acc.name}</span>
-                            <span className={`text-xs px-2 py-0.5 rounded-md font-semibold ${
-                              acc.badgeColor === 'blue' ? 'bg-apple-blue/15 text-apple-blue' : 'bg-apple-emerald/15 text-apple-emerald'
-                            }`}>
+                            <span className="text-xs px-2 py-0.5 rounded-md font-semibold bg-white/10 text-[#D4D4D8]">
                               {acc.badge}
                             </span>
                           </div>
-                          <span className="text-sm text-[#86868B] font-mono block mt-0.5">
+                          <span className="text-sm text-[#8E8E93] font-mono block mt-0.5">
                             {acc.email}
                           </span>
                         </div>
                       </div>
-                      {email === acc.email && <Check className="w-5 h-5 text-apple-blue shrink-0 ml-2" />}
+                      {email === acc.email && <Check className="w-5 h-5 text-white shrink-0 ml-2" />}
                     </button>
                   ))}
                 </div>
@@ -306,7 +299,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 Contraseña
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-5 text-[#86868B] pointer-events-none">
+                <span className="absolute left-5 text-[#8E8E93] pointer-events-none">
                   <Lock className="w-5 h-5" />
                 </span>
                 <input
@@ -321,14 +314,14 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   className={`w-full pl-14 pr-24 py-4 rounded-2xl border text-lg font-medium text-[#F5F5F7] placeholder-[#636366] transition-all duration-300 ease-spring focus:outline-none ${
                     passwordError
                       ? 'border-red-500/70 bg-red-500/[0.04]'
-                      : 'border-white/[0.08] bg-[#13141c] focus:border-apple-blue focus:bg-[#161822]'
+                      : 'border-white/[0.09] bg-[#141414] focus:border-white/40 focus:bg-[#1a1a1a]'
                   }`}
                 />
                 <div className="absolute right-4 flex items-center gap-1">
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-[#86868B] hover:text-white transition-all duration-200 cursor-pointer p-2 rounded-xl hover:bg-white/5"
+                    className="text-[#8E8E93] hover:text-white transition-all duration-200 cursor-pointer p-2 rounded-xl hover:bg-white/5"
                     title={showPassword ? 'Ocultar' : 'Mostrar'}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -339,10 +332,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                       setShowPasswordMenu(!showPasswordMenu);
                       setShowEmailMenu(false);
                     }}
-                    className="text-[#86868B] hover:text-white transition-all duration-300 ease-spring cursor-pointer p-2 rounded-xl hover:bg-white/5"
+                    className="text-[#8E8E93] hover:text-white transition-all duration-300 ease-spring cursor-pointer p-2 rounded-xl hover:bg-white/5"
                     title="Elegir contraseña"
                   >
-                    <ChevronDown className={`w-5 h-5 transition-transform duration-300 ease-spring ${showPasswordMenu ? 'rotate-180 text-apple-blue' : ''}`} />
+                    <ChevronDown className={`w-5 h-5 transition-transform duration-300 ease-spring ${showPasswordMenu ? 'rotate-180 text-white' : ''}`} />
                   </button>
                 </div>
               </div>
@@ -357,8 +350,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                       onClick={() => handleSelectAccount(acc.id as any)}
                       className={`w-full flex items-center justify-between p-3.5 rounded-xl text-left transition-all duration-200 ease-spring cursor-pointer ${
                         password === acc.password
-                          ? 'bg-apple-blue/20 text-white border border-apple-blue/30'
-                          : 'hover:bg-white/10 text-[#A1A1A6]'
+                          ? 'bg-white/15 text-white border border-white/25'
+                          : 'hover:bg-white/[0.07] text-[#A1A1A6]'
                       }`}
                     >
                       <div className="flex flex-col">
@@ -366,17 +359,15 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                           <span className="text-base font-mono font-bold text-white tracking-wider">
                             {showPassword ? acc.password : '••••••••••••'}
                           </span>
-                          <span className={`text-xs px-2 py-0.5 rounded-md font-semibold ${
-                            acc.badgeColor === 'blue' ? 'bg-apple-blue/15 text-apple-blue' : 'bg-apple-emerald/15 text-apple-emerald'
-                          }`}>
+                          <span className="text-xs px-2 py-0.5 rounded-md font-semibold bg-white/10 text-[#D4D4D8]">
                             {acc.badge}
                           </span>
                         </div>
-                        <span className="text-sm text-[#86868B] mt-0.5">
+                        <span className="text-sm text-[#8E8E93] mt-0.5">
                           {acc.name}
                         </span>
                       </div>
-                      {password === acc.password && <Check className="w-5 h-5 text-apple-blue shrink-0 ml-2" />}
+                      {password === acc.password && <Check className="w-5 h-5 text-white shrink-0 ml-2" />}
                     </button>
                   ))}
                 </div>
@@ -411,13 +402,13 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 aria-checked={rememberTerminal}
                 onClick={() => setRememberTerminal(!rememberTerminal)}
                 className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-spring focus:outline-none ${
-                  rememberTerminal ? 'bg-apple-blue' : 'bg-white/10'
+                  rememberTerminal ? 'bg-white' : 'bg-white/15'
                 }`}
               >
                 <span
                   aria-hidden="true"
-                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-300 ease-spring ${
-                    rememberTerminal ? 'translate-x-5' : 'translate-x-0'
+                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-full shadow-lg ring-0 transition duration-300 ease-spring ${
+                    rememberTerminal ? 'translate-x-5 bg-black' : 'translate-x-0 bg-white'
                   }`}
                 />
               </button>

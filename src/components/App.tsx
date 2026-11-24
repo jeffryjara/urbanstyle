@@ -101,9 +101,9 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="relative h-[100dvh] w-screen bg-[#070709] text-[#F5F5F7] flex flex-col lg:flex-row overflow-hidden">
+    <div className="relative h-[100dvh] w-screen bg-black text-[#F5F5F7] flex flex-col lg:flex-row overflow-hidden">
       {/* Mobile Top Header */}
-      <div className="lg:hidden flex items-center justify-between px-5 py-4 border-b border-white/[0.06] bg-[#0b0c10] relative z-20 shrink-0">
+      <div className="lg:hidden flex items-center justify-between px-5 py-4 border-b border-white/[0.07] bg-[#080808] relative z-20 shrink-0">
         <div className="flex items-center gap-3">
           <img
             src="/logo-icon.png"
@@ -115,13 +115,13 @@ export const App: React.FC = () => {
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setCurrentView(currentView === 'dashboard' ? 'pos' : 'dashboard')}
-            className="px-4 py-2 rounded-xl bg-white/[0.06] border border-white/10 text-sm font-bold text-white transition-all duration-300 ease-spring"
+            className="px-4 py-2 rounded-xl bg-white text-black text-sm font-bold transition-all duration-300 ease-spring"
           >
-            {currentView === 'dashboard' ? 'Terminal POS' : 'Dashboard'}
+            {currentView === 'dashboard' ? 'Catálogo' : 'Dashboard'}
           </button>
           <button
             onClick={handleLogout}
-            className="p-2 rounded-xl text-[#FF453A] hover:bg-red-500/10 transition-colors"
+            className="p-2 rounded-xl text-[#8E8E93] hover:text-white hover:bg-white/10 transition-colors"
             title="Cerrar Sesión"
           >
             <LogOut className="w-5 h-5" />

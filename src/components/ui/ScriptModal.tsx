@@ -126,34 +126,34 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-6xl h-[90vh] flex flex-col rounded-[34px] bg-[#0b0c12] border border-white/[0.08] shadow-[0_40px_100px_rgba(0,0,0,0.95)] overflow-hidden animate-scale-in"
+        className="relative w-full max-w-6xl h-[90vh] flex flex-col rounded-[34px] bg-[#0a0a0a] border border-white/[0.09] shadow-[0_40px_100px_rgba(0,0,0,0.95)] overflow-hidden animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* MINIMALIST MODAL HEADER */}
-        <div className="flex items-center justify-between px-7 py-5 border-b border-white/[0.07] shrink-0">
-          <h3 className="text-2xl md:text-3xl font-extrabold font-display text-white tracking-tight">
+        <div className="flex items-center justify-between px-8 py-6 border-b border-white/[0.08] shrink-0">
+          <h3 className="text-3xl md:text-4xl font-extrabold font-display text-white tracking-tight">
             SQL Studio
           </h3>
 
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-4">
             {/* View Mode Tabs */}
-            <div className="flex items-center p-1.5 rounded-full bg-[#14151e] border border-white/[0.07]">
+            <div className="flex items-center p-1.5 rounded-full bg-[#141414] border border-white/[0.08]">
               <button
                 onClick={() => setActiveTab('console')}
-                className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 ease-spring cursor-pointer ${
+                className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ease-spring cursor-pointer ${
                   activeTab === 'console'
                     ? 'bg-white text-black shadow-md'
-                    : 'text-[#86868B] hover:text-white'
+                    : 'text-[#8E8E93] hover:text-white'
                 }`}
               >
                 Consola
               </button>
               <button
                 onClick={() => setActiveTab('scripts')}
-                className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 ease-spring cursor-pointer ${
+                className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ease-spring cursor-pointer ${
                   activeTab === 'scripts'
                     ? 'bg-white text-black shadow-md'
-                    : 'text-[#86868B] hover:text-white'
+                    : 'text-[#8E8E93] hover:text-white'
                 }`}
               >
                 Scripts
@@ -162,17 +162,17 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-2.5 rounded-full bg-white/[0.05] text-[#86868B] hover:text-white hover:bg-white/10 transition-all duration-300 ease-spring cursor-pointer"
+              className="p-2.5 rounded-full bg-[#141414] text-[#8E8E93] hover:text-white hover:bg-white/10 transition-all duration-300 ease-spring cursor-pointer"
               title="Cerrar"
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6" />
             </button>
           </div>
         </div>
 
         {/* TAB 1: CONSOLA SQL INTERACTIVA */}
         {activeTab === 'console' && (
-          <div className="flex-1 flex flex-col min-h-0 p-6 space-y-4 overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0 p-6 md:p-8 space-y-5 overflow-hidden">
             {/* Quick Action Presets Chips */}
             <div className="flex items-center gap-2.5 overflow-x-auto pb-1 shrink-0 no-scrollbar">
               {SQL_PRESETS.map((preset) => {
@@ -181,10 +181,10 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
                   <button
                     key={preset.id}
                     onClick={() => handleSelectPreset(preset)}
-                    className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 ease-spring shrink-0 cursor-pointer border ${
+                    className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ease-spring shrink-0 cursor-pointer border active:scale-95 ${
                       isSelected
-                        ? 'bg-apple-blue text-white border-apple-blue shadow-apple-glow'
-                        : 'bg-[#13141c] text-[#A1A1A6] border-white/[0.06] hover:text-white hover:bg-[#191a24]'
+                        ? 'bg-white text-black border-white shadow-md'
+                        : 'bg-[#141414] text-[#8E8E93] border-white/[0.07] hover:text-white hover:bg-[#1c1c1c]'
                     }`}
                   >
                     <span>{preset.title}</span>
@@ -194,26 +194,20 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
             </div>
 
             {/* SQL EDITOR BOX */}
-            <div className="relative rounded-2xl bg-[#07080c] border border-white/[0.08] overflow-hidden shrink-0 flex flex-col">
+            <div className="relative rounded-2xl bg-black border border-white/[0.09] overflow-hidden shrink-0 flex flex-col">
               <textarea
                 value={sqlQuery}
                 onChange={(e) => setSqlQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                    e.preventDefault();
-                    handleRunQuery();
-                  }
-                }}
                 rows={3}
                 placeholder="SELECT * FROM VarianteProducto..."
-                className="w-full p-5 font-mono text-base text-apple-emerald bg-transparent resize-none focus:outline-none placeholder-[#636366] leading-relaxed selection:bg-apple-blue/30"
+                className="w-full p-5 font-mono text-base md:text-lg text-white bg-transparent resize-none focus:outline-none placeholder-[#636366] leading-relaxed"
               />
 
-              <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.06] bg-white/[0.02]">
-                <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between px-5 py-3.5 border-t border-white/[0.07] bg-[#0e0e0e]">
+                <div className="flex items-center gap-5">
                   <button
                     onClick={() => setShowDocenteGuide(!showDocenteGuide)}
-                    className="text-sm font-bold text-apple-blue hover:text-apple-blueLight flex items-center gap-1.5 cursor-pointer transition-colors"
+                    className="text-sm font-bold text-white hover:text-[#D4D4D8] flex items-center gap-2 cursor-pointer transition-colors"
                   >
                     <GraduationCap className="w-4.5 h-4.5" />
                     <span>{showDocenteGuide ? 'Ocultar Guía Docente' : 'Guía Docente'}</span>
@@ -222,179 +216,144 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
                   <button
                     onClick={() => handleCopy(sqlQuery)}
-                    className="text-sm font-semibold text-[#86868B] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                    className="text-sm font-semibold text-[#8E8E93] hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
                   >
-                    {copiedQuery ? <Check className="w-4 h-4 text-apple-emerald" /> : <Copy className="w-4 h-4" />}
+                    {copiedQuery ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
                     <span>{copiedQuery ? 'Copiado' : 'Copiar'}</span>
                   </button>
                 </div>
 
                 <GlassButton
-                  variant="emerald"
+                  variant="primary"
                   size="sm"
                   icon={<Play className="w-4 h-4 fill-current" />}
                   onClick={() => handleRunQuery()}
                   disabled={isExecuting}
+                  className="rounded-full px-6 py-2.5 text-sm font-bold"
                 >
                   {isExecuting ? 'Ejecutando...' : 'Ejecutar'}
                 </GlassButton>
               </div>
             </div>
 
-            {/* ACADEMIC EXPLANATION PANEL FOR THE TEACHER (LINE-BY-LINE & Q&A) */}
+            {/* ACADEMIC EXPLANATION PANEL FOR THE TEACHER */}
             {showDocenteGuide && activePreset && (
-              <div className="rounded-2xl bg-white/[0.025] border border-white/10 p-4 shrink-0 max-h-48 overflow-y-auto custom-scrollbar no-scrollbar transition-all space-y-3">
-                <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-apple-blue/15 border border-apple-blue/30 flex items-center justify-center text-apple-blue">
-                      <BookOpen className="w-3.5 h-3.5" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-white flex items-center gap-2">
-                        <span>Fundamento Académico: {activePreset.title}</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-apple-blue/20 text-apple-blueLight border border-apple-blue/30">
-                          {activePreset.category}
-                        </span>
-                      </h4>
-                      <p className="text-[11px] text-[#A1A1A6]">
-                        {activePreset.theoryConcept}
-                      </p>
-                    </div>
+              <div className="rounded-2xl bg-[#111111] border border-white/[0.09] p-5 shrink-0 max-h-56 overflow-y-auto custom-scrollbar no-scrollbar transition-all space-y-4">
+                <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
+                  <div>
+                    <h4 className="text-base font-bold text-white flex items-center gap-2.5">
+                      <span>{activePreset.title}</span>
+                      <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-white/10 text-white">
+                        {activePreset.category}
+                      </span>
+                    </h4>
+                    <p className="text-xs text-[#8E8E93] mt-0.5">
+                      {activePreset.theoryConcept}
+                    </p>
                   </div>
 
                   <button
                     onClick={() => handleCopyDocenteGuide(activePreset)}
-                    className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-medium text-[#F5F5F7] border border-white/10 flex items-center gap-1.5 cursor-pointer transition-colors"
-                    title="Copiar todo el guion para exponer al profesor"
+                    className="px-3.5 py-1.5 rounded-xl bg-white/[0.07] hover:bg-white/15 text-xs font-bold text-white border border-white/10 flex items-center gap-1.5 cursor-pointer transition-colors shrink-0"
                   >
-                    {copiedDocenteGuide ? <Check className="w-3.5 h-3.5 text-apple-emerald" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedDocenteGuide ? 'Guion Copiado' : 'Copiar Guion para Exposición'}</span>
+                    {copiedDocenteGuide ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedDocenteGuide ? 'Copiado' : 'Copiar Guion'}</span>
                   </button>
                 </div>
 
-                {/* What to tell the professor directly */}
-                <div className="p-3 rounded-xl bg-apple-blue/5 border border-apple-blue/15 text-xs text-white leading-relaxed">
-                  <span className="font-bold text-apple-blueLight block mb-1">🗣️ Qué decirle al Docente:</span>
-                  <p className="text-[#E5E5EA]">{activePreset.academicDocenteNote}</p>
+                <div className="p-3.5 rounded-xl bg-black border border-white/[0.07] text-sm text-[#E5E5E7] leading-relaxed">
+                  <span className="font-bold text-white block mb-1">Explicación para el Docente:</span>
+                  <p>{activePreset.academicDocenteNote}</p>
                 </div>
 
-                {/* Line by line breakdown */}
-                <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#86868B] block mb-1.5">
-                    📋 Desglose Línea por Línea:
-                  </span>
-                  <div className="space-y-1.5">
-                    {activePreset.lineByLine.map((item, idx) => (
-                      <div key={idx} className="p-2 rounded-xl bg-black/40 border border-white/5 flex flex-col sm:flex-row sm:items-start gap-2 text-xs">
-                        <span className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-[10px] text-white shrink-0">
-                          Línea {item.lineNum}
+                <div className="space-y-2">
+                  {activePreset.lineByLine.map((item, idx) => (
+                    <div key={idx} className="p-3 rounded-xl bg-black/60 border border-white/[0.05] flex flex-col sm:flex-row sm:items-center gap-3 text-xs">
+                      <span className="px-2 py-0.5 rounded bg-white/10 font-mono text-white font-bold shrink-0">
+                        L{item.lineNum}
+                      </span>
+                      <code className="font-mono text-white font-semibold shrink-0 max-w-xs truncate">
+                        {item.code}
+                      </code>
+                      <span className="text-[#8E8E93]">
+                        {item.explanation}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {activePreset.teacherQuestions && activePreset.teacherQuestions.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                    {activePreset.teacherQuestions.map((q, idx) => (
+                      <div key={idx} className="p-3.5 rounded-xl bg-black/60 border border-white/[0.05] text-xs">
+                        <span className="font-bold text-white block mb-1">
+                          {q.question}
                         </span>
-                        <code className="font-mono text-apple-emerald shrink-0 max-w-xs truncate">
-                          {item.code}
-                        </code>
-                        <span className="text-[#A1A1A6] text-xs">
-                          {item.explanation}
-                        </span>
+                        <p className="text-[#8E8E93] leading-relaxed">
+                          {q.answer}
+                        </p>
                       </div>
                     ))}
-                  </div>
-                </div>
-
-                {/* Teacher Q&A */}
-                {activePreset.teacherQuestions && activePreset.teacherQuestions.length > 0 && (
-                  <div>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-[#86868B] block mb-1.5">
-                      ❓ Preguntas Clave que puede hacer el Docente:
-                    </span>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {activePreset.teacherQuestions.map((q, idx) => (
-                        <div key={idx} className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 text-xs">
-                          <span className="font-bold text-white block mb-1">
-                            {q.question}
-                          </span>
-                          <p className="text-[#86868B] text-[11px] leading-relaxed">
-                            {q.answer}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 )}
               </div>
             )}
 
             {/* LIVE QUERY RESULT GRID */}
-            <div className="flex-1 flex flex-col min-h-0 rounded-2xl bg-[#06070a] border border-white/10 overflow-hidden">
-              {/* Result Meta Bar */}
-              <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-white/[0.02] shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1.5">
-                    {queryResult?.isError ? (
-                      <AlertTriangle className="w-4 h-4 text-red-400" />
-                    ) : (
-                      <CheckCircle2 className="w-4 h-4 text-apple-emerald" />
-                    )}
-                    <span className="text-xs font-semibold text-white">
-                      {queryResult?.isError ? 'Error en ejecución' : 'Resultado de Consulta'}
-                    </span>
-                  </div>
+            <div className="flex-1 flex flex-col min-h-0 rounded-2xl bg-black border border-white/[0.09] overflow-hidden">
+              {/* Minimalist Result Meta Bar */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.07] bg-[#0e0e0e] shrink-0">
+                <span className="text-sm font-bold text-white">
+                  {queryResult?.isError
+                    ? 'Error de sintaxis o restricción'
+                    : `${queryResult?.rowCount ?? 0} filas`}
+                </span>
 
-                  {queryResult && (
-                    <span className="text-xs text-[#86868B]">
-                      {queryResult.rowCount} fila(s) • {queryResult.executionTimeMs} ms
-                    </span>
-                  )}
-                </div>
-
-                {queryResult?.message && (
+                {queryResult?.isError || (queryResult?.affectedRows && queryResult.affectedRows > 0) ? (
                   <span
-                    className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
+                    className={`text-xs px-3 py-1 rounded-full font-bold ${
                       queryResult.isError
-                        ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                        : 'bg-apple-emerald/10 text-apple-emerald border border-apple-emerald/20'
+                        ? 'bg-red-500/15 text-[#FF453A] border border-red-500/25'
+                        : 'bg-white/15 text-white'
                     }`}
                   >
                     {queryResult.message}
                   </span>
+                ) : (
+                  queryResult && (
+                    <span className="text-xs font-mono text-[#8E8E93]">
+                      {queryResult.executionTimeMs} ms
+                    </span>
+                  )
                 )}
               </div>
 
-              {/* Real-time sync notification badge */}
-              {queryResult?.affectedRows && queryResult.affectedRows > 0 && (
-                <div className="px-4 py-2 bg-apple-blue/10 border-b border-apple-blue/20 flex items-center justify-between text-xs text-apple-blueLight shrink-0">
-                  <span className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-apple-blue" />
-                    <strong>Sincronización en tiempo real:</strong> Los cambios en la base de datos se reflejaron instantáneamente en la Terminal POS, Inventario y Dashboard.
-                  </span>
-                </div>
-              )}
-
-              {/* Table Result Display (no-scrollbar on horizontal axis, sleek custom-scrollbar on vertical) */}
+              {/* Table Result Display */}
               <div className="flex-1 overflow-x-auto no-scrollbar overflow-y-auto custom-scrollbar">
                 {queryResult && queryResult.columns.length > 0 ? (
-                  <table className="w-full text-left border-collapse text-xs">
+                  <table className="w-full text-left border-collapse text-sm">
                     <thead>
-                      <tr className="border-b border-white/10 bg-white/[0.03] sticky top-0 z-10 backdrop-blur-md">
+                      <tr className="border-b border-white/[0.08] bg-[#111111] sticky top-0 z-10">
                         {queryResult.columns.map((col, idx) => (
                           <th
                             key={idx}
-                            className="py-2.5 px-4 font-mono font-semibold text-[#A1A1A6] uppercase tracking-wider text-[11px] whitespace-nowrap"
+                            className="py-3.5 px-5 font-mono font-bold text-[#8E8E93] uppercase tracking-wider text-xs whitespace-nowrap"
                           >
                             {col}
                           </th>
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5 font-mono">
+                    <tbody className="divide-y divide-white/[0.05] font-mono">
                       {queryResult.rows.map((row, rowIdx) => (
                         <tr
                           key={rowIdx}
-                          className="hover:bg-white/[0.04] transition-colors"
+                          className="hover:bg-white/[0.03] transition-colors"
                         >
                           {row.map((cell, cellIdx) => (
                             <td
                               key={cellIdx}
-                              className="py-2.5 px-4 text-[#F5F5F7] whitespace-nowrap"
+                              className="py-3.5 px-5 text-[#F5F5F7] whitespace-nowrap"
                             >
                               {cell === null ? (
                                 <span className="text-[#636366] italic">NULL</span>
@@ -410,8 +369,8 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
                     </tbody>
                   </table>
                 ) : (
-                  <div className="h-full flex items-center justify-center text-xs text-[#86868B]">
-                    Ejecuta una consulta SQL para ver la tabla de resultados.
+                  <div className="h-full flex items-center justify-center text-base text-[#8E8E93]">
+                    {queryResult?.message || 'Ejecuta una consulta SQL'}
                   </div>
                 )}
               </div>
@@ -419,81 +378,74 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
           </div>
         )}
 
-        {/* TAB 2: SCRIPTS UNIFICADOS */}
+        {/* TAB 2: SCRIPTS UNIFICADOS (MINIMALIST & HOMOGENEOUS) */}
         {activeTab === 'scripts' && (
           <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
-            {/* Sidebar List of Scripts */}
-            <div className="w-full md:w-80 border-r border-white/10 p-4 space-y-3 shrink-0 flex flex-col overflow-y-auto custom-scrollbar bg-black/20">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-[#86868B]">
-                Módulos de Código
-              </span>
-
-              <div className="space-y-2">
-                {CLASSMATE_SCRIPTS.map((script) => {
-                  const isSelected = script.id === selectedScriptId;
-                  return (
-                    <button
-                      key={script.id}
-                      onClick={() => setSelectedScriptId(script.id)}
-                      className={`w-full text-left p-3 rounded-2xl transition-all cursor-pointer border ${
-                        isSelected
-                          ? 'bg-apple-blue/15 border-apple-blue/30 text-white'
-                          : 'bg-white/[0.02] border-white/5 text-[#A1A1A6] hover:bg-white/[0.05] hover:text-white'
+            {/* Minimalist Left Sidebar of Scripts */}
+            <div className="w-full md:w-72 border-r border-white/[0.08] p-5 space-y-2.5 shrink-0 flex flex-col overflow-y-auto custom-scrollbar bg-[#0c0c0c]">
+              {CLASSMATE_SCRIPTS.map((script, idx) => {
+                const isSelected = script.id === selectedScriptId;
+                const cleanTitle = script.title.includes('—')
+                  ? script.title.split('—')[1].trim()
+                  : script.title;
+                return (
+                  <button
+                    key={script.id}
+                    onClick={() => setSelectedScriptId(script.id)}
+                    className={`w-full text-left px-5 py-4 rounded-2xl transition-all duration-300 ease-spring cursor-pointer border active:scale-[0.98] ${
+                      isSelected
+                        ? 'bg-white text-black border-white shadow-lg font-extrabold'
+                        : 'bg-[#141414] border-white/[0.06] text-[#A1A1A6] hover:bg-[#1c1c1c] hover:text-white font-semibold'
+                    }`}
+                  >
+                    <span
+                      className={`text-xs font-mono block mb-1 ${
+                        isSelected ? 'text-black/60' : 'text-[#8E8E93]'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-white">
-                          {script.category}
-                        </span>
-                      </div>
-                      <h4 className="text-sm font-bold text-white line-clamp-1">
-                        {script.title}
-                      </h4>
-                      <p className="text-xs text-[#86868B] line-clamp-2 mt-1 leading-relaxed">
-                        {script.description}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
+                      0{idx + 1} • {script.category}
+                    </span>
+                    <span className="text-base block truncate">
+                      {cleanTitle}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Script Viewer & Action Bar */}
-            <div className="flex-1 flex flex-col min-h-0 bg-[#06070a] overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-3 border-b border-white/10 bg-white/[0.02] shrink-0">
-                <div>
-                  <h4 className="text-sm font-bold text-white font-display">
-                    {selectedScript.title}
-                  </h4>
-                  <p className="text-xs text-[#86868B]">
-                    {selectedScript.description}
-                  </p>
-                </div>
+            {/* Clean Script Viewer & Single-Line Action Bar */}
+            <div className="flex-1 flex flex-col min-h-0 bg-black overflow-hidden">
+              <div className="flex items-center justify-between gap-4 px-7 py-4 border-b border-white/[0.08] bg-[#0e0e0e] shrink-0">
+                <h4 className="text-lg md:text-xl font-extrabold text-white font-display truncate">
+                  {selectedScript.title}
+                </h4>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 shrink-0">
                   <GlassButton
-                    variant="ghost"
+                    variant="glass"
                     size="sm"
-                    icon={copiedScript ? <Check className="w-3.5 h-3.5 text-apple-emerald" /> : <Copy className="w-3.5 h-3.5" />}
+                    icon={copiedScript ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     onClick={() => handleCopy(selectedScript.code, true)}
+                    className="whitespace-nowrap rounded-full px-5"
                   >
-                    {copiedScript ? 'Copiado al portapapeles' : 'Copiar Código'}
+                    {copiedScript ? 'Copiado' : 'Copiar'}
                   </GlassButton>
 
                   <GlassButton
                     variant="primary"
                     size="sm"
-                    icon={<Play className="w-3.5 h-3.5 fill-current" />}
+                    icon={<Play className="w-4 h-4 fill-current" />}
                     onClick={() => handleLoadScriptToConsole(selectedScript.code.slice(0, 1500))}
+                    className="whitespace-nowrap rounded-full px-5"
                   >
-                    Cargar en Consola
+                    Consola
                   </GlassButton>
                 </div>
               </div>
 
-              {/* Code Preformatted Block */}
-              <div className="flex-1 overflow-auto p-5 custom-scrollbar">
-                <pre className="font-mono text-xs text-[#E5E5EA] leading-relaxed select-text whitespace-pre">
+              {/* Code Preformatted Block without Horizontal Scrollbar */}
+              <div className="flex-1 overflow-y-auto overflow-x-auto no-scrollbar custom-scrollbar p-7">
+                <pre className="font-mono text-sm text-[#D4D4D8] leading-relaxed select-text whitespace-pre">
                   <code>{selectedScript.code}</code>
                 </pre>
               </div>

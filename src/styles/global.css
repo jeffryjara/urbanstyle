@@ -17,7 +17,7 @@
 
   html,
   body {
-    background-color: #070709;
+    background-color: #000000;
     color: #F5F5F7;
     font-family: "Plus Jakarta Sans", "Outfit", -apple-system, BlinkMacSystemFont, sans-serif;
     overflow-x: hidden;
@@ -26,17 +26,17 @@
   }
 
   ::selection {
-    background-color: rgba(0, 122, 255, 0.35);
+    background-color: rgba(255, 255, 255, 0.22);
     color: #ffffff;
   }
 }
 
 @layer utilities {
-  /* Minimalist Architectural Surface Panel - Clean, deep, zero subpixel artifact */
+  /* Minimalist Neutral Surface Panel - Pure monochrome, zero colored tint */
   .glass-panel {
-    background: #101116;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.55);
+    background: #0c0c0c;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 14px 40px -10px rgba(0, 0, 0, 0.7);
     isolation: isolate;
     contain: paint;
     transition: background 0.4s cubic-bezier(0.22, 1, 0.36, 1),
@@ -46,39 +46,39 @@
   }
 
   .glass-panel-hover:hover {
-    background: #14161d;
-    border-color: rgba(255, 255, 255, 0.13);
-    box-shadow: 0 20px 44px -10px rgba(0, 0, 0, 0.7);
+    background: #121212;
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.85);
   }
 
-  /* Floating Glass Bar with subtle top illumination */
+  /* Floating Neutral Glass Bar */
   .glass-bar {
-    background: rgba(14, 15, 20, 0.88);
+    background: rgba(14, 14, 14, 0.90);
     backdrop-filter: blur(32px) saturate(180%);
     -webkit-backdrop-filter: blur(32px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.65);
+    box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.75);
   }
 
-  /* Super-blur dropdown for select menus: opaque dark glass that completely masks elements behind it */
+  /* Super-blur dropdown for select menus: opaque neutral dark glass */
   .super-blur-dropdown {
-    background: rgba(14, 15, 22, 0.98);
-    backdrop-filter: blur(48px) saturate(200%);
-    -webkit-backdrop-filter: blur(48px) saturate(200%);
+    background: rgba(14, 14, 14, 0.98);
+    backdrop-filter: blur(48px) saturate(180%);
+    -webkit-backdrop-filter: blur(48px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, 0.16);
     box-shadow: 0 28px 70px -10px rgba(0, 0, 0, 0.96);
   }
 
-  /* Minimalist Tactile Button - Silky Spring Physics */
+  /* Minimalist Tactile Secondary Button */
   .glass-button {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: #141414;
+    border: 1px solid rgba(255, 255, 255, 0.10);
     color: #F5F5F7;
     transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .glass-button:hover {
-    background: rgba(255, 255, 255, 0.10);
-    border-color: rgba(255, 255, 255, 0.20);
+    background: #1f1f1f;
+    border-color: rgba(255, 255, 255, 0.22);
     color: #ffffff;
     transform: translateY(-1px);
   }
@@ -86,16 +86,16 @@
     transform: scale(0.97);
   }
 
-  /* Primary High-Contrast Button */
+  /* Primary High-Contrast Neutral White Button */
   .apple-btn-primary {
-    background: #007AFF;
-    color: #ffffff;
-    box-shadow: 0 8px 24px -4px rgba(0, 122, 255, 0.45);
+    background: #ffffff;
+    color: #000000;
+    box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5);
     transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .apple-btn-primary:hover {
-    background: #1485ff;
-    box-shadow: 0 12px 30px -4px rgba(0, 122, 255, 0.6);
+    background: #e5e5e5;
+    box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.65);
     transform: translateY(-1px);
   }
   .apple-btn-primary:active {
@@ -119,9 +119,9 @@
     animation: slideUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both;
   }
 
-  /* iOS Segmented Control - Crisp rendering without subpixel line artifacts */
+  /* Neutral Segmented Control */
   .segmented-control {
-    background: #14151c;
+    background: #141414;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 9999px;
     padding: 4px;

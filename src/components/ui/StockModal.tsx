@@ -49,15 +49,15 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
 
   return (
     <ModalPortal isOpen={isOpen} onClose={onClose}>
-      <div className="relative w-full max-w-6xl h-[88vh] max-h-[900px] bg-[#0c0d12] border border-white/[0.08] rounded-[34px] p-7 md:p-10 shadow-[0_40px_100px_rgba(0,0,0,0.95)] overflow-hidden animate-scale-in text-[#F5F5F7] flex flex-col justify-between">
+      <div className="relative w-full max-w-6xl h-[88vh] max-h-[900px] bg-[#0a0a0a] border border-white/[0.09] rounded-[34px] p-7 md:p-10 shadow-[0_40px_100px_rgba(0,0,0,0.95)] overflow-hidden animate-scale-in text-[#F5F5F7] flex flex-col justify-between">
         {/* Top Minimalist Header */}
-        <div className="flex items-center justify-between pb-6 border-b border-white/[0.07] relative z-10 shrink-0">
+        <div className="flex items-center justify-between pb-6 border-b border-white/[0.08] relative z-10 shrink-0">
           <h3 className="text-3xl md:text-4xl font-extrabold font-display text-white tracking-tight">
             Inventario
           </h3>
           <button
             onClick={onClose}
-            className="p-2.5 rounded-full bg-white/[0.05] text-[#86868B] hover:text-white hover:bg-white/10 transition-all duration-300 ease-spring cursor-pointer"
+            className="p-2.5 rounded-full bg-[#141414] text-[#8E8E93] hover:text-white hover:bg-white/10 transition-all duration-300 ease-spring cursor-pointer"
           >
             <X className="w-6 h-6" />
           </button>
@@ -65,30 +65,30 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
 
         {/* 4 Oversized Minimalist KPI Blocks */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 my-6 relative z-10 shrink-0">
-          <div className="p-5 rounded-2xl bg-[#13141c] border border-white/[0.06]">
-            <span className="text-sm font-semibold text-[#86868B] block">Modelos</span>
+          <div className="p-5 rounded-2xl bg-[#121212] border border-white/[0.07]">
+            <span className="text-sm font-semibold text-[#8E8E93] block">Modelos</span>
             <span className="text-3xl font-extrabold font-display text-white mt-1 block">
               {currentProducts.length}
             </span>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#13141c] border border-white/[0.06]">
-            <span className="text-sm font-semibold text-[#86868B] block">Pares</span>
+          <div className="p-5 rounded-2xl bg-[#121212] border border-white/[0.07]">
+            <span className="text-sm font-semibold text-[#8E8E93] block">Pares</span>
             <span className="text-3xl font-extrabold font-display text-white mt-1 block">
               {totalStock}
             </span>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#13141c] border border-white/[0.06]">
-            <span className="text-sm font-semibold text-[#86868B] block">Valorización</span>
+          <div className="p-5 rounded-2xl bg-[#121212] border border-white/[0.07]">
+            <span className="text-sm font-semibold text-[#8E8E93] block">Valorización</span>
             <span className="text-3xl font-extrabold font-display text-white mt-1 block">
               S/ {totalValuation.toLocaleString('es-PE', { maximumFractionDigits: 0 })}
             </span>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#13141c] border border-white/[0.06]">
-            <span className="text-sm font-semibold text-[#86868B] block">Bajo Stock</span>
-            <span className="text-3xl font-extrabold font-display text-[#FF9F0A] mt-1 block">
+          <div className="p-5 rounded-2xl bg-[#121212] border border-white/[0.07]">
+            <span className="text-sm font-semibold text-[#8E8E93] block">Bajo Stock</span>
+            <span className="text-3xl font-extrabold font-display text-white mt-1 block">
               {lowStockCount}
             </span>
           </div>
@@ -97,13 +97,13 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
         {/* Search & Brand Pills */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-5 relative z-10 shrink-0">
           <div className="relative w-full sm:max-w-sm flex items-center">
-            <Search className="w-5 h-5 text-[#86868B] absolute left-4 pointer-events-none" />
+            <Search className="w-5 h-5 text-[#8E8E93] absolute left-4 pointer-events-none" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar modelo o SKU..."
-              className="w-full pl-12 pr-5 py-3 rounded-full bg-[#13141c] border border-white/[0.08] text-base text-white placeholder-[#636366] focus:outline-none focus:border-apple-blue transition-all duration-300 ease-spring"
+              className="w-full pl-12 pr-5 py-3 rounded-full bg-[#121212] border border-white/[0.08] text-base text-white placeholder-[#636366] focus:outline-none focus:border-white/35 transition-all duration-300 ease-spring"
             />
           </div>
 
@@ -112,10 +112,10 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
               <button
                 key={b}
                 onClick={() => setSelectedBrand(b)}
-                className={`px-4.5 py-2 rounded-full text-sm font-bold capitalize transition-all duration-300 ease-spring cursor-pointer shrink-0 ${
+                className={`px-5 py-2.5 rounded-full text-sm font-bold capitalize transition-all duration-300 ease-spring cursor-pointer shrink-0 ${
                   selectedBrand.toLowerCase() === b.toLowerCase()
                     ? 'bg-white text-black shadow-md'
-                    : 'bg-[#13141c] text-[#86868B] hover:text-white border border-white/[0.06]'
+                    : 'bg-[#121212] text-[#8E8E93] hover:text-white border border-white/[0.07]'
                 }`}
               >
                 {b}
@@ -124,10 +124,10 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
 
             <button
               onClick={() => setOnlyLowStock(!onlyLowStock)}
-              className={`px-4.5 py-2 rounded-full text-sm font-bold flex items-center gap-1.5 transition-all duration-300 ease-spring cursor-pointer shrink-0 ${
+              className={`px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-1.5 transition-all duration-300 ease-spring cursor-pointer shrink-0 ${
                 onlyLowStock
-                  ? 'bg-amber-500/20 text-[#FF9F0A] border border-amber-500/40'
-                  : 'bg-[#13141c] text-[#86868B] hover:text-white border border-white/[0.06]'
+                  ? 'bg-white text-black shadow-md'
+                  : 'bg-[#121212] text-[#8E8E93] hover:text-white border border-white/[0.07]'
               }`}
             >
               <AlertTriangle className="w-4 h-4" />
@@ -137,9 +137,9 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
         </div>
 
         {/* Clean 5-Column Inventory Table */}
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar no-scrollbar border border-white/[0.07] rounded-2xl relative z-10 bg-[#0f1016]">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar no-scrollbar border border-white/[0.08] rounded-2xl relative z-10 bg-black">
           <table className="w-full text-left text-base">
-            <thead className="bg-[#14151e] border-b border-white/[0.07] text-sm text-[#86868B] font-semibold sticky top-0 z-10">
+            <thead className="bg-[#121212] border-b border-white/[0.08] text-sm text-[#8E8E93] font-semibold sticky top-0 z-10">
               <tr>
                 <th className="py-4 px-5">Calzado</th>
                 <th className="py-4 px-4">SKU</th>
@@ -151,7 +151,7 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
             <tbody className="divide-y divide-white/[0.05]">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-16 text-center text-[#86868B]">
+                  <td colSpan={5} className="py-16 text-center text-[#8E8E93]">
                     <p className="text-base">Sin resultados</p>
                   </td>
                 </tr>
@@ -165,14 +165,14 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
                           <img
                             src={product.image}
                             alt={product.name}
-                            className="w-12 h-12 rounded-2xl object-cover bg-black/40 border border-white/10 shrink-0"
+                            className="w-12 h-12 rounded-2xl object-cover bg-black border border-white/10 shrink-0"
                             loading="lazy"
                           />
                           <div className="min-w-0">
                             <span className="font-bold text-white text-base block truncate max-w-[240px]">
                               {product.name}
                             </span>
-                            <span className="text-xs font-semibold text-[#86868B]">
+                            <span className="text-xs font-semibold text-[#8E8E93]">
                               {product.brand}
                             </span>
                           </div>
@@ -188,7 +188,7 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
                           {product.sizes.map((s) => (
                             <span
                               key={s}
-                              className="px-2.5 py-1 rounded-lg bg-white/[0.05] text-xs font-mono font-bold text-[#D1D1D6]"
+                              className="px-2.5 py-1 rounded-lg bg-[#161616] border border-white/[0.06] text-xs font-mono font-bold text-[#D1D1D6]"
                             >
                               {s}
                             </span>
@@ -199,7 +199,7 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
                       <td className="py-3.5 px-4 text-center">
                         <span
                           className={`font-display text-lg font-extrabold ${
-                            isLow ? 'text-[#FF9F0A]' : 'text-[#30D158]'
+                            isLow ? 'text-[#A1A1A6] underline decoration-white/40' : 'text-white'
                           }`}
                         >
                           {product.stock}
@@ -218,11 +218,11 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
         </div>
 
         {/* Minimalist Footer */}
-        <div className="mt-5 pt-4 border-t border-white/[0.07] flex items-center justify-between text-sm text-[#86868B] relative z-10 shrink-0">
+        <div className="mt-5 pt-4 border-t border-white/[0.08] flex items-center justify-between text-sm text-[#8E8E93] relative z-10 shrink-0">
           <span className="font-medium">
             {filtered.length} modelos
           </span>
-          <GlassButton variant="primary" size="md" onClick={onClose} className="px-7">
+          <GlassButton variant="primary" size="md" onClick={onClose} className="px-7 rounded-full">
             Cerrar
           </GlassButton>
         </div>

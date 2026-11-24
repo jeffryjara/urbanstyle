@@ -101,83 +101,63 @@ export const EditCustomerModal: React.FC<EditCustomerModalProps> = ({
 
   return (
     <ModalPortal isOpen={isOpen} onClose={onClose}>
-      <div className="relative w-full max-w-lg bg-[#0e0e11] border border-white/15 rounded-3xl p-6 md:p-8 shadow-[0_25px_70px_rgba(0,0,0,0.9)] overflow-hidden text-[#F5F5F7] animate-scale-in">
-        {/* Soft background ambient blur */}
-        <div className="absolute -top-24 -left-24 w-52 h-52 bg-apple-blue/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-52 h-52 bg-apple-purple/15 rounded-full blur-3xl pointer-events-none" />
-
+      <div className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/[0.09] rounded-[34px] p-7 md:p-9 shadow-[0_40px_100px_rgba(0,0,0,0.95)] overflow-hidden text-[#F5F5F7] animate-scale-in">
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/10 relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-apple-blue/15 border border-apple-blue/30 flex items-center justify-center text-apple-blue">
-              <UserCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold font-display text-white">
-                Datos del Cliente / Adquirente
-              </h3>
-              <p className="text-xs md:text-sm text-[#86868B]">
-                Emisión oficial SUNAT (Boleta o Factura Electrónica)
-              </p>
-            </div>
-          </div>
+        <div className="flex items-center justify-between pb-5 border-b border-white/[0.08] relative z-10">
+          <h3 className="text-2xl md:text-3xl font-extrabold font-display text-white tracking-tight">
+            Cliente
+          </h3>
           <button
             onClick={onClose}
-            className="p-2 rounded-full text-[#86868B] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-2.5 rounded-full bg-[#141414] text-[#8E8E93] hover:text-white hover:bg-white/10 transition-all duration-300 ease-spring cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-4 relative z-10">
-          {/* Document Type Selector Segment */}
-          <div>
-            <label className="text-xs font-semibold text-[#86868B] uppercase tracking-wider block mb-1.5">
-              Tipo de Comprobante
-            </label>
-            <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-white/[0.04] border border-white/10">
-              <button
-                type="button"
-                onClick={() => {
-                  setDocType('Boleta');
-                  if (doc.length === 11) {
-                    setDoc('00000000');
-                    setName('Consumidor Final');
-                  }
-                }}
-                className={`py-2.5 px-3 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                  docType === 'Boleta'
-                    ? 'bg-apple-blue text-white shadow-apple-glow font-semibold'
-                    : 'text-[#86868B] hover:text-white'
-                }`}
-              >
-                <span>Boleta (DNI)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setDocType('Factura');
-                  if (doc === '00000000' || doc.length === 8) {
-                    setDoc('20608941231');
-                    setName('Inversiones Deportivas S.A.C.');
-                  }
-                }}
-                className={`py-2.5 px-3 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                  docType === 'Factura'
-                    ? 'bg-apple-blue text-white shadow-apple-glow font-semibold'
-                    : 'text-[#86868B] hover:text-white'
-                }`}
-              >
-                <Building className="w-4 h-4" />
-                <span>Factura (RUC)</span>
-              </button>
-            </div>
+        <form onSubmit={handleSubmit} noValidate className="space-y-5 pt-6 relative z-10">
+          {/* Document Type Selector */}
+          <div className="grid grid-cols-2 gap-1.5 p-1.5 rounded-2xl bg-[#141414] border border-white/[0.08]">
+            <button
+              type="button"
+              onClick={() => {
+                setDocType('Boleta');
+                if (doc.length === 11) {
+                  setDoc('00000000');
+                  setName('Consumidor Final');
+                }
+              }}
+              className={`py-3 px-4 rounded-xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer ${
+                docType === 'Boleta'
+                  ? 'bg-white text-black shadow-md'
+                  : 'text-[#8E8E93] hover:text-white'
+              }`}
+            >
+              Boleta (DNI)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDocType('Factura');
+                if (doc === '00000000' || doc.length === 8) {
+                  setDoc('20608941231');
+                  setName('Inversiones Deportivas S.A.C.');
+                }
+              }}
+              className={`py-3 px-4 rounded-xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer ${
+                docType === 'Factura'
+                  ? 'bg-white text-black shadow-md'
+                  : 'text-[#8E8E93] hover:text-white'
+              }`}
+            >
+              Factura (RUC)
+            </button>
           </div>
 
           {/* Document Number Input */}
           <div>
-            <label className="text-xs font-semibold text-[#86868B] uppercase tracking-wider block mb-1.5">
-              {docType === 'Factura' ? 'RUC de la Empresa (11 dígitos)' : 'DNI del Cliente (8 dígitos)'}
+            <label className="text-sm font-semibold text-[#8E8E93] block mb-2">
+              {docType === 'Factura' ? 'RUC (11 dígitos)' : 'DNI (8 dígitos)'}
             </label>
             <input
               type="text"
@@ -188,14 +168,14 @@ export const EditCustomerModal: React.FC<EditCustomerModalProps> = ({
               }}
               maxLength={docType === 'Factura' ? 11 : 8}
               placeholder={docType === 'Factura' ? '20608941231' : '00000000'}
-              className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-base font-mono text-white placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
+              className="w-full px-5 py-3.5 rounded-2xl bg-[#141414] border border-white/[0.08] text-lg font-mono text-white placeholder-[#636366] focus:outline-none focus:border-white/40 transition-all duration-300 ease-spring"
             />
           </div>
 
           {/* Client Name Input */}
           <div>
-            <label className="text-xs font-semibold text-[#86868B] uppercase tracking-wider block mb-1.5">
-              {docType === 'Factura' ? 'Razón Social' : 'Nombre Completo / Razón Social'}
+            <label className="text-sm font-semibold text-[#8E8E93] block mb-2">
+              {docType === 'Factura' ? 'Razón Social' : 'Nombre'}
             </label>
             <input
               type="text"
@@ -205,52 +185,50 @@ export const EditCustomerModal: React.FC<EditCustomerModalProps> = ({
                 setError(null);
               }}
               placeholder={docType === 'Factura' ? 'Empresa S.A.C.' : 'Consumidor Final'}
-              className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-base text-white placeholder-[#636366] focus:outline-none focus:border-apple-blue focus:ring-1 focus:ring-apple-blue transition-all"
+              className="w-full px-5 py-3.5 rounded-2xl bg-[#141414] border border-white/[0.08] text-lg text-white placeholder-[#636366] focus:outline-none focus:border-white/40 transition-all duration-300 ease-spring"
             />
           </div>
 
           {/* Quick Presets */}
           <div>
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#86868B] uppercase tracking-wider mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-apple-blueLight" />
-              <span>Sugerencias Frecuentes</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
+            <span className="text-sm font-semibold text-[#8E8E93] block mb-2.5">
+              Frecuentes
+            </span>
+            <div className="grid grid-cols-2 gap-2.5">
               {PRESET_CUSTOMERS.map((preset) => (
                 <button
                   key={preset.doc}
                   type="button"
                   onClick={() => handleSelectPreset(preset)}
-                  className={`text-left p-3 rounded-2xl border text-sm transition-all cursor-pointer ${
+                  className={`text-left p-3.5 rounded-2xl border transition-all duration-300 ease-spring cursor-pointer ${
                     doc === preset.doc
-                      ? 'bg-apple-blue/15 border-apple-blue/40 text-white'
-                      : 'bg-white/[0.02] border-white/5 text-[#A1A1A6] hover:bg-white/[0.05] hover:text-white'
+                      ? 'bg-white text-black border-white font-bold'
+                      : 'bg-[#141414] border-white/[0.06] text-[#A1A1A6] hover:bg-[#1c1c1c] hover:text-white'
                   }`}
                 >
-                  <div className="font-semibold text-white truncate text-sm">{preset.name}</div>
-                  <div className="text-xs text-[#86868B] mt-1 font-mono">
-                    {preset.type}: {preset.doc}
+                  <div className="font-bold truncate text-sm">{preset.name}</div>
+                  <div className={`text-xs mt-1 font-mono ${doc === preset.doc ? 'text-black/70' : 'text-[#8E8E93]'}`}>
+                    {preset.doc}
                   </div>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Error Message */}
           {error && (
-            <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-sm text-[#FF453A] animate-shake">
+            <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-sm text-[#FF453A]">
               {error}
             </div>
           )}
 
           {/* Actions */}
-          <div className="pt-3 border-t border-white/10 grid grid-cols-2 gap-3">
+          <div className="pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-3">
             <GlassButton
               type="button"
               variant="glass"
               size="md"
               onClick={onClose}
-              className="text-sm font-semibold"
+              className="w-full"
             >
               Cancelar
             </GlassButton>
@@ -258,10 +236,9 @@ export const EditCustomerModal: React.FC<EditCustomerModalProps> = ({
               type="submit"
               variant="primary"
               size="md"
-              icon={<Check className="w-4 h-4" />}
-              className="text-sm font-semibold"
+              className="w-full"
             >
-              Guardar Datos
+              Guardar
             </GlassButton>
           </div>
         </form>

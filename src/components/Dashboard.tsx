@@ -128,8 +128,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* KPI 1: Ingresos */}
         <GlassCard hoverEffect className="flex flex-col justify-between min-h-[210px]">
           <div className="flex justify-between items-center">
-            <span className="text-base font-semibold text-[#86868B]">Ingresos</span>
-            <Badge variant="emerald" icon={<ArrowUpRight className="w-4 h-4" />}>
+            <span className="text-base font-semibold text-[#8E8E93]">Ingresos</span>
+            <Badge variant="neutral" icon={<ArrowUpRight className="w-4 h-4" />}>
               {kpiData.change}
             </Badge>
           </div>
@@ -141,13 +141,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           <div className="space-y-2">
-            <div className="flex justify-between text-sm font-medium text-[#86868B]">
+            <div className="flex justify-between text-sm font-medium text-[#8E8E93]">
               <span>Meta</span>
               <span className="text-white font-bold">{kpiData.metaPct}</span>
             </div>
-            <div className="w-full h-2.5 bg-white/[0.07] rounded-full overflow-hidden">
+            <div className="w-full h-2.5 bg-white/[0.08] rounded-full overflow-hidden">
               <div
-                className="h-full bg-apple-blue rounded-full transition-all duration-700 ease-spring"
+                className="h-full bg-white rounded-full transition-all duration-700 ease-spring"
                 style={{ width: kpiData.metaPct }}
               />
             </div>
@@ -157,8 +157,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {/* KPI 2: Más Vendido */}
         <GlassCard hoverEffect className="flex flex-col justify-between min-h-[210px]">
           <div className="flex justify-between items-center">
-            <span className="text-base font-semibold text-[#86868B]">Más Vendido</span>
-            <span className="text-sm font-bold text-apple-blue">Ultraboost 22</span>
+            <span className="text-base font-semibold text-[#8E8E93]">Más Vendido</span>
+            <span className="text-sm font-bold text-white">Ultraboost 22</span>
           </div>
 
           <div className="my-4 flex items-center justify-between gap-4">
@@ -166,10 +166,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
                 {kpiData.topCount}
               </span>
-              <span className="text-lg text-[#86868B] font-semibold">pares</span>
+              <span className="text-lg text-[#8E8E93] font-semibold">pares</span>
             </div>
 
-            <div className="w-24 h-16 rounded-2xl overflow-hidden border border-white/10 bg-black/40 shrink-0">
+            <div className="w-24 h-16 rounded-2xl overflow-hidden border border-white/10 bg-black shrink-0">
               <img
                 src="https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&w=240&q=80"
                 alt="Ultraboost 22"
@@ -178,17 +178,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
 
-          <div className="flex justify-between text-sm text-[#86868B] font-medium">
+          <div className="flex justify-between text-sm text-[#8E8E93] font-medium">
             <span>Adidas Running</span>
-            <span className="text-[#30D158] font-bold">+42.8% margen</span>
+            <span className="text-white font-bold">+42.8% margen</span>
           </div>
         </GlassCard>
 
         {/* KPI 3: Canales */}
         <GlassCard hoverEffect className="flex flex-col justify-between min-h-[210px]">
           <div className="flex justify-between items-center">
-            <span className="text-base font-semibold text-[#86868B]">Canales</span>
-            <span className="text-sm font-semibold text-[#86868B]">Digital / Tienda</span>
+            <span className="text-base font-semibold text-[#8E8E93]">Canales</span>
+            <span className="text-sm font-semibold text-[#8E8E93]">Digital / Tienda</span>
           </div>
 
           <div className="my-4 flex items-baseline gap-3">
@@ -201,17 +201,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           <div className="space-y-2.5">
-            <div className="w-full h-3 bg-white/[0.07] rounded-full overflow-hidden flex gap-1">
+            <div className="w-full h-3 bg-white/[0.08] rounded-full overflow-hidden flex gap-1">
               <div
-                className="h-full bg-apple-blue rounded-full transition-all duration-700 ease-spring"
+                className="h-full bg-white rounded-full transition-all duration-700 ease-spring"
                 style={{ width: `${kpiData.digitalPct}%` }}
               />
               <div
-                className="h-full bg-white/25 rounded-full transition-all duration-700 ease-spring"
+                className="h-full bg-[#48484A] rounded-full transition-all duration-700 ease-spring"
                 style={{ width: `${kpiData.storePct}%` }}
               />
             </div>
-            <div className="flex justify-between text-sm font-medium text-[#86868B]">
+            <div className="flex justify-between text-sm font-medium text-[#8E8E93]">
               <span className="text-white">Digital</span>
               <span>Tienda Física</span>
             </div>
@@ -219,77 +219,125 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </GlassCard>
       </div>
 
-      {/* Middle Row: Sales Chart + 3 Minimalist Metric Blocks */}
+      {/* Middle Row: PowerBI-Caliber Thick Column Chart + 3 Minimalist Metric Blocks */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 stagger-3">
         {/* Sales Chart (8 cols) */}
         <GlassCard className="lg:col-span-8 flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-extrabold font-display text-white tracking-tight">
-              Ventas Anuales
-            </h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div>
+              <h3 className="text-2xl md:text-3xl font-extrabold font-display text-white tracking-tight">
+                Ventas Anuales
+              </h3>
+            </div>
 
-            <div className="flex items-center gap-5 text-sm font-semibold">
-              <span className="flex items-center gap-2 text-white">
-                <span className="w-3 h-3 rounded-full bg-apple-blue" /> Digital
+            <div className="flex items-center gap-6 text-sm font-bold">
+              <span className="flex items-center gap-2.5 text-white">
+                <span className="w-3.5 h-3.5 rounded-[4px] bg-white" /> Digital
               </span>
-              <span className="flex items-center gap-2 text-[#86868B]">
-                <span className="w-3 h-3 rounded-full bg-white/25" /> Tienda
+              <span className="flex items-center gap-2.5 text-[#8E8E93]">
+                <span className="w-3.5 h-3.5 rounded-[4px] bg-[#3A3A3C]" /> Tienda
               </span>
             </div>
           </div>
 
-          {/* Minimalist Bar Chart Visualizer */}
-          <div className="h-64 flex items-end justify-between gap-3 pt-8 pb-2 px-2 relative">
-            {MONTHLY_SALES_DATA.map((item) => {
-              const maxVal = 65000;
-              const digitalHeight = (item.digital / maxVal) * 100;
-              const storeHeight = (item.store / maxVal) * 100;
-              const isHovered = hoveredMonth === item.month;
+          {/* PowerBI-Inspired Thick Bar Visualizer with Y-Axis Grid & Value Callouts */}
+          <div className="relative h-80 flex pt-6 pb-2">
+            {/* Y-Axis Scale Labels */}
+            <div className="flex flex-col justify-between pr-4 pb-8 text-xs font-mono font-semibold text-[#636366] select-none shrink-0 text-right w-12">
+              <span>65k</span>
+              <span>50k</span>
+              <span>35k</span>
+              <span>20k</span>
+              <span>0</span>
+            </div>
 
-              return (
-                <div
-                  key={item.month}
-                  onMouseEnter={() => setHoveredMonth(item.month)}
-                  onMouseLeave={() => setHoveredMonth(null)}
-                  className="flex-1 flex flex-col items-center h-full justify-end cursor-pointer group relative"
-                >
-                  {isHovered && (
-                    <div className="absolute -top-12 z-20 px-3.5 py-2 rounded-2xl bg-[#161822] border border-white/15 shadow-2xl text-xs text-white whitespace-nowrap pointer-events-none animate-scale-in">
-                      <span className="font-bold text-apple-blue mr-1.5">{item.month}</span>
-                      <span className="font-extrabold">S/ {item.total.toLocaleString()}</span>
-                    </div>
-                  )}
+            {/* Chart Plot Area */}
+            <div className="relative flex-1 flex items-end justify-between gap-2 sm:gap-3.5 pb-8 border-b border-white/[0.12]">
+              {/* Horizontal Reference Grid Lines */}
+              <div className="absolute inset-0 bottom-8 flex flex-col justify-between pointer-events-none">
+                <div className="w-full border-b border-dashed border-white/[0.06]" />
+                <div className="w-full border-b border-dashed border-white/[0.06]" />
+                <div className="w-full border-b border-dashed border-white/[0.06]" />
+                <div className="w-full border-b border-dashed border-white/[0.06]" />
+                <div className="w-full" />
+              </div>
 
-                  <div className="w-full flex items-end justify-center gap-1.5 h-full">
-                    <div
-                      className="w-1/2 max-w-[14px] bg-white/20 group-hover:bg-white/40 rounded-t-lg transition-all duration-500 ease-spring"
-                      style={{ height: `${storeHeight}%` }}
-                    />
-                    <div
-                      className="w-1/2 max-w-[14px] bg-apple-blue group-hover:bg-apple-blueLight rounded-t-lg transition-all duration-500 ease-spring"
-                      style={{ height: `${digitalHeight}%` }}
-                    />
-                  </div>
+              {MONTHLY_SALES_DATA.map((item) => {
+                const maxVal = 65000;
+                const digitalHeight = Math.max((item.digital / maxVal) * 100, 8);
+                const storeHeight = Math.max((item.store / maxVal) * 100, 8);
+                const totalK = Math.round(item.total / 1000);
+                const isHovered = hoveredMonth === item.month;
 
-                  <span
-                    className={`text-xs mt-3 font-semibold transition-colors duration-200 ${
-                      isHovered ? 'text-white' : 'text-[#86868B]'
-                    }`}
+                return (
+                  <div
+                    key={item.month}
+                    onMouseEnter={() => setHoveredMonth(item.month)}
+                    onMouseLeave={() => setHoveredMonth(null)}
+                    className="relative z-10 flex-1 flex flex-col items-center h-full justify-end cursor-pointer group"
                   >
-                    {item.month}
-                  </span>
-                </div>
-              );
-            })}
+                    {/* Detailed Floating Popover on Hover */}
+                    {isHovered && (
+                      <div className="absolute -top-16 z-30 px-4 py-2.5 rounded-2xl bg-[#18181B] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.9)] text-xs text-white whitespace-nowrap pointer-events-none animate-scale-in">
+                        <div className="font-extrabold text-sm mb-0.5">
+                          {item.month} — S/ {item.total.toLocaleString()}
+                        </div>
+                        <div className="text-[#A1A1A6] font-mono text-[11px]">
+                          Digital: S/ {item.digital.toLocaleString()} • Tienda: S/ {item.store.toLocaleString()}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Top Value Callout (PowerBI style data label) */}
+                    <span
+                      className={`text-[11px] font-mono font-bold mb-2 transition-all duration-300 ${
+                        isHovered ? 'text-white scale-110' : 'text-[#8E8E93]'
+                      }`}
+                    >
+                      {totalK}k
+                    </span>
+
+                    {/* Thick Bar Pair */}
+                    <div className="w-full flex items-end justify-center gap-1 sm:gap-1.5 h-full px-0.5">
+                      {/* Store Bar (Neutral Ash Gray) */}
+                      <div
+                        className={`w-1/2 max-w-[20px] rounded-t-lg transition-all duration-500 ease-spring ${
+                          isHovered ? 'bg-[#636366]' : 'bg-[#3A3A3C]'
+                        }`}
+                        style={{ height: `${storeHeight}%` }}
+                      />
+                      {/* Digital Bar (Pure High-Contrast White) */}
+                      <div
+                        className={`w-1/2 max-w-[20px] rounded-t-lg transition-all duration-500 ease-spring ${
+                          isHovered
+                            ? 'bg-white shadow-[0_0_20px_rgba(255,255,255,0.35)]'
+                            : 'bg-[#EDEDEF]'
+                        }`}
+                        style={{ height: `${digitalHeight}%` }}
+                      />
+                    </div>
+
+                    {/* X-Axis Month Label */}
+                    <span
+                      className={`absolute -bottom-7 text-xs font-bold transition-colors duration-200 ${
+                        isHovered ? 'text-white' : 'text-[#8E8E93]'
+                      }`}
+                    >
+                      {item.month}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </GlassCard>
 
         {/* Side Metric Blocks (4 cols) */}
         <div className="lg:col-span-4 flex flex-col justify-between gap-5">
           <GlassCard hoverEffect className="flex-1 flex items-center justify-between py-6 px-7">
-            <div className="space-y-1">
-              <span className="text-base font-semibold text-[#86868B] block">Conversión</span>
-              <Badge variant="emerald">+0.6%</Badge>
+            <div className="space-y-1.5">
+              <span className="text-base font-semibold text-[#8E8E93] block">Conversión</span>
+              <Badge variant="neutral">+0.6%</Badge>
             </div>
             <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
               3.8%
@@ -298,8 +346,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
           <GlassCard hoverEffect className="flex-1 flex items-center justify-between py-6 px-7">
             <div className="space-y-1">
-              <span className="text-base font-semibold text-[#86868B] block">Entrega</span>
-              <span className="text-sm font-medium text-[#30D158] block">Lima</span>
+              <span className="text-base font-semibold text-[#8E8E93] block">Entrega</span>
+              <span className="text-sm font-medium text-[#A1A1A6] block">Lima</span>
             </div>
             <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
               24h
@@ -308,8 +356,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
           <GlassCard hoverEffect className="flex-1 flex items-center justify-between py-6 px-7">
             <div className="space-y-1">
-              <span className="text-base font-semibold text-[#86868B] block">Satisfacción</span>
-              <span className="text-sm font-medium text-[#86868B] block">NPS</span>
+              <span className="text-base font-semibold text-[#8E8E93] block">Satisfacción</span>
+              <span className="text-sm font-medium text-[#8E8E93] block">NPS</span>
             </div>
             <div className="flex items-baseline gap-1">
               <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
@@ -330,13 +378,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
           <div className="flex flex-wrap items-center gap-3.5">
             <div className="relative flex items-center">
-              <Search className="w-5 h-5 text-[#86868B] absolute left-4 pointer-events-none" />
+              <Search className="w-5 h-5 text-[#8E8E93] absolute left-4 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar cliente o ticket..."
-                className="pl-12 pr-5 py-2.5 rounded-full bg-[#15161e] border border-white/[0.08] text-base text-white placeholder-[#636366] focus:outline-none focus:border-apple-blue transition-all duration-300 ease-spring w-64 md:w-72"
+                className="pl-12 pr-5 py-2.5 rounded-full bg-[#141414] border border-white/[0.08] text-base text-white placeholder-[#636366] focus:outline-none focus:border-white/30 transition-all duration-300 ease-spring w-64 md:w-72"
               />
             </div>
 
@@ -353,7 +401,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/[0.08] text-[#86868B] font-semibold text-sm">
+              <tr className="border-b border-white/[0.08] text-[#8E8E93] font-semibold text-sm">
                 <th className="py-4 px-4">Comprobante</th>
                 <th className="py-4 px-4">Cliente</th>
                 <th className="py-4 px-4">Canal</th>
@@ -364,7 +412,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <tbody className="divide-y divide-white/[0.05] text-base">
               {filteredRecords.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-[#86868B] text-base">
+                  <td colSpan={5} className="py-12 text-center text-[#8E8E93] text-base">
                     Sin resultados
                   </td>
                 </tr>
@@ -378,19 +426,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       <span className="font-mono font-bold text-white block">
                         {rec.sunatNumber}
                       </span>
-                      <span className="text-xs text-[#86868B] font-mono">{rec.time}</span>
+                      <span className="text-xs text-[#8E8E93] font-mono">{rec.time}</span>
                     </td>
                     <td className="py-4.5 px-4 text-white font-bold">{rec.client}</td>
                     <td className="py-4.5 px-4 text-[#A1A1A6] font-medium">
                       <span className="inline-flex items-center gap-2">
                         {rec.channel === 'Tienda Física' && <Store className="w-4 h-4 text-white/60" />}
-                        {rec.channel === 'WhatsApp Store' && <MessageCircle className="w-4 h-4 text-[#30D158]" />}
-                        {rec.channel === 'Web' && <Globe className="w-4 h-4 text-apple-blue" />}
-                        {rec.channel === 'B2B Corporativo' && <Building2 className="w-4 h-4 text-[#BF5AF2]" />}
+                        {rec.channel === 'WhatsApp Store' && <MessageCircle className="w-4 h-4 text-white/60" />}
+                        {rec.channel === 'Web' && <Globe className="w-4 h-4 text-white/60" />}
+                        {rec.channel === 'B2B Corporativo' && <Building2 className="w-4 h-4 text-white/60" />}
                         {rec.channel}
                       </span>
                     </td>
-                    <td className="py-4.5 px-4 text-[#86868B] font-medium">{rec.payment}</td>
+                    <td className="py-4.5 px-4 text-[#8E8E93] font-medium">{rec.payment}</td>
                     <td className="py-4.5 px-4 text-right font-display font-extrabold text-lg text-white">
                       S/ {rec.total.toFixed(2)}
                     </td>
@@ -403,7 +451,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Clean Table Footer */}
         <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between gap-4">
-          <span className="text-sm font-medium text-[#86868B]">
+          <span className="text-sm font-medium text-[#8E8E93]">
             {filteredRecords.length} registros
           </span>
 
@@ -411,7 +459,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <GlassButton
               variant="glass"
               size="md"
-              icon={<FileSpreadsheet className="w-4.5 h-4.5 text-apple-emerald" />}
+              icon={<FileSpreadsheet className="w-4.5 h-4.5" />}
               onClick={() => showNotification('Excel exportado')}
             >
               Excel

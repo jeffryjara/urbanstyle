@@ -32,11 +32,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      <aside className="relative w-72 min-w-[288px] max-w-[288px] shrink-0 h-full border-r border-white/[0.06] bg-[#0b0c10] flex flex-col justify-between p-6 hidden lg:flex overflow-hidden z-20">
+      <aside className="relative w-72 min-w-[288px] max-w-[288px] shrink-0 h-full border-r border-white/[0.07] bg-[#080808] flex flex-col justify-between p-6 hidden lg:flex overflow-hidden z-20">
         {/* TOP SECTION: Brand Identity & Primary Views */}
         <div className="relative z-10 flex flex-col">
           {/* Brand Identity: Direct logo without extra containers, rounded corners */}
-          <div className="flex items-center gap-4 pb-7 border-b border-white/[0.06] mb-7 px-1">
+          <div className="flex items-center gap-4 pb-7 border-b border-white/[0.07] mb-7 px-1">
             <img
               src="/logo-icon.png"
               alt="Urban Style"
@@ -53,8 +53,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => onViewChange('dashboard')}
               className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer active:scale-[0.98] ${
                 currentView === 'dashboard'
-                  ? 'bg-apple-blue text-white shadow-apple-glow'
-                  : 'text-[#86868B] hover:text-white hover:bg-white/[0.04]'
+                  ? 'bg-white text-black shadow-lg'
+                  : 'text-[#8E8E93] hover:text-white hover:bg-white/[0.05]'
               }`}
             >
               <span className="flex items-center gap-3.5">
@@ -62,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span>Dashboard</span>
               </span>
               {currentView === 'dashboard' && (
-                <span className="w-2 h-2 rounded-full bg-white" />
+                <span className="w-2 h-2 rounded-full bg-black" />
               )}
             </button>
 
@@ -70,16 +70,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => onViewChange('pos')}
               className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer active:scale-[0.98] ${
                 currentView === 'pos'
-                  ? 'bg-apple-blue text-white shadow-apple-glow'
-                  : 'text-[#86868B] hover:text-white hover:bg-white/[0.04]'
+                  ? 'bg-white text-black shadow-lg'
+                  : 'text-[#8E8E93] hover:text-white hover:bg-white/[0.05]'
               }`}
             >
               <span className="flex items-center gap-3.5">
                 <Store className="w-5 h-5" />
-                <span>Terminal POS</span>
+                <span>Catálogo</span>
               </span>
               {currentView === 'pos' && (
-                <span className="w-2 h-2 rounded-full bg-white" />
+                <span className="w-2 h-2 rounded-full bg-black" />
               )}
             </button>
           </nav>
@@ -90,10 +90,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Script Button (Above Inventario) */}
           <button
             onClick={() => setIsScriptOpen(true)}
-            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-[#A1A1A6] hover:text-white bg-white/[0.02] hover:bg-white/[0.06] text-base font-semibold border border-white/[0.05] transition-all duration-300 ease-spring cursor-pointer active:scale-[0.98] group"
+            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-[#A1A1A6] hover:text-white bg-[#111111] hover:bg-[#181818] text-base font-semibold border border-white/[0.06] transition-all duration-300 ease-spring cursor-pointer active:scale-[0.98] group"
           >
             <span className="flex items-center gap-3.5">
-              <Terminal className="w-5 h-5 text-apple-emerald group-hover:scale-110 transition-transform duration-300 ease-spring" />
+              <Terminal className="w-5 h-5 text-white/80 group-hover:text-white transition-colors" />
               <span>Script</span>
             </span>
           </button>
@@ -101,10 +101,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Inventario Button */}
           <button
             onClick={() => setIsStockOpen(true)}
-            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-[#A1A1A6] hover:text-white bg-white/[0.02] hover:bg-white/[0.06] text-base font-semibold border border-white/[0.05] transition-all duration-300 ease-spring cursor-pointer active:scale-[0.98] group"
+            className="w-full flex items-center justify-between px-5 py-4 rounded-2xl text-[#A1A1A6] hover:text-white bg-[#111111] hover:bg-[#181818] text-base font-semibold border border-white/[0.06] transition-all duration-300 ease-spring cursor-pointer active:scale-[0.98] group"
           >
             <span className="flex items-center gap-3.5">
-              <Package className="w-5 h-5 text-apple-blueLight group-hover:scale-110 transition-transform duration-300 ease-spring" />
+              <Package className="w-5 h-5 text-white/80 group-hover:text-white transition-colors" />
               <span>Inventario</span>
             </span>
           </button>
@@ -112,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Divider Line Below Inventario */}
           <div className="pt-3.5 border-t border-white/[0.08]">
             {/* User Profile Card */}
-            <div className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] transition-all duration-300 ease-spring">
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-[#111111] border border-white/[0.06] hover:bg-[#161616] transition-all duration-300 ease-spring">
               <div className="flex items-center gap-3.5 min-w-0">
                 <img
                   src={user.avatarUrl}
@@ -123,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span className="text-base font-bold text-white truncate leading-tight">
                     {user.name.split(' ')[0]}
                   </span>
-                  <span className="text-xs text-[#86868B] truncate leading-tight mt-0.5 font-medium">
+                  <span className="text-xs text-[#8E8E93] truncate leading-tight mt-0.5 font-medium">
                     {user.role === 'gerencia' ? 'Gerencia' : 'Ventas'}
                   </span>
                 </div>
@@ -132,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={onLogout}
                 title="Cerrar Sesión"
-                className="p-2.5 rounded-xl text-[#86868B] hover:text-[#FF453A] hover:bg-red-500/10 transition-all duration-300 ease-spring cursor-pointer shrink-0 ml-1 active:scale-95"
+                className="p-2.5 rounded-xl text-[#8E8E93] hover:text-white hover:bg-white/10 transition-all duration-300 ease-spring cursor-pointer shrink-0 ml-1 active:scale-95"
               >
                 <LogOut className="w-5 h-5" />
               </button>

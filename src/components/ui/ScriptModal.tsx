@@ -20,6 +20,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { GlassButton } from './GlassButton';
+import { Toast, useToastNotification } from './Toast';
 import { executeSQL } from '../../utils/sqlEngine';
 import { CLASSMATE_SCRIPTS } from '../../data/classmateScripts';
 import { SQL_PRESETS, type SqlPreset } from '../../data/sqlPresets';
@@ -53,19 +54,33 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
   const [selectedScriptId, setSelectedScriptId] = useState<string>('script-01');
   const [copiedScript, setCopiedScript] = useState<boolean>(false);
 
+  const { toast, showNotification, clearToast } = useToastNotification();
+
   // Current active preset object
   const activePreset = SQL_PRESETS.find((p) => p.id === selectedPresetId) || SQL_PRESETS[0];
 
   // Execute initial query when opened
   useEffect(() => {
     if (isOpen && !queryResult) {
-      handleRunQuery(SQL_PRESETS[0].sql);
+      handleRunQuery(SQL_PRESETS[0].sql, false);
     }
   }, [isOpen]);
 
+  // Close modal when pressing Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
-  const handleRunQuery = (customQuery?: string) => {
+  const handleRunQuery = (customQuery?: string, notify = true) => {
     const q = customQuery !== undefined ? customQuery : sqlQuery;
     setIsExecuting(true);
 
@@ -73,6 +88,14 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
       const res = executeSQL(q);
       setQueryResult(res);
       setIsExecuting(false);
+
+      if (notify) {
+        if (res.isError) {
+          showNotification('Restricción SQL activada');
+        } else {
+          showNotification(`Consulta ejecutada (${res.rowCount} filas)`);
+        }
+      }
 
       if (res.operation === 'INSERT' || res.operation === 'UPDATE' || res.operation === 'DELETE' || res.operation === 'EXEC') {
         if (onDatabaseMutated) onDatabaseMutated();
@@ -83,11 +106,12 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
   const handleSelectPreset = (preset: SqlPreset) => {
     setSelectedPresetId(preset.id);
     setSqlQuery(preset.sql);
-    handleRunQuery(preset.sql);
+    handleRunQuery(preset.sql, true);
   };
 
   const handleCopy = (text: string, isScript = false) => {
     navigator.clipboard.writeText(text);
+    showNotification('Código copiado al portapapeles');
     if (isScript) {
       setCopiedScript(true);
       setTimeout(() => setCopiedScript(false), 2000);
@@ -109,6 +133,7 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
     navigator.clipboard.writeText(text);
     setCopiedDocenteGuide(true);
+    showNotification('Guion docente copiado');
     setTimeout(() => setCopiedDocenteGuide(false), 2200);
   };
 
@@ -117,7 +142,7 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
   const handleLoadScriptToConsole = (sqlSnippet: string) => {
     setSqlQuery(sqlSnippet);
     setActiveTab('console');
-    handleRunQuery(sqlSnippet);
+    handleRunQuery(sqlSnippet, true);
   };
 
   return (
@@ -125,8 +150,9 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-xl animate-fade-in"
       onClick={onClose}
     >
+      <Toast message={toast} onClose={clearToast} />
       <div
-        className="relative w-full max-w-6xl h-[90vh] flex flex-col rounded-[34px] bg-[#0a0a0a] border border-white/[0.09] shadow-[0_40px_100px_rgba(0,0,0,0.95)] overflow-hidden animate-scale-in"
+        className="relative w-full max-w-6xl h-[90vh] flex flex-col rounded-[34px] bg-[#0a0a0a] border border-white/[0.09] shadow-[0_40px_100px_rgba(0,0,0,0.95)] overflow-hidden animate-modal-bounce"
         onClick={(e) => e.stopPropagation()}
       >
         {/* MINIMALIST MODAL HEADER */}

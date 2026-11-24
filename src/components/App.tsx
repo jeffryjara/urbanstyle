@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Login } from './Login';
 import { Sidebar } from './layout/Sidebar';
 import { Dashboard } from './Dashboard';
@@ -41,6 +41,13 @@ export const App: React.FC = () => {
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [auditRecords, setAuditRecords] = useState<AuditRecord[]>(INITIAL_AUDIT_RECORDS);
 
+  // Apple Rubber-Band Overscroll State
+  const mainScrollRef = useRef<HTMLElement | null>(null);
+  const [overscrollY, setOverscrollY] = useState<number>(0);
+  const [isSnappingBack, setIsSnappingBack] = useState<boolean>(false);
+  const snapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+
   useEffect(() => {
     // 1. Initialize in-memory SQL database
     initSqlEngine(INITIAL_PRODUCTS, INITIAL_AUDIT_RECORDS);
@@ -51,8 +58,78 @@ export const App: React.FC = () => {
       setAuditRecords([...state.auditRecords]);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
+    };
   }, []);
+
+  // Reset scroll position when switching views so top-to-bottom bounce is crisp
+  const handleViewChange = (nextView: 'dashboard' | 'pos') => {
+    if (nextView === currentView) return;
+    setCurrentView(nextView);
+    setOverscrollY(0);
+    if (mainScrollRef.current) {
+      mainScrollRef.current.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    }
+  };
+
+  // Apple macOS/iOS Rubber-Band Overscroll Handler (Wheel)
+  const handleWheel = (e: React.WheelEvent<HTMLElement>) => {
+    const el = mainScrollRef.current;
+    if (!el) return;
+
+    const atTop = el.scrollTop <= 1;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+
+    if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
+      setIsSnappingBack(false);
+      setOverscrollY((prev) => {
+        // Logarithmic resistance as displacement grows
+        const resistance = Math.max(0.08, 0.34 - Math.abs(prev) / 170);
+        const next = prev - e.deltaY * resistance;
+        return Math.max(-52, Math.min(52, next));
+      });
+
+      if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
+      snapTimerRef.current = setTimeout(() => {
+        setIsSnappingBack(true);
+        setOverscrollY(0);
+      }, 95);
+    } else if (overscrollY !== 0) {
+      setIsSnappingBack(true);
+      setOverscrollY(0);
+    }
+  };
+
+  // Touch Overscroll Support for Trackpads / Mobile
+  const handleTouchStart = (e: React.TouchEvent<HTMLElement>) => {
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLElement>) => {
+    const el = mainScrollRef.current;
+    if (!el || touchStartYRef.current === null) return;
+
+    const currentY = e.touches[0].clientY;
+    const deltaY = currentY - touchStartYRef.current;
+    const atTop = el.scrollTop <= 1;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+
+    if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {
+      setIsSnappingBack(false);
+      const damped = Math.max(-56, Math.min(56, deltaY * 0.32));
+      setOverscrollY(damped);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    touchStartYRef.current = null;
+    if (overscrollY !== 0) {
+      setIsSnappingBack(true);
+      setOverscrollY(0);
+    }
+  };
 
   const handleAddSale = (newRecord: AuditRecord) => {
     const updated = [newRecord, ...auditRecords];
@@ -72,7 +149,6 @@ export const App: React.FC = () => {
     } else {
       setCurrentView('dashboard');
     }
-    // Trigger entry splash animation with Urban Style logo for brief seconds
     setShowSplash(true);
   };
 
@@ -84,18 +160,15 @@ export const App: React.FC = () => {
     }
     setCurrentUser(null);
     setShowSplash(false);
-    // Replace browser history state so back button cannot return to protected dashboard
     if (typeof window !== 'undefined' && window.history) {
       window.history.replaceState(null, '', window.location.pathname);
     }
   };
 
-  // If user is not authenticated, show Login immediately without splash animation
   if (!currentUser) {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
 
-  // If splash animation is active, display the Apple-style entry splash screen
   if (showSplash) {
     return <SplashScreen onFinish={() => setShowSplash(false)} />;
   }
@@ -114,8 +187,8 @@ export const App: React.FC = () => {
         </div>
         <div className="flex items-center gap-2.5">
           <button
-            onClick={() => setCurrentView(currentView === 'dashboard' ? 'pos' : 'dashboard')}
-            className="px-4 py-2 rounded-xl bg-white text-black text-sm font-bold transition-all duration-300 ease-spring"
+            onClick={() => handleViewChange(currentView === 'dashboard' ? 'pos' : 'dashboard')}
+            className="px-4 py-2 rounded-xl bg-[#007AFF] text-white text-sm font-bold transition-all duration-300 ease-spring active:scale-95"
           >
             {currentView === 'dashboard' ? 'Catálogo' : 'Dashboard'}
           </button>
@@ -135,27 +208,45 @@ export const App: React.FC = () => {
           user={currentUser}
           onLogout={handleLogout}
           currentView={currentView}
-          onViewChange={setCurrentView}
+          onViewChange={handleViewChange}
           products={products}
         />
 
-        <main className="flex-1 h-full overflow-y-auto custom-scrollbar p-6 lg:p-10 xl:p-12">
-          <div className="max-w-[1600px] mx-auto">
-            {currentView === 'dashboard' ? (
-              <Dashboard
-                user={currentUser}
-                onNavigateToPos={() => setCurrentView('pos')}
-                auditRecords={auditRecords}
-                products={products}
-              />
-            ) : (
-              <Pos
-                user={currentUser}
-                onNavigateToDashboard={() => setCurrentView('dashboard')}
-                products={products}
-                onAddSale={handleAddSale}
-              />
-            )}
+        <main
+          ref={mainScrollRef}
+          onWheel={handleWheel}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="flex-1 h-full overflow-y-auto custom-scrollbar p-6 lg:p-10 xl:p-12"
+        >
+          {/* Apple Rubber-Band Overscroll Container + Top-to-Bottom Section Bounce */}
+          <div
+            style={{
+              transform: `translate3d(0, ${overscrollY}px, 0)`,
+              transition: isSnappingBack
+                ? 'transform 0.55s cubic-bezier(0.22, 1.38, 0.36, 1)'
+                : 'transform 0.06s linear',
+            }}
+            className="max-w-[1600px] mx-auto will-change-transform"
+          >
+            <div key={currentView} className="animate-section-drop">
+              {currentView === 'dashboard' ? (
+                <Dashboard
+                  user={currentUser}
+                  onNavigateToPos={() => handleViewChange('pos')}
+                  auditRecords={auditRecords}
+                  products={products}
+                />
+              ) : (
+                <Pos
+                  user={currentUser}
+                  onNavigateToDashboard={() => handleViewChange('dashboard')}
+                  products={products}
+                  onAddSale={handleAddSale}
+                />
+              )}
+            </div>
           </div>
         </main>
       </div>

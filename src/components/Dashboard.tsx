@@ -18,7 +18,7 @@ import {
 import { GlassCard } from './ui/GlassCard';
 import { GlassButton } from './ui/GlassButton';
 import { Badge } from './ui/Badge';
-import { Toast } from './ui/Toast';
+import { Toast, useToastNotification } from './ui/Toast';
 import { SegmentedControl, type SegmentOption } from './ui/SegmentedControl';
 import type { UserSession, AuditRecord, Product } from '../types';
 import { INITIAL_AUDIT_RECORDS, MONTHLY_SALES_DATA } from '../data/initialData';
@@ -43,12 +43,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [docFilter, setDocFilter] = useState<DocFilter>('todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredMonth, setHoveredMonth] = useState<string | null>(null);
-  const [notification, setNotification] = useState<string | null>(null);
-
-  const showNotification = (msg: string) => {
-    setNotification(msg);
-    setTimeout(() => setNotification(null), 3000);
-  };
+  const { toast, showNotification, clearToast } = useToastNotification();
 
   const timeframeOptions: SegmentOption<Timeframe>[] = [
     { id: 'hoy', label: 'Hoy' },
@@ -96,8 +91,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="space-y-8 pb-8">
-      {/* Toast Notification */}
-      <Toast message={notification} onClose={() => setNotification(null)} />
+      {/* Centered Pill Toast Notification with x2/x3 Counter */}
+      <Toast message={toast} onClose={clearToast} />
 
       {/* Minimalist Oversized Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 stagger-1">
@@ -109,14 +104,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <SegmentedControl
             options={timeframeOptions}
             value={timeframe}
-            onChange={setTimeframe}
+            onChange={(val) => {
+              setTimeframe(val);
+              showNotification(`Vista filtrada: ${val.toUpperCase()}`);
+            }}
             size="md"
           />
           <GlassButton
             variant="glass"
             size="md"
             icon={<Download className="w-4.5 h-4.5" />}
-            onClick={() => showNotification('Reporte exportado')}
+            onClick={() => showNotification('Reporte BI exportado')}
           >
             Exportar
           </GlassButton>
@@ -129,7 +127,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <GlassCard hoverEffect className="flex flex-col justify-between min-h-[210px]">
           <div className="flex justify-between items-center">
             <span className="text-base font-semibold text-[#8E8E93]">Ingresos</span>
-            <Badge variant="neutral" icon={<ArrowUpRight className="w-4 h-4" />}>
+            <Badge variant="neutral" icon={<ArrowUpRight className="w-4 h-4 text-[#007AFF]" />}>
               {kpiData.change}
             </Badge>
           </div>
@@ -147,7 +145,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
             <div className="w-full h-2.5 bg-white/[0.08] rounded-full overflow-hidden">
               <div
-                className="h-full bg-white rounded-full transition-all duration-700 ease-spring"
+                className="h-full bg-[#007AFF] rounded-full transition-all duration-700 ease-spring"
                 style={{ width: kpiData.metaPct }}
               />
             </div>
@@ -158,7 +156,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <GlassCard hoverEffect className="flex flex-col justify-between min-h-[210px]">
           <div className="flex justify-between items-center">
             <span className="text-base font-semibold text-[#8E8E93]">Más Vendido</span>
-            <span className="text-sm font-bold text-white">Ultraboost 22</span>
+            <span className="text-sm font-bold text-[#007AFF]">Ultraboost 22</span>
           </div>
 
           <div className="my-4 flex items-center justify-between gap-4">
@@ -203,11 +201,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="space-y-2.5">
             <div className="w-full h-3 bg-white/[0.08] rounded-full overflow-hidden flex gap-1">
               <div
-                className="h-full bg-white rounded-full transition-all duration-700 ease-spring"
+                className="h-full bg-[#007AFF] rounded-full transition-all duration-700 ease-spring"
                 style={{ width: `${kpiData.digitalPct}%` }}
               />
               <div
-                className="h-full bg-[#48484A] rounded-full transition-all duration-700 ease-spring"
+                className="h-full bg-[#3A3A3C] rounded-full transition-all duration-700 ease-spring"
                 style={{ width: `${kpiData.storePct}%` }}
               />
             </div>
@@ -232,7 +230,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             <div className="flex items-center gap-6 text-sm font-bold">
               <span className="flex items-center gap-2.5 text-white">
-                <span className="w-3.5 h-3.5 rounded-[4px] bg-white" /> Digital
+                <span className="w-3.5 h-3.5 rounded-[4px] bg-[#007AFF]" /> Digital
               </span>
               <span className="flex items-center gap-2.5 text-[#8E8E93]">
                 <span className="w-3.5 h-3.5 rounded-[4px] bg-[#3A3A3C]" /> Tienda
@@ -274,6 +272,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     key={item.month}
                     onMouseEnter={() => setHoveredMonth(item.month)}
                     onMouseLeave={() => setHoveredMonth(null)}
+                    onClick={() => showNotification(`${item.month}: S/ ${item.total.toLocaleString()}`)}
                     className="relative z-10 flex-1 flex flex-col items-center h-full justify-end cursor-pointer group"
                   >
                     {/* Detailed Floating Popover on Hover */}
@@ -302,16 +301,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       {/* Store Bar (Neutral Ash Gray) */}
                       <div
                         className={`w-1/2 max-w-[20px] rounded-t-lg transition-all duration-500 ease-spring ${
-                          isHovered ? 'bg-[#636366]' : 'bg-[#3A3A3C]'
+                          isHovered ? 'bg-[#52525B]' : 'bg-[#3A3A3C]'
                         }`}
                         style={{ height: `${storeHeight}%` }}
                       />
-                      {/* Digital Bar (Pure High-Contrast White) */}
+                      {/* Digital Bar (Solid Blue Accent) */}
                       <div
                         className={`w-1/2 max-w-[20px] rounded-t-lg transition-all duration-500 ease-spring ${
-                          isHovered
-                            ? 'bg-white shadow-[0_0_20px_rgba(255,255,255,0.35)]'
-                            : 'bg-[#EDEDEF]'
+                          isHovered ? 'bg-[#268FFF]' : 'bg-[#007AFF]'
                         }`}
                         style={{ height: `${digitalHeight}%` }}
                       />

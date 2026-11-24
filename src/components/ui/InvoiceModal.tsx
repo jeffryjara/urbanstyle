@@ -46,7 +46,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
   return (
     <ModalPortal isOpen={isOpen} onClose={onClose}>
       {/* On-Screen Minimalist Monochrome Modal Container */}
-      <div className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/[0.09] rounded-[34px] p-7 md:p-9 shadow-[0_40px_100px_rgba(0,0,0,0.95)] overflow-hidden text-[#F5F5F7] animate-scale-in">
+      <div className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/[0.09] rounded-[34px] p-7 md:p-9 shadow-[0_40px_100px_rgba(0,0,0,0.95)] overflow-hidden text-[#F5F5F7] animate-modal-bounce">
         {/* Modal Top Header Bar - hidden on print */}
         <div className="flex items-center justify-between pb-5 border-b border-white/[0.08] no-print">
           <div>

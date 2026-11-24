@@ -21,7 +21,7 @@ import { GlassButton } from './ui/GlassButton';
 import { Badge } from './ui/Badge';
 import { InvoiceModal } from './ui/InvoiceModal';
 import { EditCustomerModal } from './ui/EditCustomerModal';
-import { Toast } from './ui/Toast';
+import { Toast, useToastNotification } from './ui/Toast';
 import type { UserSession, Product, CartItem, PaymentMethod, AuditRecord } from '../types';
 import { INITIAL_PRODUCTS } from '../data/initialData';
 
@@ -50,15 +50,15 @@ export const Pos: React.FC<PosProps> = ({
     return initial;
   });
 
-  // Cart State (Initialized with 2 items to match Screenshot 3)
+  // Cart State
   const [cart, setCart] = useState<CartItem[]>([
     {
-      product: INITIAL_PRODUCTS[0], // Adidas Ultraboost
+      product: INITIAL_PRODUCTS[0],
       selectedSize: 42,
       quantity: 1,
     },
     {
-      product: INITIAL_PRODUCTS[1], // Nike Air Max 270
+      product: INITIAL_PRODUCTS[1],
       selectedSize: 40,
       quantity: 1,
     },
@@ -71,12 +71,7 @@ export const Pos: React.FC<PosProps> = ({
   const [orderNumber, setOrderNumber] = useState('#ORD-8492');
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [isEditCustomerOpen, setIsEditCustomerOpen] = useState(false);
-  const [notification, setNotification] = useState<string | null>(null);
-
-  const showNotification = (msg: string) => {
-    setNotification(msg);
-    setTimeout(() => setNotification(null), 2500);
-  };
+  const { toast, showNotification, clearToast } = useToastNotification();
 
   // Filter products
   const filteredProducts = products.filter((product) => {
@@ -117,6 +112,7 @@ export const Pos: React.FC<PosProps> = ({
 
   const handleSelectSize = (productId: string, size: number) => {
     setSelectedSizes((prev) => ({ ...prev, [productId]: size }));
+    showNotification(`Talla ${size} seleccionada`);
   };
 
   const handleAddToCart = (product: Product) => {
@@ -131,13 +127,13 @@ export const Pos: React.FC<PosProps> = ({
         const updated = [...prev];
         if (updated[existingIndex].quantity < product.stock) {
           updated[existingIndex].quantity += 1;
-          showNotification(`+1 ${product.name} (Talla ${size})`);
+          showNotification(`${product.name} (Talla ${size}) agregado`);
         } else {
           showNotification(`Stock máximo alcanzado (${product.stock} disp.)`);
         }
         return updated;
       } else {
-        showNotification(`${product.name} agregado a la orden`);
+        showNotification(`${product.name} (Talla ${size}) agregado`);
         return [...prev, { product, selectedSize: size, quantity: 1 }];
       }
     });
@@ -153,6 +149,11 @@ export const Pos: React.FC<PosProps> = ({
               showNotification(`Stock máximo: ${item.product.stock} unidades`);
               return item;
             }
+            if (delta > 0) {
+              showNotification(`${item.product.name} (Talla ${size}) agregado`);
+            } else if (newQty > 0) {
+              showNotification(`${item.product.name} actualizado`);
+            }
             return { ...item, quantity: newQty };
           }
           return item;
@@ -163,6 +164,7 @@ export const Pos: React.FC<PosProps> = ({
 
   const handleRemoveItem = (productId: string, size: number) => {
     setCart((prev) => prev.filter((i) => !(i.product.id === productId && i.selectedSize === size)));
+    showNotification('Artículo eliminado de la orden');
   };
 
   // Financial Calculations
@@ -172,7 +174,7 @@ export const Pos: React.FC<PosProps> = ({
 
   const handleProcessSale = () => {
     if (cart.length === 0) {
-      showNotification('La orden está vacía. Seleccione calzado para cobrar.');
+      showNotification('La orden está vacía');
       return;
     }
 
@@ -181,10 +183,10 @@ export const Pos: React.FC<PosProps> = ({
         particleCount: 70,
         spread: 60,
         origin: { y: 0.7 },
-        colors: ['#007AFF', '#30D158', '#58A6FF', '#ffffff'],
+        colors: ['#007AFF', '#ffffff', '#A1A1A6'],
       });
     } catch {
-      // ignore confetti errors in SSR or restricted environments
+      // ignore
     }
 
     if (onAddSale) {
@@ -210,13 +212,13 @@ export const Pos: React.FC<PosProps> = ({
     const currentNum = parseInt(orderNumber.replace('#ORD-', ''), 10) || 8492;
     setOrderNumber(`#ORD-${currentNum + 1}`);
     setCart([]);
-    showNotification('Venta completada');
+    showNotification('Venta completada con éxito');
   };
 
   return (
     <div className="space-y-8 pb-8">
-      {/* Toast Notification */}
-      <Toast message={notification} onClose={() => setNotification(null)} />
+      {/* Centered Pill Toast Notification with x2/x3 Counter */}
+      <Toast message={toast} onClose={clearToast} />
 
       {/* Main POS Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -236,7 +238,7 @@ export const Pos: React.FC<PosProps> = ({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Buscar calzado..."
-                  className="w-full pl-14 pr-6 py-3.5 rounded-full bg-[#0c0c0c] border border-white/[0.09] text-base font-medium text-white placeholder-[#636366] focus:outline-none focus:border-white/35 transition-all duration-300 ease-spring"
+                  className="w-full pl-14 pr-6 py-3.5 rounded-full bg-[#0c0c0c] border border-white/[0.09] text-base font-medium text-white placeholder-[#636366] focus:outline-none focus:border-[#007AFF] transition-all duration-300 ease-spring"
                 />
               </div>
             </div>
@@ -255,7 +257,10 @@ export const Pos: React.FC<PosProps> = ({
               ].map((pill) => (
                 <button
                   key={pill.id}
-                  onClick={() => setSelectedFilter(pill.id as FilterCategory)}
+                  onClick={() => {
+                    setSelectedFilter(pill.id as FilterCategory);
+                    showNotification(`Filtro: ${pill.label}`);
+                  }}
                   className={`px-6 py-3 rounded-full text-base font-bold whitespace-nowrap transition-all duration-300 ease-spring cursor-pointer active:scale-95 ${
                     selectedFilter === pill.id
                       ? 'bg-white text-black shadow-lg'
@@ -327,7 +332,7 @@ export const Pos: React.FC<PosProps> = ({
                       </div>
                     </div>
 
-                    {/* Large Price & Add Button */}
+                    {/* Large Price & Solid Blue Add Button */}
                     <div className="pt-4 border-t border-white/[0.07] flex items-center justify-between">
                       <span className="text-2xl font-extrabold font-display text-white tracking-tight">
                         S/ {product.price.toFixed(0)}
@@ -370,6 +375,7 @@ export const Pos: React.FC<PosProps> = ({
                   setDocumentType('Boleta');
                   setClientName('Consumidor Final');
                   setClientDoc('00000000');
+                  showNotification('Comprobante: Boleta');
                 }}
                 className={`py-2.5 rounded-xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer flex items-center justify-center gap-2 ${
                   documentType === 'Boleta'
@@ -384,6 +390,7 @@ export const Pos: React.FC<PosProps> = ({
                   setDocumentType('Factura');
                   setClientName('Inversiones Deportivas S.A.C.');
                   setClientDoc('20608941231');
+                  showNotification('Comprobante: Factura');
                 }}
                 className={`py-2.5 rounded-xl text-base font-bold transition-all duration-300 ease-spring cursor-pointer flex items-center justify-center gap-2 ${
                   documentType === 'Factura'
@@ -409,7 +416,7 @@ export const Pos: React.FC<PosProps> = ({
               <button
                 type="button"
                 onClick={() => setIsEditCustomerOpen(true)}
-                className="text-sm font-bold text-white hover:bg-white/15 px-3.5 py-2 rounded-xl bg-white/[0.08] transition-all duration-300 ease-spring cursor-pointer shrink-0"
+                className="text-sm font-bold text-[#007AFF] hover:text-white hover:bg-[#007AFF] px-3.5 py-2 rounded-xl bg-[#007AFF]/12 transition-all duration-300 ease-spring cursor-pointer shrink-0 active:scale-95"
               >
                 Cambiar
               </button>
@@ -483,7 +490,10 @@ export const Pos: React.FC<PosProps> = ({
                 return (
                   <button
                     key={m.id}
-                    onClick={() => setPaymentMethod(m.id as PaymentMethod)}
+                    onClick={() => {
+                      setPaymentMethod(m.id as PaymentMethod);
+                      showNotification(`Pago con ${m.label}`);
+                    }}
                     className={`p-3.5 rounded-2xl border text-base font-bold flex items-center justify-between transition-all duration-300 ease-spring cursor-pointer active:scale-95 ${
                       isSelected
                         ? 'bg-white text-black border-white shadow-md'

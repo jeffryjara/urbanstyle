@@ -49,7 +49,7 @@ export const StockModal: React.FC<StockModalProps> = ({ isOpen, onClose, product
 
   return (
     <ModalPortal isOpen={isOpen} onClose={onClose}>
-      <div className="relative w-full max-w-6xl h-[88vh] max-h-[900px] bg-[#0a0a0a] border border-white/[0.09] rounded-[34px] p-7 md:p-10 shadow-[0_40px_100px_rgba(0,0,0,0.95)] overflow-hidden animate-scale-in text-[#F5F5F7] flex flex-col justify-between">
+      <div className="relative w-full max-w-6xl h-[88vh] max-h-[900px] bg-[#0a0a0a] border border-white/[0.09] rounded-[34px] p-7 md:p-10 shadow-[0_40px_100px_rgba(0,0,0,0.95)] overflow-hidden animate-modal-bounce text-[#F5F5F7] flex flex-col justify-between">
         {/* Top Minimalist Header */}
         <div className="flex items-center justify-between pb-6 border-b border-white/[0.08] relative z-10 shrink-0">
           <h3 className="text-3xl md:text-4xl font-extrabold font-display text-white tracking-tight">

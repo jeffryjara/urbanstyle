@@ -29,19 +29,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
       <div className="absolute w-[600px] h-[600px] rounded-full bg-apple-blue/20 blur-[180px] pointer-events-none animate-pulse-subtle" />
       <div className="absolute w-[500px] h-[500px] rounded-full bg-apple-purple/15 blur-[200px] pointer-events-none -bottom-28" />
 
-      {/* Center Showcase: Only the large prominent Logo & Brand Name (sin barras ni texto de carga) */}
+      {/* Center Showcase: Only the large prominent Logo & Brand Name (sin contenedores ni box-shadow) */}
       <div className="relative z-10 flex flex-col items-center text-center space-y-6 animate-scale-in">
-        {/* Large Prominent Logo Container */}
-        <div className="relative">
-          <div className="absolute -inset-4 rounded-[52px] bg-gradient-to-r from-apple-blue via-apple-blueLight to-apple-purple opacity-40 blur-2xl" />
-          <div className="relative w-48 h-48 md:w-60 md:h-60 rounded-[40px] md:rounded-[48px] overflow-hidden border border-white/20 bg-[#0a0b12]/95 backdrop-blur-3xl p-4 shadow-[0_25px_80px_rgba(0,122,255,0.35)] flex items-center justify-center">
-            <img
-              src="/logo-icon.png"
-              alt="Urban Style"
-              className="w-full h-full object-contain rounded-2xl md:rounded-3xl drop-shadow-md"
-            />
-          </div>
-        </div>
+        {/* Logo directo sin contenedores adicionales ni box-shadow */}
+        <img
+          src="/logo-icon.png"
+          alt="Urban Style"
+          className="w-44 h-44 md:w-56 md:h-56 rounded-[36px] md:rounded-[44px] object-contain"
+        />
 
         {/* Brand Name & Tagline */}
         <div className="space-y-1">

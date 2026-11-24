@@ -231,7 +231,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           {/* Form with noValidate to disable generic browser popups */}
           <form noValidate onSubmit={handleSubmit} className="space-y-5">
             {/* Input: Correo electrónico con selector Chevron */}
-            <div className="relative account-dropdown-container">
+            <div className={`relative account-dropdown-container ${showEmailMenu ? 'z-40' : 'z-20'}`}>
               <label className="block text-sm font-semibold text-[#A1A1A6] mb-2 flex items-center justify-between">
                 <span>Correo electrónico</span>
                 <button
@@ -280,7 +280,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
               {/* Dropdown Menu for Email */}
               {showEmailMenu && (
-                <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl bg-[#11121b]/98 border border-white/15 backdrop-blur-3xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-30 animate-scale-in">
+                <div className="super-blur-dropdown absolute left-0 right-0 top-full mt-2 rounded-2xl p-2 z-50 animate-scale-in">
                   <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-[#86868B] border-b border-white/5 mb-1">
                     Seleccionar Cuenta:
                   </div>
@@ -292,7 +292,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                       className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-colors cursor-pointer ${
                         email === acc.email
                           ? 'bg-apple-blue/20 text-white border border-apple-blue/30'
-                          : 'hover:bg-white/5 text-[#A1A1A6]'
+                          : 'hover:bg-white/10 text-[#A1A1A6]'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
@@ -331,7 +331,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             </div>
 
             {/* Input: Contraseña con selector Chevron */}
-            <div className="relative account-dropdown-container">
+            <div className={`relative account-dropdown-container ${showPasswordMenu ? 'z-40' : 'z-10'}`}>
               <label className="block text-sm font-semibold text-[#A1A1A6] mb-2 flex items-center justify-between">
                 <span>Contraseña</span>
                 <button
@@ -390,7 +390,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
               {/* Dropdown Menu for Password */}
               {showPasswordMenu && (
-                <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl bg-[#11121b]/98 border border-white/15 backdrop-blur-3xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-30 animate-scale-in">
+                <div className="super-blur-dropdown absolute left-0 right-0 top-full mt-2 rounded-2xl p-2 z-50 animate-scale-in">
                   <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-[#86868B] border-b border-white/5 mb-1">
                     Seleccionar Contraseña:
                   </div>
@@ -402,7 +402,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                       className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left transition-colors cursor-pointer ${
                         password === acc.password
                           ? 'bg-apple-blue/20 text-white border border-apple-blue/30'
-                          : 'hover:bg-white/5 text-[#A1A1A6]'
+                          : 'hover:bg-white/10 text-[#A1A1A6]'
                       }`}
                     >
                       <div className="flex flex-col">

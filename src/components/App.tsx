@@ -9,11 +9,33 @@ import { INITIAL_USERS, INITIAL_PRODUCTS, INITIAL_AUDIT_RECORDS } from '../data/
 import { initSqlEngine, subscribeToDatabase, syncSqlEngineState } from '../utils/sqlEngine';
 import { LogOut } from 'lucide-react';
 
+// Helper to read persisted session synchronously from localStorage on initial render
+const getInitialSession = (): UserSession | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem('urbanstyle_session');
+    if (stored) {
+      const parsed = JSON.parse(stored) as UserSession;
+      if (parsed && parsed.email) {
+        return parsed;
+      }
+    }
+  } catch {
+    // Fallback: stay on login
+  }
+  return null;
+};
+
 export const App: React.FC = () => {
-  // Session state: null = login screen, or active UserSession
-  const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'pos'>('dashboard');
-  const [showSplash, setShowSplash] = useState<boolean>(false);
+  // Session state: read synchronously from localStorage to eliminate any flash of login on reload
+  const [currentUser, setCurrentUser] = useState<UserSession | null>(getInitialSession);
+  const [currentView, setCurrentView] = useState<'dashboard' | 'pos'>(() => {
+    const session = getInitialSession();
+    return session?.role === 'ventas' ? 'pos' : 'dashboard';
+  });
+  const [showSplash, setShowSplash] = useState<boolean>(() => {
+    return !!getInitialSession();
+  });
 
   // Reactive database state connected to SQL Engine
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
@@ -28,21 +50,6 @@ export const App: React.FC = () => {
       setProducts([...state.products]);
       setAuditRecords([...state.auditRecords]);
     });
-
-    // 3. Restore persisted session from localStorage if exists
-    try {
-      const stored = localStorage.getItem('urbanstyle_session');
-      if (stored) {
-        const parsed = JSON.parse(stored) as UserSession;
-        if (parsed && parsed.email) {
-          setCurrentUser(parsed);
-          setCurrentView(parsed.role === 'ventas' ? 'pos' : 'dashboard');
-          setShowSplash(true); // Entry animation with logo for few seconds
-        }
-      }
-    } catch {
-      // Fallback: stay on login
-    }
 
     return () => unsubscribe();
   }, []);
@@ -90,7 +97,7 @@ export const App: React.FC = () => {
 
   // If splash animation is active, display the Apple-style entry splash screen
   if (showSplash) {
-    return <SplashScreen onFinish={() => setShowSplash(false)} user={currentUser} />;
+    return <SplashScreen onFinish={() => setShowSplash(false)} />;
   }
 
   return (

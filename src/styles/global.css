@@ -106,11 +106,17 @@
 
   /* Center Pill Toast Super-Blur Surface */
   .toast-pill-blur {
-    background: rgba(18, 18, 22, 0.86);
-    backdrop-filter: blur(52px) saturate(210%);
-    -webkit-backdrop-filter: blur(52px) saturate(210%);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 28px 70px -8px rgba(0, 0, 0, 0.92), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+    background: rgba(16, 16, 20, 0.65) !important;
+    backdrop-filter: blur(36px) saturate(210%) brightness(110%) !important;
+    -webkit-backdrop-filter: blur(36px) saturate(210%) brightness(110%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    box-shadow: 0 24px 60px -8px rgba(0, 0, 0, 0.88), 0 0 0 1px rgba(255, 255, 255, 0.08) inset, 0 1px 0 0 rgba(255, 255, 255, 0.32) inset !important;
+  }
+
+  @supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+    .toast-pill-blur {
+      background: rgba(20, 20, 24, 0.95) !important;
+    }
   }
 
   /* Apple Elastic Bounce Keyframes */
@@ -153,29 +159,30 @@
   @keyframes toastPillIn {
     0% {
       opacity: 0;
-      transform: translate(-50%, -36px) scale(0.75);
+      transform: translateY(-36px) scale(0.82);
     }
     60% {
       opacity: 1;
-      transform: translate(-50%, 5px) scale(1.04);
+      transform: translateY(5px) scale(1.03);
     }
-    80% {
-      transform: translate(-50%, -2px) scale(0.985);
+    82% {
+      opacity: 1;
+      transform: translateY(-2px) scale(0.99);
     }
     100% {
       opacity: 1;
-      transform: translate(-50%, 0) scale(1);
+      transform: none;
     }
   }
 
   @keyframes toastPillOut {
     0% {
       opacity: 1;
-      transform: translate(-50%, 0) scale(1);
+      transform: none;
     }
     100% {
       opacity: 0;
-      transform: translate(-50%, -28px) scale(0.82);
+      transform: translateY(-28px) scale(0.84);
     }
   }
 

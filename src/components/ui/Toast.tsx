@@ -123,40 +123,42 @@ export const Toast: React.FC<ToastProps> = ({ message, onClose, count: externalC
   if (!visibleToast || !mounted) return null;
 
   return createPortal(
-    <div
-      className={`fixed top-7 left-1/2 z-[9999] pointer-events-auto select-none ${
-        isExiting ? 'animate-toast-out' : 'animate-toast-in'
-      }`}
-    >
-      <div className="toast-pill-blur flex items-center gap-4 px-6 py-3.5 md:px-7 md:py-4 rounded-full text-white max-w-[92vw] sm:max-w-xl">
-        {/* Solid Accent Check Circle */}
-        <div className="w-8 h-8 rounded-full bg-[#007AFF] flex items-center justify-center shrink-0">
-          <Check className="w-4.5 h-4.5 text-white stroke-[2.8]" />
-        </div>
+    <div className="fixed top-6 inset-x-0 z-[9999] pointer-events-none flex justify-center items-start px-4">
+      <div
+        className={`pointer-events-auto select-none ${
+          isExiting ? 'animate-toast-out' : 'animate-toast-in'
+        }`}
+      >
+        <div className="toast-pill-blur backdrop-blur-2xl backdrop-saturate-200 flex items-center gap-4 px-6 py-3.5 md:px-7 md:py-4 rounded-full text-white max-w-[92vw] sm:max-w-xl">
+          {/* Solid Accent Check Circle */}
+          <div className="w-8 h-8 rounded-full bg-[#007AFF] flex items-center justify-center shrink-0 shadow-[0_0_16px_rgba(0,122,255,0.4)]">
+            <Check className="w-4.5 h-4.5 text-white stroke-[2.8]" />
+          </div>
 
-        {/* Large Pill Text */}
-        <span className="text-base md:text-lg font-bold font-display text-white tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
-          {visibleToast.text}
-        </span>
-
-        {/* Multiplier Counter Badge (x2, x3, x4...) when triggered repeatedly */}
-        {visibleToast.count > 1 && (
-          <span
-            key={visibleToast.key}
-            className="px-3 py-1 rounded-full bg-[#007AFF] text-white text-sm font-extrabold font-mono tracking-tight shrink-0 animate-badge-pop"
-          >
-            x{visibleToast.count}
+          {/* Large Pill Text */}
+          <span className="text-base md:text-lg font-bold font-display text-white tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+            {visibleToast.text}
           </span>
-        )}
 
-        {/* Subtle Close Button */}
-        <button
-          onClick={handleManualClose}
-          className="w-7 h-7 rounded-full bg-white/[0.08] hover:bg-white/[0.16] text-[#A1A1A6] hover:text-white flex items-center justify-center transition-all duration-200 cursor-pointer shrink-0 ml-1 active:scale-90"
-          title="Cerrar"
-        >
-          <X className="w-4 h-4" />
-        </button>
+          {/* Multiplier Counter Badge (x2, x3, x4...) when triggered repeatedly */}
+          {visibleToast.count > 1 && (
+            <span
+              key={visibleToast.key}
+              className="px-3 py-1 rounded-full bg-[#007AFF] text-white text-sm font-extrabold font-mono tracking-tight shrink-0 animate-badge-pop shadow-[0_0_12px_rgba(0,122,255,0.4)]"
+            >
+              x{visibleToast.count}
+            </span>
+          )}
+
+          {/* Subtle Close Button */}
+          <button
+            onClick={handleManualClose}
+            className="w-7 h-7 rounded-full bg-white/[0.08] hover:bg-white/[0.18] text-[#A1A1A6] hover:text-white flex items-center justify-center transition-all duration-200 cursor-pointer shrink-0 ml-1 active:scale-90"
+            title="Cerrar"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>,
     document.body

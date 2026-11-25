@@ -287,6 +287,26 @@ function handleSelect(query: string, startTime: number): QueryResult {
     return filterAndSort(columns, rows, query, startTime, 'SELECT');
   }
 
+  // Handle Usuario table query
+  if (upper.includes('FROM USUARIO') || upper.includes('FROM USUARIOS')) {
+    const columns = ['IdUsuario', 'Empleado', 'NombreUsuario', 'Correo', 'IdRol', 'Rol', 'ClaveHash', 'Activo'];
+    const rows = [
+      [1, 'Idelfonso Ayala', 'iayala', 'gerencia@urbanstyle.pe', 1, 'Gerencia', '0x8F3C92... (SHA-256)', 'ACTIVO'],
+      [2, 'Ana Quispe', 'aquispe', 'ventas@urbanstyle.pe', 2, 'Ventas', '0x4D2A71... (SHA-256)', 'ACTIVO'],
+    ];
+    return filterAndSort(columns, rows, query, startTime, 'SELECT');
+  }
+
+  // Handle Rol table query
+  if (upper.includes('FROM ROL') || upper.includes('FROM ROLES')) {
+    const columns = ['IdRol', 'NombreRol', 'Descripcion', 'NivelAcceso'];
+    const rows = [
+      [1, 'Gerencia', 'Acceso total a métricas, inventario, auditoría y SQL Studio', 'Nivel 1 (Total)'],
+      [2, 'Ventas', 'Acceso restringido a Catálogo POS y registro de ventas', 'Nivel 2 (Operativo)'],
+    ];
+    return filterAndSort(columns, rows, query, startTime, 'SELECT');
+  }
+
   if (upper.includes('FROM DW.FACTVENTAS') || upper.includes('FROM FACTVENTAS') || upper.includes('FROM VW_VENTASDETALLADAS')) {
     const columns = ['SK_FactVenta', 'NumeroComprobante', 'Tipo', 'Canal', 'Cliente', 'TotalLinea', 'CostoTotal', 'UtilidadNeta', 'MargenPct'];
     const rows = dbState.auditRecords.map((r, idx) => {

@@ -62,8 +62,8 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
   const filteredPresets = SQL_PRESETS.filter((p) => {
     if (presetGroup === 'all') return true;
+    if (presetGroup === 'security') return p.category === 'Seguridad & RBAC' || p.category === 'Auditoría & Triggers';
     if (presetGroup === 'oltp') return p.category === 'OLTP (3FN)' || p.category === 'Transaccional (ACID)';
-    if (presetGroup === 'security') return p.category === 'Auditoría & Triggers';
     if (presetGroup === 'dw') return p.category === 'Data Warehouse (Kimball)';
     if (presetGroup === 'spark') return p.category === 'Big Data (PySpark)';
     return true;
@@ -209,10 +209,10 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
               <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
                 {[
                   { id: 'all', label: `Todos (${SQL_PRESETS.length})` },
+                  { id: 'security', label: 'Seguridad & RBAC (Pasos 1-9)' },
                   { id: 'oltp', label: 'OLTP & 3FN' },
-                  { id: 'security', label: 'Login, Roles & Seguridad' },
                   { id: 'dw', label: 'Data Warehouse (Kimball)' },
-                  { id: 'spark', label: 'Apache Spark (Exposición)' },
+                  { id: 'spark', label: 'Big Data & PySpark' },
                 ].map((grp) => {
                   const active = presetGroup === grp.id;
                   return (

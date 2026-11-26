@@ -276,7 +276,7 @@ export function executeSQL(rawQuery: string): QueryResult {
 
   try {
     // 1. DELETE FROM Comprobante -> Inmutability Trigger Test
-    if (upper.startsWith('DELETE FROM COMPROBANTE')) {
+    if (upper.startsWith('DELETE FROM COMPROBANTE') || upper.includes('DELETE FROM COMPROBANTE')) {
       return {
         columns: ['Error', 'Código', 'Trigger'],
         rows: [['Un comprobante emitido no se puede eliminar. Emita una nota de crédito.', '50001', 'TR_Comprobante_Inmutable']],
@@ -288,36 +288,41 @@ export function executeSQL(rawQuery: string): QueryResult {
       };
     }
 
-    // 2. INSERT INTO VarianteProducto / Producto
-    if (upper.startsWith('INSERT INTO')) {
+    // 2. DCL Statements: GRANT / DENY
+    if (upper.startsWith('GRANT') || upper.startsWith('DENY') || upper.includes('GRANT SELECT') || upper.includes('DENY UPDATE')) {
+      return handleDcl(query, startTime);
+    }
+
+    // 3. INSERT (including Usuario, Rol, and VarianteProducto)
+    if (upper.startsWith('INSERT INTO') || upper.includes('INSERT INTO')) {
       return handleInsert(query, startTime);
     }
 
-    // 3. UPDATE VarianteProducto
-    if (upper.startsWith('UPDATE')) {
+    // 4. UPDATE (including Usuario and VarianteProducto)
+    if (upper.startsWith('UPDATE') || upper.includes('UPDATE DBO.USUARIO') || upper.includes('UPDATE USUARIO')) {
       return handleUpdate(query, startTime);
     }
 
-    // 4. DELETE FROM VarianteProducto
-    if (upper.startsWith('DELETE FROM VARIANTEPRODUCTO') || upper.startsWith('DELETE FROM PRODUCTO')) {
+    // 5. DELETE (including Usuario and VarianteProducto)
+    if (upper.startsWith('DELETE FROM') || upper.includes('DELETE FROM DBO.USUARIO') || upper.includes('DELETE FROM USUARIO')) {
       return handleDelete(query, startTime);
     }
 
-    // 5. SELECT Queries
-    if (upper.startsWith('SELECT')) {
+    // 6. SELECT Queries
+    if (upper.startsWith('SELECT') || upper.includes('SELECT ')) {
       return handleSelect(query, startTime);
     }
 
-    // 6. EXEC Stored Procedure
-    if (upper.startsWith('EXEC') || upper.startsWith('EXECUTE')) {
+    // 7. EXEC Stored Procedure
+    if (upper.startsWith('EXEC') || upper.startsWith('EXECUTE') || upper.includes('EXEC ') || upper.includes('EXECUTE ')) {
       return handleExec(query, startTime);
     }
 
     // Fallback for generic DDL / USE
-    if (upper.startsWith('USE') || upper.startsWith('SET') || upper.startsWith('CREATE')) {
+    if (upper.startsWith('USE') || upper.startsWith('SET') || upper.startsWith('CREATE') || upper.startsWith('DECLARE')) {
       return {
         columns: ['Instrucción', 'Estado', 'Mensaje'],
-        rows: [[query.substring(0, 40) + '...', 'Completado', 'Comando DDL ejecutado correctamente en el esquema en memoria']],
+        rows: [[query.substring(0, 40) + '...', 'Completado', 'Comando SQL ejecutado correctamente en el motor']],
         rowCount: 1,
         executionTimeMs: Math.round(performance.now() - startTime),
         message: 'Comando ejecutado con éxito.',
@@ -353,9 +358,9 @@ function handleSelect(query: string, startTime: number): QueryResult {
   const upper = query.toUpperCase();
 
   // -----------------------------------------------------------------
-  // PRESENTACIÓN DIAPOSITIVA 3: KPIs Consolidados (OLTP -> DW -> Spark)
+  // CONSOLIDADO ESTRATÉGICO: KPIs Clave de Negocio (OLTP -> DW -> Spark)
   // -----------------------------------------------------------------
-  if (upper.includes('VW_RESUMENDIAPOSITIVA3') || upper.includes('CIFRAS_DIAPOSITIVA_3')) {
+  if (upper.includes('VW_RESUMENDIAPOSITIVA3') || upper.includes('CIFRAS_DIAPOSITIVA_3') || upper.includes('VW_RESUMENEJECUTIVOKPIS') || upper.includes('KPIS_NEGOCIO')) {
     const columns = ['IndicadorClave', 'ValorVerificado', 'OrigenDatos', 'FormulaSpark_SQL', 'ImpactoNegocio'];
     const rows = [
       ['Ventas netas sin IGV', 'S/ 11,173.39', 'Spark RDD Broadcast', 'rdd_ventas.map(f => f[4] / (1 + 0.18)).sum()', 'Descuento de tasa IGV 18% vía variable Broadcast'],
@@ -369,12 +374,12 @@ function handleSelect(query: string, startTime: number): QueryResult {
       rowCount: rows.length,
       executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
       operation: 'SELECT',
-      message: 'Cifras oficiales verificadas de la Diapositiva 3 (OLTP + Data Warehouse Kimball + Apache Spark).',
+      message: 'Métricas clave consolidadas verificadas (OLTP + Data Warehouse Kimball + Apache Spark).',
     };
   }
 
   // -----------------------------------------------------------------
-  // EXPOSITOR 1 (SEMANA 11 - DIAPOSITIVAS 5, 6, 7): Limpieza CSV, BOM y Cast
+  // MÓDULO 1: Ingesta CSV, Remoción de BOM y Type Casting
   // -----------------------------------------------------------------
   if (upper.includes('VW_LIMPIEZASPARK') || upper.includes('VENTAS_DEMO') || upper.includes('SIN_BOM')) {
     const columns = ['Dataset_CSV', 'FilasBrutas_SQLCMD', 'FilasSuciasFiltradas', 'RegistrosLimpios', 'TransformacionesAplicadas'];
@@ -388,12 +393,12 @@ function handleSelect(query: string, startTime: number): QueryResult {
       rowCount: rows.length,
       executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
       operation: 'SELECT',
-      message: 'Expositor 1 (Semana 11): Limpieza de BOM y casteo de esquemas en DataFrames (59 ventas y 275 variantes limpias).',
+      message: 'Módulo 1 (Ingesta Spark): Remoción de BOM y casteo de esquemas en DataFrames (59 ventas y 275 variantes limpias).',
     };
   }
 
   // -----------------------------------------------------------------
-  // EXPOSITOR 2 (SEMANA 12 - DIAPOSITIVA 10): RDD leftOuterJoin Stock vs Ventas
+  // MÓDULO 2: Pair RDDs y leftOuterJoin Stock vs Ventas
   // -----------------------------------------------------------------
   if (upper.includes('LEFT OUTER JOIN') || upper.includes('LEFTOUTERJOIN')) {
     const columns = ['NombreMarca', 'Stock_Pares', 'Valor_Inventario', 'Ventas_Soles', 'Utilidad_Soles', 'Estado_Rotacion'];
@@ -412,12 +417,12 @@ function handleSelect(query: string, startTime: number): QueryResult {
       rowCount: rows.length,
       executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
       operation: 'SELECT',
-      message: 'Expositor 2 (Semana 12): leftOuterJoin conserva las 7 marcas (detectando 3 marcas sin rotación con 675 pares cada una).',
+      message: 'Módulo 2 (Pair RDDs): leftOuterJoin conserva las 7 marcas (detectando 3 marcas sin rotación con 675 pares cada una).',
     };
   }
 
   // -----------------------------------------------------------------
-  // EXPOSITOR 2 (SEMANA 12 - DIAPOSITIVA 11): Top 3 Modelos (takeOrdered)
+  // MÓDULO 2: Ranking Top 3 Modelos con takeOrdered
   // -----------------------------------------------------------------
   if (upper.includes('TAKEORDERED') || upper.includes('TOP 3')) {
     const columns = ['Ranking', 'NombreMarca', 'NombreModelo', 'UnidadesVendidas', 'Particiones_Y_Linaje_RDD'];
@@ -432,12 +437,12 @@ function handleSelect(query: string, startTime: number): QueryResult {
       rowCount: rows.length,
       executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
       operation: 'SELECT',
-      message: 'Expositor 2 (Semana 12): Top 3 modelos más vendidos extraídos con takeOrdered(3).',
+      message: 'Módulo 2 (Pair RDDs): Top 3 modelos más vendidos extraídos con takeOrdered(3).',
     };
   }
 
   // -----------------------------------------------------------------
-  // EXPOSITOR 3 (SEMANA 14 - DIAPOSITIVAS 13 Y 14): SparkSQL Stock y Valor por Marca
+  // MÓDULO 3: SparkSQL Stock y Valor por Marca
   // -----------------------------------------------------------------
   if (upper.includes('VALOR_INVENTARIO_SOLES') || (upper.includes('FROM STOCK') && upper.includes('GROUP BY'))) {
     if (upper.includes('IS NULL')) {
@@ -453,7 +458,7 @@ function handleSelect(query: string, startTime: number): QueryResult {
         rowCount: rows.length,
         executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
         operation: 'SELECT',
-        message: 'Expositor 3 (Semana 14): 3 marcas sin rotación que inmovilizan S/ 262,564.68 de capital.',
+        message: 'Módulo 3 (SparkSQL): 3 marcas sin rotación que inmovilizan S/ 262,564.68 de capital.',
       };
     }
 
@@ -473,12 +478,12 @@ function handleSelect(query: string, startTime: number): QueryResult {
       rowCount: rows.length,
       executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
       operation: 'SELECT',
-      message: 'Expositor 3 (Semana 14): Stock y valorización por marca con DataFrame API / SparkSQL sobre vista temporal.',
+      message: 'Módulo 3 (SparkSQL): Stock y valorización por marca con DataFrame API / SparkSQL sobre vista temporal.',
     };
   }
 
   // -----------------------------------------------------------------
-  // EXPOSITOR 4 (SEMANA 14 - DIAPOSITIVA 17): Estadística Avanzada (describe, corr, approxQuantile)
+  // MÓDULO 4: Estadística Avanzada (describe, corr, approxQuantile)
   // -----------------------------------------------------------------
   if (upper.includes('VW_ESTADISTICASPARK') || upper.includes('APPROXQUANTILE') || upper.includes('DESCRIBE')) {
     const columns = ['Funcion_Spark', 'Columna_TotalLinea', 'Columna_Utilidad', 'Interpretacion_Analitica'];
@@ -498,12 +503,12 @@ function handleSelect(query: string, startTime: number): QueryResult {
       rowCount: rows.length,
       executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
       operation: 'SELECT',
-      message: 'Expositor 4 (Semana 14): Estadística avanzada con describe(), stat.corr() y approxQuantile().',
+      message: 'Módulo 4 (Estadística): Estadística avanzada con describe(), stat.corr() y approxQuantile().',
     };
   }
 
   // -----------------------------------------------------------------
-  // EXPOSITOR 4 (SEMANA 14 - DIAPOSITIVA 18): Márgenes (%) por Marca y Crosstab
+  // MÓDULO 4: Márgenes (%) por Marca y Tabla de Contingencia
   // -----------------------------------------------------------------
   if (upper.includes('MARGENPCT') || upper.includes('CROSSTAB')) {
     const columns = ['NombreMarca', 'MargenPct', 'TiendaFisica', 'Web_WhatsApp', 'RedesSociales', 'Conclusion_De_Negocio'];
@@ -519,12 +524,12 @@ function handleSelect(query: string, startTime: number): QueryResult {
       rowCount: rows.length,
       executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
       operation: 'SELECT',
-      message: 'Expositor 4 (Semana 14): Margen de utilidad (%) por marca y tabla de contingencia (stat.crosstab).',
+      message: 'Módulo 4 (Rentabilidad): Margen de utilidad (%) por marca y tabla de contingencia (stat.crosstab).',
     };
   }
 
   // -----------------------------------------------------------------
-  // EXPOSITOR 4 (SEMANA 14 - DIAPOSITIVA 19): Modelos que Generan Pérdida (Utilidad < 0)
+  // MÓDULO 4: Detección de Modelos que Generan Pérdida (Utilidad < 0)
   // -----------------------------------------------------------------
   if (upper.includes('UTILIDAD < 0') || upper.includes('PERDIDA')) {
     const columns = ['NombreMarca', 'NombreModelo', 'UnidadesVendidas', 'Perdida_Acumulada', 'Causa_Raiz_Detectada'];
@@ -539,7 +544,7 @@ function handleSelect(query: string, startTime: number): QueryResult {
       rowCount: rows.length,
       executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
       operation: 'SELECT',
-      message: 'Expositor 4 (Semana 14): Modelos con pérdida acumulada (Utilidad < 0) coincidente entre RDD y DataFrames.',
+      message: 'Módulo 4 (Auditoría): Modelos con pérdida acumulada (Utilidad < 0) coincidente entre RDD y DataFrames.',
     };
   }
 
@@ -892,7 +897,92 @@ function handleInsert(query: string, startTime: number): QueryResult {
     };
   }
 
-  // Try to parse values from INSERT statement for VarianteProducto:
+  // 2. INSERT INTO Usuario (IdEmpleado, IdRol, NombreUsuario, Correo, ClaveHash, Salt, Activo)
+  if (upper.includes('INTO USUARIO') || upper.includes('INTO DBO.USUARIO')) {
+    let email = 'carlos.mendoza@urbanstyle.pe';
+    let username = 'cmendoza';
+    let empleado = 'Carlos Mendoza';
+    let dni = '72349182';
+    let plainPass = 'Supervisor2026*';
+    let roleId = 3;
+    let roleName = 'Supervisor';
+
+    const emailMatch = query.match(/['"]([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})['"]/);
+    if (emailMatch) email = emailMatch[1];
+
+    const userMatch = query.match(/['"]([a-zA-Z0-9_]{4,20})['"]/i);
+    if (userMatch && !userMatch[1].includes('@') && !userMatch[1].includes('*')) {
+      username = userMatch[1];
+    }
+
+    const passMatch = query.match(/@ClavePlana\s*(?:VARCHAR\(\d+\))?\s*=\s*['"]([^'"]+)['"]/i) || query.match(/['"]([A-Za-z0-9*@#$!]{6,30})['"]/);
+    if (passMatch) plainPass = passMatch[1];
+
+    const matchingRole = dbState.roles.find(r => r.nombreRol.toLowerCase() === 'supervisor') || dbState.roles[dbState.roles.length - 1];
+    if (matchingRole) {
+      roleId = matchingRole.idRol;
+      roleName = matchingRole.nombreRol;
+    }
+
+    const newSalt = `3F1D8B92-7A4C-4E8F-B2D1-9E5C6A0B${(Math.floor(Math.random() * 8999) + 1000).toString(16).toUpperCase()}`;
+    const newHash = computeSimulatedSha256(plainPass + newSalt);
+
+    const existingIdx = dbState.usuarios.findIndex(u => u.correo.toLowerCase() === email.toLowerCase());
+    const newRecord: SqlUserRecord = {
+      idUsuario: existingIdx >= 0 ? dbState.usuarios[existingIdx].idUsuario : dbState.usuarios.length + 1,
+      idEmpleado: existingIdx >= 0 ? dbState.usuarios[existingIdx].idEmpleado : dbState.usuarios.length + 1,
+      empleado,
+      dni,
+      nombreUsuario: username,
+      correo: email,
+      clavePlana: plainPass,
+      salt: newSalt,
+      claveHash: newHash,
+      idRol: roleId,
+      rol: roleName,
+      activo: true,
+    };
+
+    if (existingIdx >= 0) {
+      dbState.usuarios[existingIdx] = newRecord;
+    } else {
+      dbState.usuarios = [...dbState.usuarios, newRecord];
+    }
+
+    dbState.auditLogs.unshift({
+      id: dbState.auditLogs.length + 1,
+      tabla: 'Usuario',
+      operacion: 'INSERT',
+      idRegistro: `IdUsuario=${newRecord.idUsuario}`,
+      valorAnterior: 'NULL',
+      valorNuevo: `Usuario=${username}; Correo=${email}; Rol=${roleName}; Salt=${newSalt.slice(0, 8)}...; ClaveHash=${newHash.slice(0, 14)}...`,
+      usuario: 'SQL_Studio_Admin',
+      fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
+    });
+
+    notifySubscribers(dbState);
+
+    return {
+      columns: ['IdUsuario', 'NombreUsuario', 'Empleado', 'Correo', 'Rol', 'Salt_UUID', 'ClaveHash_SHA256', 'Estado_Cuenta'],
+      rows: dbState.usuarios.map(u => [
+        u.idUsuario,
+        u.nombreUsuario,
+        u.empleado,
+        u.correo,
+        u.rol,
+        u.salt,
+        `${u.claveHash.slice(0, 18)}...`,
+        u.activo ? 'ACTIVO (1)' : 'INACTIVO (0)',
+      ]),
+      rowCount: dbState.usuarios.length,
+      affectedRows: 1,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'INSERT',
+      message: `Usuario "${username}" (${email}) registrado en dbo.Usuario con Salt aleatorio y Hash SHA-256 (Rol: ${roleName}).`,
+    };
+  }
+
+  // 3. INSERT INTO VarianteProducto
   let name = 'Nuevo Calzado Urban Style';
   let brand: any = 'Adidas';
   let category = 'Urbana / Deportiva';
@@ -944,10 +1034,8 @@ function handleInsert(query: string, startTime: number): QueryResult {
     isNew: true,
   };
 
-  // Mutate database state
   dbState.products = [newProduct, ...dbState.products];
 
-  // Log in Auditoria
   dbState.auditLogs.unshift({
     id: dbState.auditLogs.length + 1,
     tabla: 'VarianteProducto',
@@ -985,16 +1073,69 @@ function handleInsert(query: string, startTime: number): QueryResult {
 // -------------------------------------------------------------
 function handleUpdate(query: string, startTime: number): QueryResult {
   const upper = query.toUpperCase();
-  let affected = 0;
 
-  // Stock increment (e.g. SET Stock = Stock + 10)
+  // 1. UPDATE Usuario (Activo = 0 / 1)
+  if (upper.includes('USUARIO')) {
+    let targetEmail = 'carlos.mendoza@urbanstyle.pe';
+    const emailMatch = query.match(/['"]([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})['"]/);
+    if (emailMatch) targetEmail = emailMatch[1];
+
+    const willDeactivate = upper.includes('ACTIVO = 0') || upper.includes('ACTIVO=0');
+    const newActiveState = !willDeactivate;
+
+    let affectedCount = 0;
+    dbState.usuarios = dbState.usuarios.map(u => {
+      if (u.correo.toLowerCase() === targetEmail.toLowerCase() || u.nombreUsuario.toLowerCase() === targetEmail.toLowerCase() || upper.includes(`'${u.nombreUsuario.toUpperCase()}'`)) {
+        affectedCount++;
+        return {
+          ...u,
+          activo: newActiveState,
+        };
+      }
+      return u;
+    });
+
+    if (affectedCount > 0) {
+      dbState.auditLogs.unshift({
+        id: dbState.auditLogs.length + 1,
+        tabla: 'Usuario',
+        operacion: 'UPDATE',
+        idRegistro: targetEmail,
+        valorAnterior: newActiveState ? 'Activo=0' : 'Activo=1',
+        valorNuevo: newActiveState ? 'Activo=1 (Alta/Activación)' : 'Activo=0 (Baja Lógica / Desactivación de Seguridad)',
+        usuario: 'SQL_Studio_Admin',
+        fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      });
+
+      notifySubscribers(dbState);
+    }
+
+    return {
+      columns: ['IdUsuario', 'NombreUsuario', 'Correo', 'Rol', 'Estado_Activo', 'Diagnóstico_Acceso'],
+      rows: dbState.usuarios.map(u => [
+        u.idUsuario,
+        u.nombreUsuario,
+        u.correo,
+        u.rol,
+        u.activo ? 'ACTIVO (1)' : 'INACTIVO (0)',
+        u.correo.toLowerCase() === targetEmail.toLowerCase()
+          ? (newActiveState ? 'Acceso Habilitado' : 'Acceso Revocado (Login Bloqueado)')
+          : 'Sin alteración',
+      ]),
+      rowCount: dbState.usuarios.length,
+      affectedRows: affectedCount,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'UPDATE',
+      message: `${affectedCount} cuenta(s) actualizada(s) en dbo.Usuario. Estado Activo = ${newActiveState ? '1' : '0'}.`,
+    };
+  }
+
+  // 2. UPDATE VarianteProducto
+  let affected = 0;
   const stockAddMatch = upper.match(/STOCK\s*=\s*STOCK\s*\+\s*(\d+)/);
-  // Specific stock value (e.g. SET Stock = 20)
   const stockSetMatch = upper.match(/STOCK\s*=\s*(\d+)/);
-  // Specific price value (e.g. SET Precio = 199.90)
   const priceSetMatch = upper.match(/PRECIO\s*=\s*([\d.]+)/);
 
-  // Filter criteria: brand or model
   let targetBrand: string | null = null;
   for (const b of ['ADIDAS', 'NIKE', 'PUMA', 'REEBOK', 'NEW BALANCE', 'VANS', 'CONVERSE']) {
     if (upper.includes(`'${b}'`)) {
@@ -1062,8 +1203,46 @@ function handleUpdate(query: string, startTime: number): QueryResult {
 // -------------------------------------------------------------
 function handleDelete(query: string, startTime: number): QueryResult {
   const upper = query.toUpperCase();
-  const prevCount = dbState.products.length;
 
+  // 1. DELETE FROM Usuario
+  if (upper.includes('USUARIO')) {
+    let targetEmail = 'carlos.mendoza@urbanstyle.pe';
+    const emailMatch = query.match(/['"]([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})['"]/);
+    if (emailMatch) targetEmail = emailMatch[1];
+
+    const prevCount = dbState.usuarios.length;
+    const userToDelete = dbState.usuarios.find(u => u.correo.toLowerCase() === targetEmail.toLowerCase() || u.nombreUsuario.toLowerCase() === targetEmail.toLowerCase());
+    dbState.usuarios = dbState.usuarios.filter(u => u.correo.toLowerCase() !== targetEmail.toLowerCase() && u.nombreUsuario.toLowerCase() !== targetEmail.toLowerCase());
+    const deletedCount = prevCount - dbState.usuarios.length;
+
+    if (deletedCount > 0) {
+      dbState.auditLogs.unshift({
+        id: dbState.auditLogs.length + 1,
+        tabla: 'Usuario',
+        operacion: 'DELETE',
+        idRegistro: targetEmail,
+        valorAnterior: `Usuario=${userToDelete?.nombreUsuario || targetEmail}; Rol=${userToDelete?.rol || 'N/A'}`,
+        valorNuevo: 'NULL (Eliminación Física de Credenciales)',
+        usuario: 'SQL_Studio_Admin',
+        fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      });
+
+      notifySubscribers(dbState);
+    }
+
+    return {
+      columns: ['Operación', 'Filas Eliminadas', 'Usuario_Afectado', 'Estado'],
+      rows: [['DELETE FROM dbo.Usuario', deletedCount, targetEmail, deletedCount > 0 ? 'Cuenta eliminada de la base de datos' : 'Usuario no encontrado']],
+      rowCount: 1,
+      affectedRows: deletedCount,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'DELETE',
+      message: `${deletedCount} cuenta de usuario eliminada de dbo.Usuario y auditada en dbo.Auditoria.`,
+    };
+  }
+
+  // 2. DELETE FROM VarianteProducto
+  const prevCount = dbState.products.length;
   let targetBrand: string | null = null;
   for (const b of ['ADIDAS', 'NIKE', 'PUMA', 'REEBOK', 'NEW BALANCE', 'VANS', 'CONVERSE']) {
     if (upper.includes(`'${b}'`)) {
@@ -1075,7 +1254,6 @@ function handleDelete(query: string, startTime: number): QueryResult {
   if (targetBrand) {
     dbState.products = dbState.products.filter(p => p.brand.toUpperCase() !== targetBrand);
   } else {
-    // Delete oldest item
     dbState.products = dbState.products.slice(0, dbState.products.length - 1);
   }
 
@@ -1096,6 +1274,55 @@ function handleDelete(query: string, startTime: number): QueryResult {
 }
 
 // -------------------------------------------------------------
+// DCL HANDLER (GRANT / DENY)
+// -------------------------------------------------------------
+function handleDcl(query: string, startTime: number): QueryResult {
+  const upper = query.toUpperCase();
+  const isGrant = upper.includes('GRANT');
+  const opType = isGrant ? 'GRANT' : 'DENY';
+
+  let targetRole = 'Rol_Supervisor';
+  const roleMatch = query.match(/TO\s+([A-Za-z0-9_]+)/i);
+  if (roleMatch) targetRole = roleMatch[1];
+
+  dbState.auditLogs.unshift({
+    id: dbState.auditLogs.length + 1,
+    tabla: 'sys.database_permissions',
+    operacion: opType,
+    idRegistro: targetRole,
+    valorAnterior: 'Permiso_Previo',
+    valorNuevo: query.substring(0, 120),
+    usuario: 'SQL_Studio_Security_Admin',
+    fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
+  });
+
+  notifySubscribers(dbState);
+
+  const permissions = [
+    { objeto: 'dbo.vw_StockActual', permiso: 'SELECT', estado: 'CONCEDIDO (GRANT)', principio: 'Lectura de inventario operativo' },
+    { objeto: 'dbo.Comprobante', permiso: 'SELECT, INSERT', estado: 'CONCEDIDO (GRANT)', principio: 'Emisión y consulta de ventas' },
+    { objeto: 'dbo.Comprobante', permiso: 'UPDATE, DELETE', estado: 'DENEGADO (DENY)', principio: 'Inmutabilidad fiscal (Ley 29733 y SUNAT)' },
+  ];
+
+  return {
+    columns: ['Comando_DCL', 'Objeto_Seguridad', 'Privilegio', 'Rol_Destino', 'Estado_Permiso', 'Principio_RBAC'],
+    rows: permissions.map(p => [
+      opType,
+      p.objeto,
+      p.permiso,
+      targetRole,
+      p.estado,
+      p.principio,
+    ]),
+    rowCount: permissions.length,
+    affectedRows: permissions.length,
+    executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+    operation: 'OTHER',
+    message: `Instrucción DCL (${opType}) ejecutada con éxito. Se aplicó el principio de menor privilegio sobre ${targetRole}.`,
+  };
+}
+
+// -------------------------------------------------------------
 // EXEC HANDLER
 // -------------------------------------------------------------
 function handleExec(query: string, startTime: number): QueryResult {
@@ -1103,14 +1330,15 @@ function handleExec(query: string, startTime: number): QueryResult {
 
   // usp_ValidarLogin - SHA-256 + Salt Authentication Stored Procedure
   if (upper.includes('USP_VALIDARLOGIN') || upper.includes('VALIDARLOGIN')) {
-    const emailMatch = query.match(/['"]([^'"]+@[^'"]+|iayala|aquispe)['"]/i);
-    const passMatch = query.match(/(?:@p_ClavePlana|@Clave)\s*=\s*['"]([^'"]+)['"]/i);
+    const emailMatch = query.match(/['"]([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9_]{3,20})['"]/i);
+    const passMatch = query.match(/(?:@p_ClavePlana|@Clave)\s*=\s*['"]([^'"]+)['"]/i) || query.match(/['"]([A-Za-z0-9*@#$!]{6,30})['"]/);
     const targetEmail = emailMatch ? emailMatch[1] : 'gerencia@urbanstyle.pe';
-    const targetPass = passMatch
-      ? passMatch[1]
-      : targetEmail.toLowerCase().includes('ventas') || targetEmail.toLowerCase() === 'aquispe'
-      ? 'Ventas2026'
-      : 'Gerencia2026';
+    let targetPass = passMatch ? passMatch[1] : '';
+    if (!targetPass) {
+      if (targetEmail.toLowerCase().includes('ventas') || targetEmail.toLowerCase() === 'aquispe') targetPass = 'Ventas2026';
+      else if (targetEmail.toLowerCase().includes('mendoza') || targetEmail.toLowerCase() === 'cmendoza') targetPass = 'Supervisor2026*';
+      else targetPass = 'Gerencia2026';
+    }
 
     const authRes = executeSqlLogin(targetEmail, targetPass);
     const userRow = dbState.usuarios.find(
@@ -1118,20 +1346,29 @@ function handleExec(query: string, startTime: number): QueryResult {
     );
 
     if (!authRes.success || !userRow) {
+      const isInactive = authRes.errorType === 'INACTIVE';
       return {
-        columns: ['Error_SQL', 'Codigo_Retorno', 'Procedimiento', 'Detalle_Criptografico'],
-        rows: [[authRes.errorMessage || 'Credenciales inválidas', -2, 'dbo.usp_ValidarLogin', 'RAISERROR: HASHBYTES("SHA2_256", @Clave + @Salt) <> ClaveHash']],
+        columns: ['Resultado_SQL', 'Codigo_Retorno', 'Procedimiento', 'Diagnostico_Seguridad'],
+        rows: [[
+          authRes.errorMessage || 'Credenciales inválidas',
+          isInactive ? -3 : -2,
+          'dbo.usp_ValidarLogin',
+          isInactive
+            ? 'USUARIO_INACTIVO: Cuenta desactivada en dbo.Usuario (Activo = 0). Acceso denegado.'
+            : 'ACCESO_DENEGADO: HASHBYTES("SHA2_256", @Clave + @Salt) no coincide con ClaveHash',
+        ]],
         rowCount: 1,
         executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
         isError: true,
         operation: 'EXEC',
-        message: `ERROR en usp_ValidarLogin: ${authRes.errorMessage}`,
+        message: `VALIDACIÓN RECHAZADA: ${authRes.errorMessage}`,
       };
     }
 
     return {
-      columns: ['IdUsuario', 'NombreUsuario', 'NombreCompleto', 'Correo', 'IdRol', 'NombreRol', 'Salt_UNIQUEIDENTIFIER', 'Verificacion_SHA256', 'Auditoria'],
+      columns: ['Resultado', 'IdUsuario', 'NombreUsuario', 'Empleado', 'Correo', 'IdRol', 'Rol', 'Salt_UUID', 'Hash_SHA256', 'Auditoría'],
       rows: [[
+        'AUTENTICACIÓN EXITOSA',
         userRow.idUsuario,
         userRow.nombreUsuario,
         userRow.empleado,

@@ -616,28 +616,28 @@ GO`,
     id: 'script-colab',
     title: 'Google Colab — Gestión de Datos, RDD, SparkSQL y Estadística con Apache Spark',
     category: 'BIG_DATA',
-    description: 'Código oficial alineado con las 20 diapositivas de exposición (Semanas 11, 12 y 14): SparkSession, limpieza de BOM, RDDs, leftOuterJoin, SparkSQL, Parquet, Catalyst y Estadística Avanzada.',
+    description: 'Pipeline analítico empresarial de Big Data (PySpark): SparkSession, limpieza de BOM, Pair RDDs, leftOuterJoin, SparkSQL, Parquet, Catalyst y Estadística Avanzada.',
     code: `# ==============================================================================
-# URBAN STYLE - GESTION DE DATOS CON APACHE SPARK
-# Base de Datos Avanzadas y Big Data - UPN
-# Codigo alineado con las diapositivas, separado por expositor / semana.
+# URBAN STYLE - PROCESAMIENTO ANALÍTICO DISTRIBUIDO CON APACHE SPARK
+# Arquitectura de Datos, Data Warehouse & Big Data
+# Pipeline de cómputo en memoria estructurado por módulos técnicos.
 #
-# INDICE
-#   EXPOSITOR 1 | Semana 11 | Gestion de datos con Spark        (diapositivas 4-7)
-#   EXPOSITOR 2 | Semana 12 | Spark en cluster y RDD             (diapositivas 8-11)
-#   EXPOSITOR 3 | Semana 14 | SparkSQL y DataFrames              (diapositivas 12-15)
-#   EXPOSITOR 4 | Semana 14 | Estadistica avanzada con Spark     (diapositivas 16-19)
-#   CIERRE      | Verificacion de las cifras de la diapositiva 3 y liberar memoria
+# ÍNDICE TÉCNICO:
+#   MÓDULO 1 | Ingesta de Datos, Remoción de BOM y Esquemas Tipados
+#   MÓDULO 2 | Cómputo Distribuido con Pair RDDs (leftOuterJoin y takeOrdered)
+#   MÓDULO 3 | SparkSQL, Vistas Temporales y Optimizador Catalyst
+#   MÓDULO 4 | Estadística Descriptiva, Correlación y Auditoría de Rentabilidad
+#   CIERRE   | Conciliación de Métricas Clave y Liberación de Memoria
 # ==============================================================================
 
 
 # ##############################################################################
-# EXPOSITOR 1 - SEMANA 11 - GESTION DE DATOS CON SPARK
-# Temas: SparkSession, carga de datos, limpieza y tipos
+# MÓDULO 1: INGESTA Y LIMPIEZA DE DATOS CON SPARK
+# Temas: SparkSession, carga de datos CSV, remoción de UTF-8 BOM y casting
 # ##############################################################################
 
 # ------------------------------------------------------------------------------
-# 1.1  Iniciar Spark                                         (diapositiva 5)
+# 1.1 Iniciar SparkSession y SparkContext
 # ------------------------------------------------------------------------------
 import os
 import time
@@ -660,7 +660,7 @@ print("Version:", spark.version)
 print("Master:", sc.master, "| tareas a la vez:", sc.defaultParallelism)
 
 # ------------------------------------------------------------------------------
-# 1.2  Descargar los CSV y quitar el BOM                     (diapositiva 6)
+# 1.2  Descargar los CSV y quitar el BOM (UTF-8)
 # ------------------------------------------------------------------------------
 BASE_URL = "https://raw.githubusercontent.com/FabrizioTrujillo/urbanstylos-data/refs/heads/main/"
 
@@ -689,7 +689,7 @@ descargar("ventas.csv", "ventas_demo.csv")
 descargar("stock.csv", "stock_demo.csv")
 
 # ------------------------------------------------------------------------------
-# 1.3  Leer y limpiar con DataFrames                         (diapositiva 7)
+# 1.3  Lectura, filtrado de líneas corruptas y Schema Casting
 # ------------------------------------------------------------------------------
 df_ventas_raw = sin_bom(
     spark.read.option("header", "true").option("inferSchema", "true").csv("ventas_demo.csv")
@@ -726,13 +726,13 @@ print("Registros limpios de stock :", df_stock.count())
 
 
 # ##############################################################################
-# EXPOSITOR 2 - SEMANA 12 - SPARK EN CLUSTER Y RDD
-# Temas: construir RDD, reduce, clave-valor, join / leftOuterJoin,
-#        takeOrdered, particiones, linaje y operaciones extra de la clase
+# MÓDULO 2: CÓMPUTO DISTRIBUIDO Y PAIR RDDS
+# Temas: transformación a RDD, reduce, clave-valor, join vs leftOuterJoin,
+#        takeOrdered, gestión de particiones y grafo de linaje DAG
 # ##############################################################################
 
 # ------------------------------------------------------------------------------
-# 2.1  Construir un RDD y reducirlo                          (diapositiva 9)
+# 2.1  Construir un RDD y calcular agregaciones con reduce
 # ------------------------------------------------------------------------------
 columnas_ventas = set(df_ventas.columns)
 col_canal = "Canal" if "Canal" in columnas_ventas else ("NombreCanal" if "NombreCanal" in columnas_ventas else None)
@@ -757,7 +757,7 @@ utilidad_total = 0.0 if utilidades.isEmpty() else utilidades.reduce(lambda a, b:
 print(f"Utilidad total neta: S/ {round(utilidad_total, 2)}")
 
 # ------------------------------------------------------------------------------
-# 2.2  Clave-valor, join y leftOuterJoin                     (diapositiva 10)
+# 2.2  Clave-valor, join y leftOuterJoin
 # ------------------------------------------------------------------------------
 # (marca, (ventas, utilidad))
 ventas_por_marca = (
@@ -779,10 +779,10 @@ interno = ventas_por_marca.join(stock_por_marca)
 # leftOuterJoin parte del STOCK: conserva las marcas sin ventas
 completo = stock_por_marca.leftOuterJoin(ventas_por_marca)
 
-print("\\njoin interno:", interno.count(), "marcas")
+print("\njoin interno:", interno.count(), "marcas")
 print("leftOuter   :", completo.count(), "marcas")
 
-print("\\n--- STOCK VS VENTAS POR MARCA (leftOuterJoin) ---")
+print("\n--- STOCK VS VENTAS POR MARCA (leftOuterJoin) ---")
 for marca, (stock_pares, vu) in completo.sortBy(lambda kv: -kv[1][0]).collect():
     ventas_soles, utilidad_soles = vu if vu is not None else (0.0, 0.0)
     estado = "SIN VENTAS" if vu is None else "con ventas"
@@ -790,10 +790,10 @@ for marca, (stock_pares, vu) in completo.sortBy(lambda kv: -kv[1][0]).collect():
           f"Utilidad: S/ {round(utilidad_soles, 2):>8} | {estado}")
 
 sin_ventas = completo.filter(lambda kv: kv[1][1] is None).map(lambda kv: (kv[0], kv[1][0])).collect()
-print("\\nSIN VENTAS:", sin_ventas)
+print("\nSIN VENTAS:", sin_ventas)
 
 # ------------------------------------------------------------------------------
-# 2.3  takeOrdered, particiones y linaje                     (diapositiva 11)
+# 2.3  takeOrdered, particiones y linaje DAG
 # ------------------------------------------------------------------------------
 top3 = (
     rdd_ventas
@@ -801,21 +801,21 @@ top3 = (
     .reduceByKey(lambda a, b: a + b)
     .takeOrdered(3, key=lambda kv: -kv[1])
 )
-print("\\n--- TOP 3 MODELOS (takeOrdered) ---")
+print("\n--- TOP 3 MODELOS (takeOrdered) ---")
 for (marca, modelo), unidades in top3:
     print(f"{marca} {modelo}: {unidades}")
 
-print("\\nparticiones:", rdd_ventas.getNumPartitions(), "->", rdd_ventas.glom().map(len).collect())
+print("\nparticiones:", rdd_ventas.getNumPartitions(), "->", rdd_ventas.glom().map(len).collect())
 print("repartition(4):", rdd_ventas.repartition(4).getNumPartitions())
 print("coalesce(1)   :", rdd_ventas.coalesce(1).getNumPartitions())
 
-print("\\n--- LINAJE (toDebugString) ---")
+print("\n--- LINAJE (toDebugString) ---")
 print(ventas_por_marca.toDebugString().decode("utf-8"))
 
 # ------------------------------------------------------------------------------
-# 2.4  Operaciones extra de la clase (diapositiva 8)
+# 2.4  Evaluación Perezosa y Variable Broadcast (Tasa IGV)
 # ------------------------------------------------------------------------------
-print("\\n--- EVALUACION PEREZOSA: TRANSFORMACION VS ACCION ---")
+print("\n--- EVALUACION PEREZOSA: TRANSFORMACION VS ACCION ---")
 t0 = time.time()
 con_perdida = rdd_ventas.filter(lambda f: f[5] < 0)
 print(f"Definir el filtro (transformacion): {time.time() - t0:.3f} s")
@@ -823,38 +823,38 @@ t0 = time.time()
 print("Lineas con utilidad negativa      :", con_perdida.count())
 print(f"Ejecutar la accion                : {time.time() - t0:.3f} s")
 
-print("\\n--- BROADCAST: ventas netas sin IGV (cifra de la diapositiva 3) ---")
+print("\n--- BROADCAST: ventas netas sin IGV (Cálculo Distribuido) ---")
 tasa_igv = sc.broadcast(0.18)                        # se envia UNA vez a cada executor
 ventas_sin_igv = rdd_ventas.map(lambda f: f[4] / (1 + tasa_igv.value)).sum()
 print(f"Ventas netas sin IGV: S/ {round(ventas_sin_igv, 2)}")
 
 
 # ##############################################################################
-# EXPOSITOR 3 - SEMANA 14 - SPARKSQL Y DATAFRAMES
+# MÓDULO 3: SPARKSQL Y DATAFRAMES
 # Temas: DataFrame API (groupBy/agg), SparkSQL con vistas temporales,
-#        cache, Parquet y plan de Catalyst
+#        cache, Parquet y optimizador Catalyst
 # ##############################################################################
 
 # ------------------------------------------------------------------------------
-# 3.1  DataFrame API: groupBy y agg                          (diapositiva 13)
+# 3.1  DataFrame API: groupBy y agg
 # ------------------------------------------------------------------------------
-print("\\n--- TOP MODELOS MAS VENDIDOS (DataFrame) ---")
-df_ventas.groupBy("NombreMarca", "NombreModelo") \\
-    .agg(F.sum("Cantidad").alias("Total_Zapatillas")) \\
-    .orderBy(F.desc("Total_Zapatillas")) \\
+print("\n--- TOP MODELOS MAS VENDIDOS (DataFrame) ---")
+df_ventas.groupBy("NombreMarca", "NombreModelo") \
+    .agg(F.sum("Cantidad").alias("Total_Zapatillas")) \
+    .orderBy(F.desc("Total_Zapatillas")) \
     .show(5, truncate=False)
 
 print("--- STOCK Y VALOR DE INVENTARIO POR MARCA (DataFrame) ---")
-df_stock.groupBy("NombreMarca") \\
+df_stock.groupBy("NombreMarca") \
     .agg(
         F.sum("Stock").alias("Pares_Disponibles"),
         F.round(F.sum("ValorInventario"), 2).alias("Valor_Inventario_Soles")
-    ) \\
-    .orderBy(F.desc("Valor_Inventario_Soles")) \\
+    ) \
+    .orderBy(F.desc("Valor_Inventario_Soles")) \
     .show(truncate=False)
 
 # ------------------------------------------------------------------------------
-# 3.2  SparkSQL con vistas temporales                        (diapositiva 14)
+# 3.2  SparkSQL con vistas temporales
 # ------------------------------------------------------------------------------
 df_stock.createOrReplaceTempView("stock")
 df_ventas.createOrReplaceTempView("ventas")
@@ -876,7 +876,7 @@ spark.sql("""
     GROUP BY s.NombreMarca""").show()
 
 # ------------------------------------------------------------------------------
-# 3.3  cache, Parquet y el plan de Catalyst                  (diapositiva 15)
+# 3.3  Cache en memoria, persistencia Parquet y plan de Catalyst
 # ------------------------------------------------------------------------------
 df_stock.cache()
 df_stock.count()                                     # 1.a accion: llena la cache
@@ -892,12 +892,12 @@ spark.sql("""SELECT NombreMarca, SUM(Stock) AS Pares
 
 
 # ##############################################################################
-# EXPOSITOR 4 - SEMANA 14 - ESTADISTICA AVANZADA CON SPARK
+# MÓDULO 4: ESTADÍSTICA AVANZADA Y AUDITORÍA FINANCIERA
 # Temas: describe, correlacion, cuantiles, margenes, crosstab, sample, perdidas
 # ##############################################################################
 
 # ------------------------------------------------------------------------------
-# 4.1  describe, correlacion y cuantiles                     (diapositiva 17)
+# 4.1  describe, correlación y cuantiles con approxQuantile
 # ------------------------------------------------------------------------------
 df_ventas.select("TotalLinea", "Utilidad").describe().show()
 
@@ -911,7 +911,7 @@ print("Lineas con utilidad negativa:", df_ventas.filter(F.col("Utilidad") < 0).c
       "de", df_ventas.count())
 
 # ------------------------------------------------------------------------------
-# 4.2  Margenes por marca y tabla de contingencia            (diapositiva 18)
+# 4.2  Márgenes por marca y tabla de contingencia (crosstab)
 # ------------------------------------------------------------------------------
 (df_ventas.groupBy("NombreMarca")
     .agg(F.round(F.sum("Utilidad") / F.sum("TotalLinea") * 100, 1).alias("MargenPct"))
@@ -921,7 +921,7 @@ print("Lineas con utilidad negativa:", df_ventas.filter(F.col("Utilidad") < 0).c
 df_ventas.stat.crosstab("NombreMarca", "Canal").show()
 
 # ------------------------------------------------------------------------------
-# 4.3  Muestreo y modelos que generan perdida                (diapositiva 19)
+# 4.3  Muestreo reproducible y detección de modelos con pérdida
 # ------------------------------------------------------------------------------
 muestra = df_ventas.sample(withReplacement=False, fraction=0.10, seed=42)
 muestra.show(3)
@@ -934,7 +934,7 @@ muestra.show(3)
 
 
 # ##############################################################################
-# CIERRE - VERIFICACION DE LA DIAPOSITIVA 3 Y LIBERAR MEMORIA
+# CIERRE - CONCILIACIÓN DE MÉTRICAS CLAVE Y LIBERACIÓN DE MEMORIA
 # ##############################################################################
 inmovilizado = (
     df_stock.groupBy("NombreMarca")
@@ -942,7 +942,7 @@ inmovilizado = (
     .join(df_ventas.select("NombreMarca").distinct(), "NombreMarca", "left_anti")
     .agg(F.sum("v")).collect()[0][0]
 )
-print("\\n================ CIFRAS DE LA DIAPOSITIVA 3 ================")
+print("\n================ MÉTRICAS CLAVE CONSOLIDADAS ================")
 print(f"Ventas netas sin IGV      : S/ {round(ventas_sin_igv, 2)}")
 print(f"Utilidad neta total       : S/ {round(utilidad_total, 2)}")
 print(f"Lineas con perdida        : {con_perdida.count()} de {rdd_ventas.count()}")
@@ -950,6 +950,7 @@ print(f"Inventario sin rotacion   : S/ {round(inmovilizado or 0.0, 2)}")
 
 rdd_ventas.unpersist()
 df_stock.unpersist()
-print("\\nFin del analisis.")`,
+print("\nFin del analisis.")`,
   },
 ];
+

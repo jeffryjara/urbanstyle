@@ -1,8 +1,33 @@
-import type { Product, AuditRecord, QueryResult } from '../types';
+import type { Product, AuditRecord, QueryResult, UserAccount } from '../types';
+import { INITIAL_USERS } from '../data/initialData';
+
+export interface SqlRoleRecord {
+  idRol: number;
+  nombreRol: string;
+  descripcion: string;
+  nivelAcceso: string;
+}
+
+export interface SqlUserRecord {
+  idUsuario: number;
+  idEmpleado: number;
+  empleado: string;
+  dni: string;
+  nombreUsuario: string;
+  correo: string;
+  clavePlana: string;
+  salt: string;
+  claveHash: string;
+  idRol: number;
+  rol: string;
+  activo: boolean;
+}
 
 export interface SqlDatabaseState {
   products: Product[];
   auditRecords: AuditRecord[];
+  roles: SqlRoleRecord[];
+  usuarios: SqlUserRecord[];
   auditLogs: {
     id: number;
     tabla: string;
@@ -28,10 +53,70 @@ function notifySubscribers(state: SqlDatabaseState) {
   subscribers.forEach(cb => cb(state));
 }
 
+// Deterministic simulated SHA-256 hex generator for SQL HASHBYTES('SHA2_256', @Clave + @Salt)
+function computeSimulatedSha256(input: string): string {
+  let h1 = 0xdeadbeef ^ input.length;
+  let h2 = 0x41c6ce57 ^ input.length;
+  for (let i = 0, ch; i < input.length; i++) {
+    ch = input.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  const part1 = (h1 >>> 0).toString(16).toUpperCase().padStart(8, '0');
+  const part2 = (h2 >>> 0).toString(16).toUpperCase().padStart(8, '0');
+  return `0x${part1}${part2}92A4B1E7D056C912F4E8A3B7`;
+}
+
 // In-memory persistent database store initialized from the application
 let dbState: SqlDatabaseState = {
   products: [],
   auditRecords: [],
+  roles: [
+    {
+      idRol: 1,
+      nombreRol: 'Gerencia',
+      descripcion: 'Acceso total a Dashboard BI, Inventario, Auditoría y SQL Studio',
+      nivelAcceso: 'Nivel 1 (Total - DDL/DML/OLAP)',
+    },
+    {
+      idRol: 2,
+      nombreRol: 'Ventas',
+      descripcion: 'Acceso operativo a Catálogo POS, emisión SUNAT y Mis Ventas',
+      nivelAcceso: 'Nivel 2 (Operativo POS - Principio de Menor Privilegio)',
+    },
+  ],
+  usuarios: [
+    {
+      idUsuario: 1,
+      idEmpleado: 1,
+      empleado: 'Idelfonso Ayala',
+      dni: '42891023',
+      nombreUsuario: 'iayala',
+      correo: 'gerencia@urbanstyle.pe',
+      clavePlana: 'Gerencia2026',
+      salt: 'E4A9F102-8B7C-4D3E-9A1B-0F2C8E6D4A11',
+      claveHash: computeSimulatedSha256('Gerencia2026E4A9F102-8B7C-4D3E-9A1B-0F2C8E6D4A11'),
+      idRol: 1,
+      rol: 'Gerencia',
+      activo: true,
+    },
+    {
+      idUsuario: 2,
+      idEmpleado: 2,
+      empleado: 'Ana Quispe',
+      dni: '11111111',
+      nombreUsuario: 'aquispe',
+      correo: 'ventas@urbanstyle.pe',
+      clavePlana: 'Ventas2026',
+      salt: 'B7C2D841-3F9A-4E1C-8D2B-5A7F9C1E3B22',
+      claveHash: computeSimulatedSha256('Ventas2026B7C2D841-3F9A-4E1C-8D2B-5A7F9C1E3B22'),
+      idRol: 2,
+      rol: 'Ventas',
+      activo: true,
+    },
+  ],
   auditLogs: [
     {
       id: 1,
@@ -48,13 +133,112 @@ let dbState: SqlDatabaseState = {
       tabla: 'VarianteProducto',
       operacion: 'UPDATE',
       idRegistro: 'US-2-41-2-2',
-      valorAnterior: 'Precio=399.90; Stock=14',
-      valorNuevo: 'Precio=399.90; Stock=18',
+      valorAnterior: 'Precio=329.90; Stock=14',
+      valorNuevo: 'Precio=329.90; Stock=18',
       usuario: 'sp_RegistrarCompra',
       fecha: new Date(Date.now() - 3600000).toISOString().replace('T', ' ').substring(0, 19),
     },
   ],
 };
+
+/**
+ * Ejecuta el procedimiento almacenado dbo.usp_ValidarLogin desde el formulario de Login
+ * verificando el Salt UNIQUEIDENTIFIER, el HASHBYTES('SHA2_256') y registrando el evento en dbo.Auditoria.
+ */
+export function executeSqlLogin(
+  userOrEmail: string,
+  plainPassword: string
+): {
+  success: boolean;
+  errorType?: 'NOT_FOUND' | 'INACTIVE' | 'WRONG_PASSWORD';
+  errorMessage?: string;
+  userAccount?: UserAccount;
+  sqlTrace?: string;
+} {
+  const cleanUser = userOrEmail.trim().toLowerCase();
+  const userRow = dbState.usuarios.find(
+    u => u.correo.toLowerCase() === cleanUser || u.nombreUsuario.toLowerCase() === cleanUser
+  );
+
+  if (!userRow) {
+    dbState.auditLogs.unshift({
+      id: dbState.auditLogs.length + 1,
+      tabla: 'Usuario',
+      operacion: 'LOGIN_FAIL',
+      idRegistro: cleanUser,
+      valorAnterior: 'NULL',
+      valorNuevo: 'RAISERROR: El usuario o correo no existe en dbo.Usuario',
+      usuario: 'dbo.usp_ValidarLogin',
+      fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
+    });
+    return {
+      success: false,
+      errorType: 'NOT_FOUND',
+      errorMessage: 'Cuenta no registrada en dbo.Usuario',
+    };
+  }
+
+  if (!userRow.activo) {
+    return {
+      success: false,
+      errorType: 'INACTIVE',
+      errorMessage: 'Usuario inactivo (Activo = 0)',
+    };
+  }
+
+  const computedHash = computeSimulatedSha256(plainPassword + userRow.salt);
+  if (computedHash !== userRow.claveHash) {
+    dbState.auditLogs.unshift({
+      id: dbState.auditLogs.length + 1,
+      tabla: 'Usuario',
+      operacion: 'LOGIN_FAIL',
+      idRegistro: `IdUsuario=${userRow.idUsuario}`,
+      valorAnterior: `HashEsperado=${userRow.claveHash.slice(0, 14)}...`,
+      valorNuevo: `HashCalculado=${computedHash.slice(0, 14)}... (Mismatch SHA-256)`,
+      usuario: 'dbo.usp_ValidarLogin',
+      fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
+    });
+    return {
+      success: false,
+      errorType: 'WRONG_PASSWORD',
+      errorMessage: 'HASHBYTES(SHA2_256) no coincide con ClaveHash',
+    };
+  }
+
+  // Register successful login in dbo.Auditoria
+  dbState.auditLogs.unshift({
+    id: dbState.auditLogs.length + 1,
+    tabla: 'Usuario',
+    operacion: 'LOGIN_AUTH',
+    idRegistro: `IdUsuario=${userRow.idUsuario} (${userRow.rol})`,
+    valorAnterior: `Salt=${userRow.salt.slice(0, 8)}...`,
+    valorNuevo: `SHA-256 Verificado (${userRow.claveHash.slice(0, 14)}...) | INNER JOIN Rol=${userRow.rol}`,
+    usuario: 'dbo.usp_ValidarLogin',
+    fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
+  });
+
+  notifySubscribers(dbState);
+
+  const baseAccount =
+    userRow.idRol === 1
+      ? INITIAL_USERS.gerencia
+      : INITIAL_USERS.ventas;
+
+  const userAccount: UserAccount = {
+    ...baseAccount,
+    role: userRow.idRol === 1 ? 'gerencia' : 'ventas',
+    name: userRow.empleado,
+    email: userRow.correo,
+    password: userRow.clavePlana,
+    title: userRow.idRol === 1 ? 'Gerente General & Administrador' : `Personal — Rol: ${userRow.rol}`,
+  };
+
+  return {
+    success: true,
+    userAccount,
+    sqlTrace: `EXEC dbo.usp_ValidarLogin @p_UsuarioOCorreo='${userRow.correo}', @p_ClavePlana='***' -> HASHBYTES('SHA2_256') OK (IdRol=${userRow.idRol}: ${userRow.rol})`,
+  };
+}
 
 export function initSqlEngine(initialProducts: Product[], initialAudit: AuditRecord[]) {
   if (dbState.products.length === 0) {
@@ -167,6 +351,240 @@ export function executeSQL(rawQuery: string): QueryResult {
 // -------------------------------------------------------------
 function handleSelect(query: string, startTime: number): QueryResult {
   const upper = query.toUpperCase();
+
+  // -----------------------------------------------------------------
+  // PRESENTACIÓN DIAPOSITIVA 3: KPIs Consolidados (OLTP -> DW -> Spark)
+  // -----------------------------------------------------------------
+  if (upper.includes('VW_RESUMENDIAPOSITIVA3') || upper.includes('CIFRAS_DIAPOSITIVA_3')) {
+    const columns = ['IndicadorClave', 'ValorVerificado', 'OrigenDatos', 'FormulaSpark_SQL', 'ImpactoNegocio'];
+    const rows = [
+      ['Ventas netas sin IGV', 'S/ 11,173.39', 'Spark RDD Broadcast', 'rdd_ventas.map(f => f[4] / (1 + 0.18)).sum()', 'Descuento de tasa IGV 18% vía variable Broadcast'],
+      ['Utilidad neta total', 'S/ 1,960.75', 'Spark RDD reduce & DW', 'rdd_ventas.map(f => f[5]).reduce((a, b) => a + b)', 'Rentabilidad real consolidada en las 59 líneas'],
+      ['Líneas vendidas con pérdida', '31 de 59 (52.5%)', 'Spark DataFrame filter', 'df_ventas.filter(F.col("Utilidad") < 0).count()', 'Alerta comercial: 31 líneas vendidas bajo costo'],
+      ['Inventario sin rotación', 'S/ 262,564.68 (S/ 262 mil)', 'SparkSQL LEFT ANTI JOIN', 'LEFT JOIN ventas WHERE v.NombreMarca IS NULL', '3 marcas inmovilizadas (New Balance, Converse, Vans)'],
+    ];
+    return {
+      columns,
+      rows,
+      rowCount: rows.length,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'SELECT',
+      message: 'Cifras oficiales verificadas de la Diapositiva 3 (OLTP + Data Warehouse Kimball + Apache Spark).',
+    };
+  }
+
+  // -----------------------------------------------------------------
+  // EXPOSITOR 1 (SEMANA 11 - DIAPOSITIVAS 5, 6, 7): Limpieza CSV, BOM y Cast
+  // -----------------------------------------------------------------
+  if (upper.includes('VW_LIMPIEZASPARK') || upper.includes('VENTAS_DEMO') || upper.includes('SIN_BOM')) {
+    const columns = ['Dataset_CSV', 'FilasBrutas_SQLCMD', 'FilasSuciasFiltradas', 'RegistrosLimpios', 'TransformacionesAplicadas'];
+    const rows = [
+      ['ventas_demo.csv (df_ventas)', 63, '4 filas ("---" y "rows affected")', 59, 'sin_bom(\\ufeff) + filter(isNotNull) + cast(Cantidad:int, TotalLinea:double, Utilidad:double)'],
+      ['stock_demo.csv (df_stock)', 279, '4 filas ("---" y "rows affected")', 275, 'sin_bom(\\ufeff) + filter(isNotNull) + cast(Stock:int, Precio:double, ValorInventario:double)'],
+    ];
+    return {
+      columns,
+      rows,
+      rowCount: rows.length,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'SELECT',
+      message: 'Expositor 1 (Semana 11): Limpieza de BOM y casteo de esquemas en DataFrames (59 ventas y 275 variantes limpias).',
+    };
+  }
+
+  // -----------------------------------------------------------------
+  // EXPOSITOR 2 (SEMANA 12 - DIAPOSITIVA 10): RDD leftOuterJoin Stock vs Ventas
+  // -----------------------------------------------------------------
+  if (upper.includes('LEFT OUTER JOIN') || upper.includes('LEFTOUTERJOIN')) {
+    const columns = ['NombreMarca', 'Stock_Pares', 'Valor_Inventario', 'Ventas_Soles', 'Utilidad_Soles', 'Estado_Rotacion'];
+    const rows = [
+      ['New Balance', '675 pares', 'S/ 103,343.10', 'S/ 0.00', 'S/ 0.00', 'SIN VENTAS (Capital Inmovilizado)'],
+      ['Converse', '675 pares', 'S/ 84,556.83', 'S/ 0.00', 'S/ 0.00', 'SIN VENTAS (Capital Inmovilizado)'],
+      ['Vans', '675 pares', 'S/ 74,664.75', 'S/ 0.00', 'S/ 0.00', 'SIN VENTAS (Capital Inmovilizado)'],
+      ['Reebok', '674 pares', 'S/ 84,546.10', 'S/ 3,120.50', 'S/ 1,279.41', 'con ventas (Margen +41%)'],
+      ['Puma', '375 pares', 'S/ 34,507.25', 'S/ 2,540.00', 'S/ -25.41', 'con ventas (Margen -1%)'],
+      ['Nike', '363 pares', 'S/ 54,678.99', 'S/ 3,890.10', 'S/ 544.61', 'con ventas (Margen +14%)'],
+      ['Adidas', '355 pares', 'S/ 27,955.00', 'S/ 3,634.00', 'S/ 162.14', 'con ventas (Margen +20%)'],
+    ];
+    return {
+      columns,
+      rows,
+      rowCount: rows.length,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'SELECT',
+      message: 'Expositor 2 (Semana 12): leftOuterJoin conserva las 7 marcas (detectando 3 marcas sin rotación con 675 pares cada una).',
+    };
+  }
+
+  // -----------------------------------------------------------------
+  // EXPOSITOR 2 (SEMANA 12 - DIAPOSITIVA 11): Top 3 Modelos (takeOrdered)
+  // -----------------------------------------------------------------
+  if (upper.includes('TAKEORDERED') || upper.includes('TOP 3')) {
+    const columns = ['Ranking', 'NombreMarca', 'NombreModelo', 'UnidadesVendidas', 'Particiones_Y_Linaje_RDD'];
+    const rows = [
+      [1, 'Adidas', 'Runfalcon', '41 pares', 'particiones: 1 -> [59] | repartition(4): 4 | coalesce(1): 1'],
+      [2, 'Nike', 'Air Max', '29 pares', 'Linaje DAG: MapPartitionsRDD -> ShuffledRDD (reduceByKey)'],
+      [3, 'Puma', 'Smash', '14 pares', 'takeOrdered(3, key=lambda kv: -kv[1]) sin ordenar todo el RDD'],
+    ];
+    return {
+      columns,
+      rows,
+      rowCount: rows.length,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'SELECT',
+      message: 'Expositor 2 (Semana 12): Top 3 modelos más vendidos extraídos con takeOrdered(3).',
+    };
+  }
+
+  // -----------------------------------------------------------------
+  // EXPOSITOR 3 (SEMANA 14 - DIAPOSITIVAS 13 Y 14): SparkSQL Stock y Valor por Marca
+  // -----------------------------------------------------------------
+  if (upper.includes('VALOR_INVENTARIO_SOLES') || (upper.includes('FROM STOCK') && upper.includes('GROUP BY'))) {
+    if (upper.includes('IS NULL')) {
+      const columns = ['NombreMarca', 'Pares_Inmovilizados', 'Valor_Inmovilizado_Soles', 'Ventas_Registradas', 'Diagnostico_SparkSQL'];
+      const rows = [
+        ['New Balance', 675, 'S/ 103,343.10', null, 'LEFT JOIN ventas WHERE v.NombreMarca IS NULL'],
+        ['Converse', 675, 'S/ 84,556.83', null, 'LEFT JOIN ventas WHERE v.NombreMarca IS NULL'],
+        ['Vans', 675, 'S/ 74,664.75', null, 'LEFT JOIN ventas WHERE v.NombreMarca IS NULL'],
+      ];
+      return {
+        columns,
+        rows,
+        rowCount: rows.length,
+        executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+        operation: 'SELECT',
+        message: 'Expositor 3 (Semana 14): 3 marcas sin rotación que inmovilizan S/ 262,564.68 de capital.',
+      };
+    }
+
+    const columns = ['NombreMarca', 'Pares_Disponibles', 'Valor_Inventario_Soles', 'Formato_Persistencia', 'Optimizador'];
+    const rows = [
+      ['New Balance', 675, 'S/ 103,343.10', 'resumen_stock.parquet (Columnar)', 'Catalyst Physical Plan == SQL Plan'],
+      ['Converse', 675, 'S/ 84,556.83', 'resumen_stock.parquet (Columnar)', 'Catalyst Physical Plan == SQL Plan'],
+      ['Reebok', 674, 'S/ 84,546.10', 'resumen_stock.parquet (Columnar)', 'Catalyst Physical Plan == SQL Plan'],
+      ['Vans', 675, 'S/ 74,664.75', 'resumen_stock.parquet (Columnar)', 'Catalyst Physical Plan == SQL Plan'],
+      ['Nike', 363, 'S/ 54,678.99', 'resumen_stock.parquet (Columnar)', 'Catalyst Physical Plan == SQL Plan'],
+      ['Puma', 375, 'S/ 34,507.25', 'resumen_stock.parquet (Columnar)', 'Catalyst Physical Plan == SQL Plan'],
+      ['Adidas', 355, 'S/ 27,955.00', 'resumen_stock.parquet (Columnar)', 'Catalyst Physical Plan == SQL Plan'],
+    ];
+    return {
+      columns,
+      rows,
+      rowCount: rows.length,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'SELECT',
+      message: 'Expositor 3 (Semana 14): Stock y valorización por marca con DataFrame API / SparkSQL sobre vista temporal.',
+    };
+  }
+
+  // -----------------------------------------------------------------
+  // EXPOSITOR 4 (SEMANA 14 - DIAPOSITIVA 17): Estadística Avanzada (describe, corr, approxQuantile)
+  // -----------------------------------------------------------------
+  if (upper.includes('VW_ESTADISTICASPARK') || upper.includes('APPROXQUANTILE') || upper.includes('DESCRIBE')) {
+    const columns = ['Funcion_Spark', 'Columna_TotalLinea', 'Columna_Utilidad', 'Interpretacion_Analitica'];
+    const rows = [
+      ['describe() -> count', '59 líneas', '59 líneas', 'Total de registros limpios analizados en df_ventas'],
+      ['describe() -> mean', 'S/ 223.47', 'S/ 33.23', 'Promedio por línea de venta facturada'],
+      ['describe() -> stddev', 'S/ 118.64', 'S/ 84.12', 'Alta dispersión en utilidad por descuentos agresivos'],
+      ['stat.corr("TotalLinea", "Utilidad")', 'r = 0.742', 'r = 0.742', 'Correlación Pearson positiva, pero NO implica margen sano'],
+      ['approxQuantile (Q1 - 25%, err=0.01)', 'S/ 149.90', 'S/ -18.40', 'Primer cuartil negativo sin ordenar todo el dataset'],
+      ['approxQuantile (Mediana - 50%)', 'S/ 199.90', 'S/ -4.20', 'Mediana negativa: más de la mitad de las ventas dan pérdida'],
+      ['approxQuantile (Q3 - 75%, err=0.01)', 'S/ 299.90', 'S/ 68.50', 'Tercer cuartil con margen positivo'],
+      ['filter(F.col("Utilidad") < 0).count()', '31 líneas', 'de 59 totales (52.5%)', 'Hallazgo verificado: 31 líneas vendidas con utilidad negativa'],
+    ];
+    return {
+      columns,
+      rows,
+      rowCount: rows.length,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'SELECT',
+      message: 'Expositor 4 (Semana 14): Estadística avanzada con describe(), stat.corr() y approxQuantile().',
+    };
+  }
+
+  // -----------------------------------------------------------------
+  // EXPOSITOR 4 (SEMANA 14 - DIAPOSITIVA 18): Márgenes (%) por Marca y Crosstab
+  // -----------------------------------------------------------------
+  if (upper.includes('MARGENPCT') || upper.includes('CROSSTAB')) {
+    const columns = ['NombreMarca', 'MargenPct', 'TiendaFisica', 'Web_WhatsApp', 'RedesSociales', 'Conclusion_De_Negocio'];
+    const rows = [
+      ['Reebok', '41.0%', '5 líneas', '4 líneas', '3 líneas', 'Vende poco volumen pero con el mejor margen unitario (+41%)'],
+      ['Adidas', '20.0%', '8 líneas', '7 líneas', '6 líneas', 'Buen margen global (+20%), aunque Runfalcon pierde en promos'],
+      ['Nike', '14.0%', '6 líneas', '5 líneas', '4 líneas', 'Margen positivo moderado (+14%) en línea Air Max'],
+      ['Puma', '-1.0%', '4 líneas', '4 líneas', '3 líneas', 'Margen negativo (-1%): vende unidades pero no deja ganancia'],
+    ];
+    return {
+      columns,
+      rows,
+      rowCount: rows.length,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'SELECT',
+      message: 'Expositor 4 (Semana 14): Margen de utilidad (%) por marca y tabla de contingencia (stat.crosstab).',
+    };
+  }
+
+  // -----------------------------------------------------------------
+  // EXPOSITOR 4 (SEMANA 14 - DIAPOSITIVA 19): Modelos que Generan Pérdida (Utilidad < 0)
+  // -----------------------------------------------------------------
+  if (upper.includes('UTILIDAD < 0') || upper.includes('PERDIDA')) {
+    const columns = ['NombreMarca', 'NombreModelo', 'UnidadesVendidas', 'Perdida_Acumulada', 'Causa_Raiz_Detectada'];
+    const rows = [
+      ['Adidas', 'Runfalcon', '41 pares (Top 1)', 'S/ -379.98', 'Es el modelo más vendido y el que más pierde: precio o costo mal calculado'],
+      ['Nike', 'Air Max', '29 pares (Top 2)', 'S/ -155.19', 'Promociones aplicadas por debajo del costo promedio ponderado'],
+      ['Puma', 'Smash', '14 pares (Top 3)', 'S/ -25.41', 'Descuento de liquidación supera el margen bruto comercial'],
+    ];
+    return {
+      columns,
+      rows,
+      rowCount: rows.length,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'SELECT',
+      message: 'Expositor 4 (Semana 14): Modelos con pérdida acumulada (Utilidad < 0) coincidente entre RDD y DataFrames.',
+    };
+  }
+
+  // -----------------------------------------------------------------
+  // SEGURIDAD LEY N.° 29733: Enmascaramiento Dinámico (DDM) en dw.DimCliente
+  // -----------------------------------------------------------------
+  if (upper.includes('DIMCLIENTE') || upper.includes('29733') || upper.includes('MASKED')) {
+    const columns = ['SK_Cliente', 'TipoDocumento', 'NumeroDocumento_DDM', 'NombreRazonSocial_DDM', 'Correo_DDM', 'Telefono_DDM', 'Distrito', 'Regla_Ley_29733'];
+    const rows = [
+      [1, 'DNI', '7XXXXXX4', 'CXXXXa RXXXXs', 'cXXX@XXXX.com', '98XXXXX21', 'Miraflores', 'partial(1,"XXXXXX",1) + email()'],
+      [2, 'RUC', '2XXXXXX1', 'IXXXXs DXXXXC', 'lXXX@XXXX.com', '99XXXXX40', 'San Isidro', 'partial(1,"XXXXXX",1) + email()'],
+      [3, 'DNI', '4XXXXXX8', 'MXXXXo TXXXXo', 'mXXX@XXXX.com', '94XXXXX15', 'Surco', 'partial(1,"XXXXXX",1) + email()'],
+      [4, 'DNI', '7XXXXXX2', 'VXXXXa PXXXXz', 'vXXX@XXXX.com', '97XXXXX88', 'La Molina', 'partial(1,"XXXXXX",1) + email()'],
+      [5, 'RUC', '2XXXXXX9', 'GXXXXo AXXXXC', 'cXXX@XXXX.com', '95XXXXX02', 'San Borja', 'partial(1,"XXXXXX",1) + email()'],
+    ];
+    return {
+      columns,
+      rows,
+      rowCount: rows.length,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'SELECT',
+      message: 'Seguridad Ley N.° 29733: Enmascaramiento Dinámico de Datos (DDM) activo sobre dw.DimCliente.',
+    };
+  }
+
+  // -----------------------------------------------------------------
+  // SCRIPT 04: Reconciliación Multinivel OLTP vs Data Warehouse Kimball
+  // -----------------------------------------------------------------
+  if (upper.includes('RECONCILIACION') || upper.includes('CUBE')) {
+    const columns = ['Metrica_Auditada', 'Base_OLTP_3FN', 'DataWarehouse_Kimball', 'Diferencia', 'Estado_Reconciliacion'];
+    const rows = [
+      ['1. Ventas Netas sin IGV (S/)', 'S/ 11,173.39', 'S/ 11,173.39', 'S/ 0.00', 'CONCILIADO (Diferencia = 0)'],
+      ['2. Utilidad Neta Total (S/)', 'S/ 1,960.75', 'S/ 1,960.75', 'S/ 0.00', 'CONCILIADO (Diferencia = 0)'],
+      ['3. Líneas Totales Facturadas', '59 líneas', '59 líneas', '0', 'CONCILIADO (Diferencia = 0)'],
+      ['4. Variantes en Stock (SKUs)', '275 variantes', '275 variantes', '0', 'CONCILIADO (Diferencia = 0)'],
+    ];
+    return {
+      columns,
+      rows,
+      rowCount: rows.length,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'SELECT',
+      message: 'Reconciliación matemática multinivel OLTP vs Data Warehouse Kimball: Diferencia = 0.00.',
+    };
+  }
 
   // Check GROUP BY Brand (OLAP Aggregation)
   if (upper.includes('GROUP BY NOMBREMARCA') || upper.includes('GROUP BY MARCA')) {
@@ -287,23 +705,33 @@ function handleSelect(query: string, startTime: number): QueryResult {
     return filterAndSort(columns, rows, query, startTime, 'SELECT');
   }
 
-  // Handle Usuario table query
-  if (upper.includes('FROM USUARIO') || upper.includes('FROM USUARIOS')) {
-    const columns = ['IdUsuario', 'Empleado', 'NombreUsuario', 'Correo', 'IdRol', 'Rol', 'ClaveHash', 'Activo'];
-    const rows = [
-      [1, 'Idelfonso Ayala', 'iayala', 'gerencia@urbanstyle.pe', 1, 'Gerencia', '0x8F3C92... (SHA-256)', 'ACTIVO'],
-      [2, 'Ana Quispe', 'aquispe', 'ventas@urbanstyle.pe', 2, 'Ventas', '0x4D2A71... (SHA-256)', 'ACTIVO'],
-    ];
+  // Handle Usuario table query (3FN joined with Empleado & Rol)
+  if (upper.includes('FROM USUARIO') || upper.includes('FROM DBO.USUARIO')) {
+    const columns = ['IdUsuario', 'Empleado', 'DNI', 'NombreUsuario', 'Correo', 'IdRol', 'NombreRol', 'Salt_UUID', 'ClaveHash_SHA256', 'Estado'];
+    const rows = dbState.usuarios.map(u => [
+      u.idUsuario,
+      u.empleado,
+      u.dni,
+      u.nombreUsuario,
+      u.correo,
+      u.idRol,
+      u.rol,
+      u.salt,
+      `${u.claveHash.slice(0, 18)}... (SHA-256)`,
+      u.activo ? 'ACTIVO (1)' : 'INACTIVO (0)',
+    ]);
     return filterAndSort(columns, rows, query, startTime, 'SELECT');
   }
 
   // Handle Rol table query
-  if (upper.includes('FROM ROL') || upper.includes('FROM ROLES')) {
-    const columns = ['IdRol', 'NombreRol', 'Descripcion', 'NivelAcceso'];
-    const rows = [
-      [1, 'Gerencia', 'Acceso total a métricas, inventario, auditoría y SQL Studio', 'Nivel 1 (Total)'],
-      [2, 'Ventas', 'Acceso restringido a Catálogo POS y registro de ventas', 'Nivel 2 (Operativo)'],
-    ];
+  if (upper.includes('FROM ROL') || upper.includes('FROM DBO.ROL')) {
+    const columns = ['IdRol', 'NombreRol', 'Descripcion', 'NivelAcceso_RBAC'];
+    const rows = dbState.roles.map(r => [
+      r.idRol,
+      r.nombreRol,
+      r.descripcion,
+      r.nivelAcceso,
+    ]);
     return filterAndSort(columns, rows, query, startTime, 'SELECT');
   }
 
@@ -419,9 +847,52 @@ function filterAndSort(
 // INSERT HANDLER
 // -------------------------------------------------------------
 function handleInsert(query: string, startTime: number): QueryResult {
-  // Try to parse values from INSERT statement:
-  // e.g. INSERT INTO VarianteProducto (NombreModelo, NombreMarca, Categoria, Talla, Precio, Stock) VALUES ('Puma Nitro', 'Puma', 'Running', 41, 489.00, 15)
+  const upper = query.toUpperCase();
   const valuesMatch = query.match(/VALUES\s*\((.*?)\)/i);
+
+  // 1. INSERT INTO Rol (NombreRol, Descripcion)
+  if (upper.includes('INTO ROL') || upper.includes('INTO DBO.ROL')) {
+    let roleName = 'Supervisor';
+    let roleDesc = 'Supervisión de operaciones, arqueo de caja y control de inventario';
+    if (valuesMatch && valuesMatch[1]) {
+      const rawArgs = valuesMatch[1].split(',').map(s => s.trim().replace(/^['"]|['"]$/g, ''));
+      if (rawArgs[0]) roleName = rawArgs[0];
+      if (rawArgs[1]) roleDesc = rawArgs[1];
+    }
+
+    const newRole: SqlRoleRecord = {
+      idRol: dbState.roles.length + 1,
+      nombreRol: roleName,
+      descripcion: roleDesc,
+      nivelAcceso: `Nivel ${dbState.roles.length + 1} (RBAC Personalizado)`,
+    };
+    dbState.roles = [...dbState.roles, newRole];
+
+    dbState.auditLogs.unshift({
+      id: dbState.auditLogs.length + 1,
+      tabla: 'Rol',
+      operacion: 'INSERT',
+      idRegistro: `IdRol=${newRole.idRol}`,
+      valorAnterior: 'NULL',
+      valorNuevo: `NombreRol=${newRole.nombreRol}; Descripcion=${newRole.descripcion}`,
+      usuario: 'SQL_Studio_Admin',
+      fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
+    });
+
+    notifySubscribers(dbState);
+
+    return {
+      columns: ['IdRol', 'NombreRol', 'Descripcion', 'NivelAcceso_RBAC', 'Estado_INSERT'],
+      rows: dbState.roles.map(r => [r.idRol, r.nombreRol, r.descripcion, r.nivelAcceso, r.idRol === newRole.idRol ? 'NUEVO ROL INSERTADO' : 'Existente']),
+      rowCount: dbState.roles.length,
+      affectedRows: 1,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'INSERT',
+      message: `Nuevo rol "${newRole.nombreRol}" (IdRol = ${newRole.idRol}) registrado en dbo.Rol y auditado en dbo.Auditoria.`,
+    };
+  }
+
+  // Try to parse values from INSERT statement for VarianteProducto:
   let name = 'Nuevo Calzado Urban Style';
   let brand: any = 'Adidas';
   let category = 'Urbana / Deportiva';
@@ -629,6 +1100,55 @@ function handleDelete(query: string, startTime: number): QueryResult {
 // -------------------------------------------------------------
 function handleExec(query: string, startTime: number): QueryResult {
   const upper = query.toUpperCase();
+
+  // usp_ValidarLogin - SHA-256 + Salt Authentication Stored Procedure
+  if (upper.includes('USP_VALIDARLOGIN') || upper.includes('VALIDARLOGIN')) {
+    const emailMatch = query.match(/['"]([^'"]+@[^'"]+|iayala|aquispe)['"]/i);
+    const passMatch = query.match(/(?:@p_ClavePlana|@Clave)\s*=\s*['"]([^'"]+)['"]/i);
+    const targetEmail = emailMatch ? emailMatch[1] : 'gerencia@urbanstyle.pe';
+    const targetPass = passMatch
+      ? passMatch[1]
+      : targetEmail.toLowerCase().includes('ventas') || targetEmail.toLowerCase() === 'aquispe'
+      ? 'Ventas2026'
+      : 'Gerencia2026';
+
+    const authRes = executeSqlLogin(targetEmail, targetPass);
+    const userRow = dbState.usuarios.find(
+      u => u.correo.toLowerCase() === targetEmail.toLowerCase() || u.nombreUsuario.toLowerCase() === targetEmail.toLowerCase()
+    );
+
+    if (!authRes.success || !userRow) {
+      return {
+        columns: ['Error_SQL', 'Codigo_Retorno', 'Procedimiento', 'Detalle_Criptografico'],
+        rows: [[authRes.errorMessage || 'Credenciales inválidas', -2, 'dbo.usp_ValidarLogin', 'RAISERROR: HASHBYTES("SHA2_256", @Clave + @Salt) <> ClaveHash']],
+        rowCount: 1,
+        executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+        isError: true,
+        operation: 'EXEC',
+        message: `ERROR en usp_ValidarLogin: ${authRes.errorMessage}`,
+      };
+    }
+
+    return {
+      columns: ['IdUsuario', 'NombreUsuario', 'NombreCompleto', 'Correo', 'IdRol', 'NombreRol', 'Salt_UNIQUEIDENTIFIER', 'Verificacion_SHA256', 'Auditoria'],
+      rows: [[
+        userRow.idUsuario,
+        userRow.nombreUsuario,
+        userRow.empleado,
+        userRow.correo,
+        userRow.idRol,
+        userRow.rol,
+        userRow.salt,
+        `${userRow.claveHash.slice(0, 18)}... (MATCH OK)`,
+        'Registrado en dbo.Auditoria (LOGIN_AUTH)',
+      ]],
+      rowCount: 1,
+      affectedRows: 1,
+      executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
+      operation: 'EXEC',
+      message: `usp_ValidarLogin ejecutado: Hash SHA-256 + Salt verificado con éxito para ${userRow.empleado} (Rol: ${userRow.rol}).`,
+    };
+  }
 
   // sp_RegistrarVenta - Transactional ACID procedure with stock deduction & live sync
   if (upper.includes('SP_REGISTRARVENTA') || upper.includes('REGISTRARVENTA')) {

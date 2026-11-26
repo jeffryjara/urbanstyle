@@ -312,3 +312,57 @@ CREATE TABLE Auditoria (
     Fecha          DATETIME2 NOT NULL DEFAULT SYSDATETIME()
 );
 GO
+
+/* =====================================================================
+   2. TRIGGERS DE INMUTABILIDAD Y PROCEDIMIENTO DE LOGIN (SHA-256)
+   ===================================================================== */
+
+CREATE OR ALTER TRIGGER dbo.TR_Comprobante_Inmutable
+ON dbo.Comprobante
+INSTEAD OF DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    RAISERROR('Un comprobante emitido no se puede eliminar. Emita una nota de crédito.', 16, 1);
+    ROLLBACK TRANSACTION;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.usp_ValidarLogin
+    @p_UsuarioOCorreo VARCHAR(100),
+    @p_ClavePlana     VARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @v_Salt UNIQUEIDENTIFIER, @v_ClaveHash VARBINARY(32), @v_IdUsuario INT, @v_Activo BIT;
+
+    SELECT @v_IdUsuario = u.IdUsuario, @v_Salt = u.Salt, @v_ClaveHash = u.ClaveHash, @v_Activo = u.Activo
+    FROM dbo.Usuario u
+    INNER JOIN dbo.Empleado e ON e.IdEmpleado = u.IdEmpleado
+    WHERE u.NombreUsuario = @p_UsuarioOCorreo OR e.Correo = @p_UsuarioOCorreo;
+
+    IF @v_IdUsuario IS NULL OR @v_Activo = 0
+    BEGIN
+        RAISERROR('Credenciales inválidas o cuenta inactiva.', 16, 1);
+        RETURN -1;
+    END;
+
+    IF HASHBYTES('SHA2_256', @p_ClavePlana + CAST(@v_Salt AS VARCHAR(36))) <> @v_ClaveHash
+    BEGIN
+        RAISERROR('Contraseña incorrecta.', 16, 1);
+        RETURN -2;
+    END;
+
+    INSERT INTO dbo.Auditoria (Tabla, Operacion, IdRegistro, ValorAnterior, ValorNuevo)
+    VALUES ('Usuario', 'LOGIN_AUTH', CAST(@v_IdUsuario AS VARCHAR(20)), 'SESION_CERRADA', 'AUTENTICACION_SHA256_EXITOSA');
+
+    SELECT u.IdUsuario, u.NombreUsuario, r.IdRol, r.NombreRol,
+           CONCAT(e.Nombres, ' ', e.Apellidos) AS NombreCompleto, e.Correo
+    FROM dbo.Usuario u
+    INNER JOIN dbo.Rol r      ON r.IdRol = u.IdRol
+    INNER JOIN dbo.Empleado e ON e.IdEmpleado = u.IdEmpleado
+    WHERE u.IdUsuario = @v_IdUsuario;
+END;
+GO
+

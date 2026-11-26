@@ -449,14 +449,14 @@ ORDER BY IngresosBrutos DESC;`,
     badge: 'Seguridad',
     badgeColor: 'red',
     sql: 'SELECT * FROM Auditoria ORDER BY IdAuditoria DESC;',
-    description: 'Registro forense de eventos de base de datos capturados automáticamente por triggers.',
-    academicDocenteNote: 'Profesor, la tabla Auditoria registra la trazabilidad de cualquier alteración en el sistema. Los triggers capturan la tabla afectada, la operación (INSERT, UPDATE, DELETE), el usuario de BD, los valores antes y después, y la fecha exacta.',
+    description: 'Registro forense de eventos de base de datos capturados automáticamente por triggers y login.',
+    academicDocenteNote: 'Profesor, la tabla Auditoria registra la trazabilidad de cualquier alteración o inicio de sesión en el sistema. Captura la tabla afectada, la operación (INSERT, UPDATE, DELETE, LOGIN_AUTH), el usuario de BD, los valores antes y después, y la fecha exacta.',
     theoryConcept: 'Tablas de Auditoría, Integridad y Trazabilidad Forense según Estándares COBIT e ISO 27001.',
     lineByLine: [
       {
         lineNum: 1,
         code: 'SELECT * FROM Auditoria ORDER BY IdAuditoria DESC;',
-        explanation: 'Recupera el historial cronológico inverso para inspeccionar las últimas operaciones registradas automáticamente por los triggers del motor.',
+        explanation: 'Recupera el historial cronológico inverso para inspeccionar las últimas operaciones registradas automáticamente por los triggers y procedimientos del motor.',
       },
     ],
     teacherQuestions: [
@@ -466,4 +466,491 @@ ORDER BY IngresosBrutos DESC;`,
       },
     ],
   },
+
+  {
+    id: 'usp_validar_login',
+    title: 'usp_ValidarLogin (SHA-256)',
+    category: 'Auditoría & Triggers',
+    badge: 'Auth SHA-256',
+    badgeColor: 'emerald',
+    sql: `EXEC dbo.usp_ValidarLogin 
+    @p_UsuarioOCorreo = 'gerencia@urbanstyle.pe', 
+    @p_ClavePlana = 'Gerencia2026';`,
+    description: 'Procedimiento almacenado que ejecuta el botón Entrar del Login: verifica Salt, HASHBYTES SHA-256 y audita el acceso.',
+    academicDocenteNote: 'Profesor, este es el procedimiento almacenado que ejecuta internamente el botón Entrar del Login. Nunca comparamos contraseñas en texto plano: recuperamos el Salt UNIQUEIDENTIFIER del usuario, calculamos HASHBYTES("SHA2_256", @Clave + @Salt) y verificamos que coincida con ClaveHash (VARBINARY 32). Además, registra el acceso en la tabla Auditoria.',
+    theoryConcept: 'Criptografía en Base de Datos (SHA-256 + Salt), Prevención de Rainbow Tables y Control de Acceso Basado en Roles (RBAC).',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'EXEC dbo.usp_ValidarLogin',
+        explanation: 'Invoca el procedimiento almacenado compilado en UrbanStylosDB que centraliza la seguridad de autenticación.',
+      },
+      {
+        lineNum: 2,
+        code: "@p_UsuarioOCorreo = 'gerencia@urbanstyle.pe',",
+        explanation: 'Parámetro que busca coincidencias en dbo.Usuario (NombreUsuario) o dbo.Empleado (Correo) mediante INNER JOIN.',
+      },
+      {
+        lineNum: 3,
+        code: "@p_ClavePlana = 'Gerencia2026';",
+        explanation: 'El SP concatena esta clave con el Salt del usuario y aplica HASHBYTES("SHA2_256") para compararlo con ClaveHash.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Para qué sirve la columna Salt (UNIQUEIDENTIFIER) en la tabla Usuario?',
+        answer: 'Es un valor aleatorio de 128 bits generado con NEWID() único por usuario. Garantiza que si dos usuarios tienen la misma contraseña, sus hashes SHA-256 sean totalmente distintos, bloqueando ataques con Rainbow Tables.',
+      },
+      {
+        question: '¿Qué pasa si las credenciales son válidas?',
+        answer: 'El SP inserta un registro LOGIN_AUTH en dbo.Auditoria y retorna la proyección con INNER JOIN entre Usuario, Rol y Empleado para habilitar los permisos según IdRol.',
+      },
+    ],
+  },
+
+  {
+    id: 'select_usuarios_roles',
+    title: 'Usuarios & Roles (3FN)',
+    category: 'OLTP (3FN)',
+    badge: 'Seguridad 3FN',
+    badgeColor: 'blue',
+    sql: `SELECT u.IdUsuario, e.Nombres, u.NombreUsuario, e.Correo, r.IdRol, r.NombreRol, u.Salt, u.ClaveHash
+FROM dbo.Usuario u
+INNER JOIN dbo.Rol r ON r.IdRol = u.IdRol
+INNER JOIN dbo.Empleado e ON e.IdEmpleado = u.IdEmpleado;`,
+    description: 'Consulta normalizada en 3FN que une Empleado, Usuario y Rol mostrando el Salt y el Hash SHA-256.',
+    academicDocenteNote: 'Profesor, en lugar de meter correo, nombre, rol y contraseña en una sola tabla desnormalizada, separamos en 3FN cuatro entidades: Cargo (RRHH), Empleado (persona física), Usuario (credencial criptográfica) y Rol (autorización del sistema).',
+    theoryConcept: 'Tercera Forma Normal (3FN), Eliminación de Dependencias Transitivas y Separación de Entidades.',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'SELECT u.IdUsuario, e.Nombres, u.NombreUsuario, ...',
+        explanation: 'Proyecta los atributos de identidad, credenciales criptográficas (Salt, ClaveHash) y nivel de rol.',
+      },
+      {
+        lineNum: 2,
+        code: 'FROM dbo.Usuario u INNER JOIN dbo.Rol r ... INNER JOIN dbo.Empleado e ...',
+        explanation: 'Reconstruye la vista de seguridad uniendo las claves foráneas IdRol e IdEmpleado.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Por qué separar Empleado y Usuario en dos tablas distintas?',
+        answer: 'Porque un empleado puede trabajar en almacén o limpieza sin tener cuenta en el sistema informático, y si se desactiva su usuario, su registro de Empleado se conserva para no romper la integridad referencial histórica de ventas.',
+      },
+    ],
+  },
+
+  {
+    id: 'insert_nuevo_rol',
+    title: 'INSERT Nuevo Rol (RBAC)',
+    category: 'Auditoría & Triggers',
+    badge: 'DML Roles',
+    badgeColor: 'emerald',
+    sql: `INSERT INTO dbo.Rol (NombreRol, Descripcion)
+VALUES ('Supervisor', 'Control de tiendas, arqueo de caja y auditoría de stock');`,
+    description: 'Inserción en vivo de un nuevo Rol en dbo.Rol demostrando la escalabilidad del modelo de permisos RBAC.',
+    academicDocenteNote: 'Profesor, si la empresa crece y requiere un nuevo perfil como Supervisor o Almacén, no modificamos la estructura de tablas: simplemente insertamos una nueva tupla en dbo.Rol y asignamos permisos con GRANT y DENY bajo el principio de menor privilegio.',
+    theoryConcept: 'Control de Acceso Basado en Roles (RBAC), Sentencias DCL (GRANT / DENY) y Escalabilidad Relacional.',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'INSERT INTO dbo.Rol (NombreRol, Descripcion)',
+        explanation: 'Inserta un nuevo registro en el catálogo maestro de roles de seguridad.',
+      },
+      {
+        lineNum: 2,
+        code: "VALUES ('Supervisor', 'Control de tiendas...');",
+        explanation: 'El motor genera automáticamente el siguiente IdRol (IDENTITY) y registra la creación en dbo.Auditoria.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: 'Además de insertar en la tabla Rol, ¿cómo se restringen permisos en SQL Server?',
+        answer: 'Con DCL (Data Control Language): CREATE ROLE Rol_Ventas; GRANT SELECT ON vw_StockActual TO Rol_Ventas; y DENY DELETE, UPDATE ON Comprobante TO Rol_Ventas;',
+      },
+    ],
+  },
+
+  {
+    id: 'ley_29733_ddm',
+    title: 'Ley 29733 (Masking DDM)',
+    category: 'Auditoría & Triggers',
+    badge: 'Ley N.° 29733',
+    badgeColor: 'red',
+    sql: `-- Enmascaramiento Dinámico de Datos (DDM) - Ley N.° 29733 (Diapositivas 2 y 3)
+SELECT SK_Cliente, TipoDocumento, NumeroDocumento, NombreRazonSocial, Correo, Telefono, Distrito
+FROM dw.DimCliente;`,
+    description: 'Demostración de protección de datos personales (PII) con Dynamic Data Masking en el Data Warehouse.',
+    academicDocenteNote: 'Profesor, como expusimos en las Diapositivas 2 y 3, uno de los problemas críticos era la exposición de datos personales. Aplicamos Dynamic Data Masking (DDM) en SQL Server sobre dw.DimCliente para cumplir con la Ley N.° 29733 de Protección de Datos Personales del Perú.',
+    theoryConcept: 'Dynamic Data Masking (DDM), Cumplimiento Normativo Ley N.° 29733 y Privacidad en Entornos Analíticos.',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'SELECT SK_Cliente, TipoDocumento, NumeroDocumento, NombreRazonSocial, Correo, Telefono',
+        explanation: 'Consulta la dimensión de clientes desde un rol de analista de Big Data o BI.',
+      },
+      {
+        lineNum: 2,
+        code: 'FROM dw.DimCliente;',
+        explanation: 'El motor aplica automáticamente las máscaras partial(1,"XXXXXX",1) y email() ocultando el DNI, nombre, correo y teléfono real.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿El enmascaramiento dinámico (DDM) modifica el dato real en el disco?',
+        answer: 'No, el dato físico permanece intacto en la página de datos para procesos internos, pero SQL Server ofusca la salida en tiempo de consulta para cualquier usuario sin el permiso UNMASK.',
+      },
+    ],
+  },
+
+  {
+    id: 'kpis_diapositiva_3',
+    title: 'Cifras Diapositiva 3 (KPIs)',
+    category: 'Data Warehouse (Kimball)',
+    badge: 'Diapositiva 3',
+    badgeColor: 'amber',
+    sql: `-- Verificación de las 4 cifras oficiales de la Diapositiva 3 (OLTP + DW + Spark)
+SELECT IndicadorClave, ValorVerificado, OrigenDatos, FormulaSpark_SQL, ImpactoNegocio
+FROM vw_ResumenDiapositiva3;`,
+    description: 'Consolidado exacto de la Diapositiva 3: S/ 11,173.39 ventas sin IGV, S/ 1,960.75 utilidad, 31/59 pérdida y S/ 262 mil sin rotación.',
+    academicDocenteNote: 'Profesor, esta vista resume los 4 hallazgos clave de nuestra Diapositiva 3 obtenidos al conectar SQL Server (OLTP), el modelo estrella de Kimball (DW) y Apache Spark: S/ 11,173.39 en ventas netas sin IGV, S/ 1,960.75 de utilidad neta total, 31 de 59 líneas vendidas con pérdida y S/ 262,564.68 de inventario sin rotación.',
+    theoryConcept: 'Integración OLTP -> ETL -> Data Warehouse Kimball -> Apache Spark y Toma de Decisiones Basada en Datos.',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'SELECT IndicadorClave, ValorVerificado, OrigenDatos, FormulaSpark_SQL',
+        explanation: 'Muestra cada KPI de la Diapositiva 3 junto con la operación exacta de Spark / SQL que lo calculó.',
+      },
+      {
+        lineNum: 2,
+        code: 'FROM vw_ResumenDiapositiva3;',
+        explanation: 'Concilia los resultados del script de PySpark con las tablas del Data Warehouse.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Cómo se calculó la cifra de S/ 11,173.39 de ventas netas sin IGV en Spark?',
+        answer: 'Usando una variable Broadcast (sc.broadcast(0.18)) enviada una sola vez a cada executor y dividiendo el total de cada línea entre 1.18: rdd_ventas.map(lambda f: f[4] / (1 + tasa_igv.value)).sum().',
+      },
+    ],
+  },
+
+  {
+    id: 'sem11_limpieza_bom',
+    title: 'Sem 11: Limpieza CSV & BOM',
+    category: 'Big Data (PySpark)',
+    badge: 'Expositor 1',
+    badgeColor: 'purple',
+    sql: `-- Expositor 1 (Semana 11 - Diapositivas 5, 6 y 7): Limpieza de BOM (\\ufeff), filtro sqlcmd y cast
+SELECT Dataset_CSV, FilasBrutas_SQLCMD, FilasSuciasFiltradas, RegistrosLimpios, TransformacionesAplicadas
+FROM vw_LimpiezaSpark;`,
+    description: 'Expositor 1 (Diapositivas 4-7): Limpieza de marca BOM de Windows, filtrado de líneas sqlcmd y casteo a 59 ventas y 275 stocks.',
+    academicDocenteNote: 'Profesor, como se explica en las Diapositivas 6 y 7 (Semana 11), al exportar los CSV desde SQL Server con sqlcmd se generan dos problemas reales: la marca BOM invisible (\\ufeff) pegada a la primera columna y filas basura con guiones "---" y "rows affected". Nuestro pipeline limpia el BOM con toDF, filtra las filas corruptas y aplica cast explícito obteniendo 59 registros limpios de ventas y 275 de stock.',
+    theoryConcept: 'Ingesta de Datos en Apache Spark, Remoción de Byte Order Mark (UTF-8 BOM), Schema Inference y Type Casting.',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: '-- sin_bom(df): c.replace("\\ufeff", "").strip()',
+        explanation: 'Elimina el carácter invisible UTF-8 BOM al inicio del CSV para que F.col("IdComprobante") no falle.',
+      },
+      {
+        lineNum: 2,
+        code: '-- filter(~id_.contains("---") & ~id_.contains("rows affected"))',
+        explanation: 'Descarta las líneas separadoras y el pie de página que sqlcmd inyecta al exportar tablas.',
+      },
+      {
+        lineNum: 3,
+        code: '-- withColumn("TotalLinea", F.col("TotalLinea").cast("double"))',
+        explanation: 'Garantiza tipos numéricos estrictos (int y double) antes de ejecutar sumas o correlaciones.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Por qué configuraron spark.sql.shuffle.partitions en 8 en lugar del valor por defecto?',
+        answer: 'Porque el valor por defecto en Spark es 200 particiones. Para un dataset de 59 ventas y 275 variantes en modo local[*], 200 particiones generaría sobrecarga de planificación de tareas vacías; 8 particiones aprovecha los núcleos locales de forma óptima.',
+      },
+    ],
+  },
+
+  {
+    id: 'sem12_rdd_left_outer_join',
+    title: 'Sem 12: RDD leftOuterJoin',
+    category: 'Big Data (PySpark)',
+    badge: 'Expositor 2',
+    badgeColor: 'purple',
+    sql: `-- Expositor 2 (Semana 12 - Diapositiva 10): stock_por_marca.leftOuterJoin(ventas_por_marca)
+SELECT s.NombreMarca,
+       SUM(s.Stock) AS Stock_Pares,
+       ISNULL(SUM(v.TotalLinea), 0) AS Ventas_Soles,
+       ISNULL(SUM(v.Utilidad), 0) AS Utilidad_Soles
+FROM stock s
+LEFT OUTER JOIN ventas v ON s.NombreMarca = v.NombreMarca
+GROUP BY s.NombreMarca
+ORDER BY Stock_Pares DESC;`,
+    description: 'Expositor 2 (Diapositiva 10): Comparativa entre join interno (4 marcas) y leftOuterJoin (7 marcas, hallando 3 sin ventas).',
+    academicDocenteNote: 'Profesor, en la Diapositiva 10 demostramos por qué el join interno entre RDDs clave-valor descartaba 3 marcas completas. Al aplicar stock_por_marca.leftOuterJoin(ventas_por_marca) partiendo del stock, conservamos las 7 marcas y descubrimos el hallazgo de negocio: New Balance, Converse y Vans tienen 675 pares cada una y cero ventas.',
+    theoryConcept: 'Pair RDDs (Clave-Valor), Transformaciones reduceByKey, Inner Join vs LeftOuterJoin y Detección de Capital Inmovilizado.',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'SELECT s.NombreMarca, SUM(s.Stock) AS Stock_Pares, ...',
+        explanation: 'Equivalente a combinar las tuplas (marca, stock_total) con (marca, (ventas, utilidad)) tras reduceByKey.',
+      },
+      {
+        lineNum: 2,
+        code: 'FROM stock s LEFT OUTER JOIN ventas v ON s.NombreMarca = v.NombreMarca',
+        explanation: 'Parte del universo de stock para conservar incluso las marcas donde el valor de ventas es None / NULL.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Por qué es preferible usar reduceByKey en lugar de groupByKey en RDDs?',
+        answer: 'Porque reduceByKey combina y suma los valores localmente dentro de cada partición (map-side combine) antes del shuffle por red, mientras que groupByKey transfiere todos los registros crudos por la red, saturando la memoria.',
+      },
+    ],
+  },
+
+  {
+    id: 'sem12_top3_takeordered',
+    title: 'Sem 12: Top 3 (takeOrdered)',
+    category: 'Big Data (PySpark)',
+    badge: 'Expositor 2',
+    badgeColor: 'purple',
+    sql: `-- Expositor 2 (Semana 12 - Diapositiva 11): takeOrdered(3, key=lambda kv: -kv[1])
+SELECT TOP 3 NombreMarca, NombreModelo, SUM(Cantidad) AS UnidadesVendidas
+FROM ventas
+GROUP BY NombreMarca, NombreModelo
+ORDER BY UnidadesVendidas DESC;`,
+    description: 'Expositor 2 (Diapositiva 11): Top 3 modelos más vendidos (Runfalcon 41, Air Max 29, Smash 14), particiones y linaje DAG.',
+    academicDocenteNote: 'Profesor, en la Diapositiva 11 utilizamos la acción takeOrdered(3, key=lambda kv: -kv[1]) sobre el RDD para extraer los 3 modelos más vendidos (Adidas Runfalcon con 41 uds, Nike Air Max con 29 uds y Puma Smash con 14 uds) sin necesidad de ordenar todo el RDD completo.',
+    theoryConcept: 'Acción takeOrdered, Gestión de Particiones (repartition vs coalesce) y Grafo de Linaje (toDebugString).',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'SELECT TOP 3 NombreMarca, NombreModelo, SUM(Cantidad) AS UnidadesVendidas',
+        explanation: 'Agrupa por la clave compuesta (marca, modelo) y suma las unidades vendidas.',
+      },
+      {
+        lineNum: 2,
+        code: 'ORDER BY UnidadesVendidas DESC;',
+        explanation: 'En el RDD equivale a takeOrdered(3, key=lambda kv: -kv[1]), manteniendo un heap de tamaño 3 por partición.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Cuál es la diferencia técnica entre repartition(4) y coalesce(1)?',
+        answer: 'repartition puede aumentar o disminuir particiones ejecutando un shuffle completo de los datos; coalesce solo sirve para reducir particiones uniendo particiones existentes sin hacer shuffle.',
+      },
+    ],
+  },
+
+  {
+    id: 'sem14_sparksql_stock',
+    title: 'Sem 14: SparkSQL Valor Stock',
+    category: 'Big Data (PySpark)',
+    badge: 'Expositor 3',
+    badgeColor: 'purple',
+    sql: `-- Expositor 3 (Semana 14 - Diapositivas 13 y 14): SparkSQL y DataFrame groupBy + agg
+SELECT NombreMarca,
+       SUM(Stock) AS Pares_Disponibles,
+       ROUND(SUM(ValorInventario), 2) AS Valor_Inventario_Soles
+FROM stock
+GROUP BY NombreMarca
+ORDER BY Valor_Inventario_Soles DESC;`,
+    description: 'Expositor 3 (Diapositivas 13-15): Valorización de stock por marca en SparkSQL, Parquet y optimizador Catalyst.',
+    academicDocenteNote: 'Profesor, como mostramos en las Diapositivas 13, 14 y 15 (Expositor 3), ya sea usando la API de DataFrames (groupBy + agg) o consultando la vista temporal con spark.sql(), el optimizador Catalyst genera exactamente el mismo plan físico de ejecución (verificado con explain()).',
+    theoryConcept: 'SparkSQL, Vistas Temporales (createOrReplaceTempView), Almacenamiento Columnar Parquet y Optimizador Catalyst.',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'SELECT NombreMarca, SUM(Stock) AS Pares_Disponibles, ROUND(SUM(ValorInventario), 2) AS Valor_Inventario_Soles',
+        explanation: 'Calcula múltiples métricas agregadas por marca en una sola pasada sobre el DataFrame cacheado.',
+      },
+      {
+        lineNum: 2,
+        code: 'FROM stock GROUP BY NombreMarca ORDER BY Valor_Inventario_Soles DESC;',
+        explanation: 'Consulta la vista temporal creada con df_stock.createOrReplaceTempView("stock").',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Por qué guardar el resumen en formato Parquet en lugar de CSV?',
+        answer: 'Porque Parquet es un formato columnar comprimido que conserva el esquema de tipos de datos nativamente y permite lectura selectiva de columnas (predicate pushdown), siendo mucho más rápido y ligero que CSV.',
+      },
+    ],
+  },
+
+  {
+    id: 'sem14_stock_sin_rotacion',
+    title: 'Sem 14: Stock sin Rotación',
+    category: 'Big Data (PySpark)',
+    badge: 'Expositor 3',
+    badgeColor: 'amber',
+    sql: `-- Expositor 3 (Semana 14 - Diapositiva 14): Inventario sin rotación (S/ 262,564.68)
+SELECT s.NombreMarca,
+       SUM(s.Stock) AS Pares_Inmovilizados,
+       ROUND(SUM(s.ValorInventario), 2) AS Valor_Inmovilizado_Soles
+FROM stock s
+LEFT JOIN ventas v ON s.NombreMarca = v.NombreMarca
+WHERE v.NombreMarca IS NULL
+GROUP BY s.NombreMarca;`,
+    description: 'Expositor 3 (Diapositiva 14): Consulta SparkSQL LEFT JOIN ... WHERE IS NULL que aísla los S/ 262 mil sin rotación.',
+    academicDocenteNote: 'Profesor, esta segunda consulta de la Diapositiva 14 es el equivalente en SparkSQL del leftOuterJoin de RDDs. Al cruzar la vista temporal stock con ventas mediante LEFT JOIN y filtrar WHERE v.NombreMarca IS NULL, aislamos las 3 marcas (New Balance, Converse y Vans) que suman S/ 262,564.68 de capital inmovilizado.',
+    theoryConcept: 'Patrón Anti-Join en SQL (LEFT JOIN + IS NULL / left_anti) y Análisis de Rotación de Inventario.',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'FROM stock s LEFT JOIN ventas v ON s.NombreMarca = v.NombreMarca',
+        explanation: 'Cruza las vistas temporales de inventario y ventas por nombre de marca.',
+      },
+      {
+        lineNum: 2,
+        code: 'WHERE v.NombreMarca IS NULL GROUP BY s.NombreMarca;',
+        explanation: 'Filtra exclusivamente aquellas marcas del catálogo que no registran ninguna transacción de venta.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Cómo se expresa este mismo LEFT JOIN ... WHERE IS NULL en el cierre del script de PySpark?',
+        answer: 'Mediante un join de tipo "left_anti": df_stock.join(df_ventas.select("NombreMarca").distinct(), "NombreMarca", "left_anti").',
+      },
+    ],
+  },
+
+  {
+    id: 'sem14_estadistica_cuantiles',
+    title: 'Sem 14: describe & Cuantiles',
+    category: 'Big Data (PySpark)',
+    badge: 'Expositor 4',
+    badgeColor: 'purple',
+    sql: `-- Expositor 4 (Semana 14 - Diapositiva 17): describe(), stat.corr() y approxQuantile()
+SELECT Funcion_Spark, Columna_TotalLinea, Columna_Utilidad, Interpretacion_Analitica
+FROM vw_EstadisticaSpark;`,
+    description: 'Expositor 4 (Diapositiva 17): Resumen estadístico, correlación de Pearson, cuartiles con approxQuantile y 31 líneas en pérdida.',
+    academicDocenteNote: 'Profesor, en la Diapositiva 17 demostramos que una correlación de Pearson positiva entre TotalLinea y Utilidad no garantiza un margen sano: al calcular los cuartiles con approxQuantile([0.25, 0.5, 0.75], 0.01) y filtrar Utilidad < 0, comprobamos que 31 de las 59 líneas de venta generan pérdida.',
+    theoryConcept: 'Estadística Descriptiva Distribuida, Correlación de Pearson (stat.corr) y Algoritmo Greenwald-Khanna (approxQuantile).',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: '-- df_ventas.select("TotalLinea", "Utilidad").describe().show()',
+        explanation: 'Calcula en una sola llamada count, mean, stddev, min y max de ambas variables numéricas.',
+      },
+      {
+        lineNum: 2,
+        code: '-- df_ventas.stat.approxQuantile("Utilidad", [0.25, 0.5, 0.75], 0.01)',
+        explanation: 'Obtiene Q1, mediana y Q3 con un error relativo de 1% sin necesidad de ordenar millones de filas.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Qué significa el tercer parámetro (0.01) en approxQuantile?',
+        answer: 'Es el error relativo aceptado (1%). Si fuera 0 calcularía el cuantil exacto ordenando todo el cluster (muy costoso); con 0.01 responde en milisegundos con alta precisión.',
+      },
+    ],
+  },
+
+  {
+    id: 'sem14_margenes_marca',
+    title: 'Sem 14: Márgenes % & Crosstab',
+    category: 'Big Data (PySpark)',
+    badge: 'Expositor 4',
+    badgeColor: 'purple',
+    sql: `-- Expositor 4 (Semana 14 - Diapositiva 18): Margen de utilidad (%) por marca y tabla de contingencia
+SELECT NombreMarca,
+       ROUND(SUM(Utilidad) / SUM(TotalLinea) * 100, 1) AS MargenPct
+FROM ventas
+GROUP BY NombreMarca
+ORDER BY MargenPct DESC;`,
+    description: 'Expositor 4 (Diapositiva 18): Margen porcentual por marca (Reebok 41%, Adidas 20%, Nike 14%, Puma -1%) y crosstab Marca x Canal.',
+    academicDocenteNote: 'Profesor, en la Diapositiva 18 calculamos el margen relativo (SUM(Utilidad) / SUM(TotalLinea) * 100). Descubrimos que Reebok vende poco pero tiene el mejor margen (+41%), mientras que Puma tiene margen negativo (-1%): vende volumen pero no deja ganancia neta.',
+    theoryConcept: 'Márgenes Relativos Agregados y Tablas de Contingencia Multivariadas (stat.crosstab).',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'ROUND(SUM(Utilidad) / SUM(TotalLinea) * 100, 1) AS MargenPct',
+        explanation: 'Divide la utilidad neta acumulada de la marca entre sus ingresos totales facturados.',
+      },
+      {
+        lineNum: 2,
+        code: '-- df_ventas.stat.crosstab("NombreMarca", "Canal").show()',
+        explanation: 'Genera la matriz de frecuencia cruzada para ver qué marcas se mueven en qué canales de venta.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Para qué sirve stat.crosstab("NombreMarca", "Canal")?',
+        answer: 'Construye una tabla de contingencia entre dos variables categóricas, mostrando cuántas transacciones tiene cada marca en cada canal comercial (Tienda, Web, WhatsApp, Redes).',
+      },
+    ],
+  },
+
+  {
+    id: 'sem14_modelos_perdida',
+    title: 'Sem 14: Modelos con Pérdida',
+    category: 'Big Data (PySpark)',
+    badge: 'Expositor 4',
+    badgeColor: 'red',
+    sql: `-- Expositor 4 (Semana 14 - Diapositiva 19): Pérdida acumulada por modelo (Utilidad < 0)
+SELECT NombreMarca, NombreModelo,
+       ROUND(SUM(Utilidad), 2) AS Perdida
+FROM ventas
+WHERE Utilidad < 0
+GROUP BY NombreMarca, NombreModelo
+ORDER BY Perdida ASC;`,
+    description: 'Expositor 4 (Diapositiva 19): Hallazgo crítico donde Adidas Runfalcon (-379.98), Nike Air Max (-155.19) y Puma Smash (-25.41) pierden dinero.',
+    academicDocenteNote: 'Profesor, cerramos la Diapositiva 19 con el hallazgo más importante del análisis: al filtrar Utilidad < 0 y agrupar por modelo, demostramos que Adidas Runfalcon —que era el Top 1 más vendido con 41 pares— es también el modelo que más pérdida genera (S/ -379.98), evidenciando un error en la política de descuentos o cálculo de costos.',
+    theoryConcept: 'Muestreo Reproducible con Semilla (sample seed=42), Filtrado de Anomalías Financieras y Diagnóstico de Rentabilidad.',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'WHERE Utilidad < 0',
+        explanation: 'Equivalente a df_ventas.filter(F.col("Utilidad") < 0), aislando las 31 líneas deficitarias.',
+      },
+      {
+        lineNum: 2,
+        code: 'GROUP BY NombreMarca, NombreModelo ORDER BY Perdida ASC;',
+        explanation: 'Suma la pérdida acumulada por modelo y ordena desde la pérdida más severa (-379.98).',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Por qué se usa seed=42 en df_ventas.sample(withReplacement=False, fraction=0.10, seed=42)?',
+        answer: 'Para garantizar reproducibilidad científica: al fijar la semilla pseudoaleatoria (seed=42), cualquier miembro del equipo o el docente obtendrá exactamente la misma muestra del 10% al ejecutar el código.',
+      },
+    ],
+  },
+
+  {
+    id: 'dw_reconciliacion_olap',
+    title: 'Reconciliación OLTP vs DW',
+    category: 'Data Warehouse (Kimball)',
+    badge: 'Script 04',
+    badgeColor: 'emerald',
+    sql: `-- Script 04: Reconciliación matemática multinivel OLTP vs Data Warehouse (Diferencia = 0)
+SELECT Metrica_Auditada, Base_OLTP_3FN, DataWarehouse_Kimball, Diferencia, Estado_Reconciliacion
+FROM dw.vw_Reconciliacion;`,
+    description: 'Verificación de calidad de datos del ETL: compara las sumas de UrbanStylosDB (OLTP) contra UrbanStylosDW (Kimball) con diferencia cero.',
+    academicDocenteNote: 'Profesor, todo proceso ETL profesional requiere una prueba de reconciliación financiera. Esta consulta del Script 04 compara los totales de la base transaccional 3FN contra la tabla de hechos dw.FactVentas, demostrando que la diferencia es exactamente S/ 0.00.',
+    theoryConcept: 'Calidad de Datos en ETL, Reconciliación Financiera Multinivel y Consistencia OLTP-OLAP.',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'SELECT Metrica_Auditada, Base_OLTP_3FN, DataWarehouse_Kimball, Diferencia',
+        explanation: 'Evalúa en paralelo las sumas de ventas netas, utilidad, líneas facturadas y variantes en stock.',
+      },
+      {
+        lineNum: 2,
+        code: 'FROM dw.vw_Reconciliacion;',
+        explanation: 'Verifica que ABS(SUM(OLTP) - SUM(DW)) sea igual a 0 en todas las dimensiones.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Qué pasaría si la diferencia entre OLTP y Data Warehouse no fuera cero?',
+        answer: 'Indicaría una fuga de datos en el pipeline ETL (por ejemplo, un INNER JOIN que descartó registros huérfanos o una falla en la carga incremental), la cual queda registrada en meta.BitacoraETL.',
+      },
+    ],
+  },
 ];
+

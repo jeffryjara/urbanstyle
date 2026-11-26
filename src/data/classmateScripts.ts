@@ -330,6 +330,59 @@ CREATE TABLE Auditoria (
     Usuario        NVARCHAR(128) NOT NULL DEFAULT SUSER_SNAME(),
     Fecha          DATETIME2 NOT NULL DEFAULT SYSDATETIME()
 );
+GO
+
+/* =====================================================================
+   2. TRIGGERS DE INMUTABILIDAD Y PROCEDIMIENTO DE LOGIN (SHA-256)
+   ===================================================================== */
+
+CREATE OR ALTER TRIGGER dbo.TR_Comprobante_Inmutable
+ON dbo.Comprobante
+INSTEAD OF DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    RAISERROR('Un comprobante emitido no se puede eliminar. Emita una nota de crédito.', 16, 1);
+    ROLLBACK TRANSACTION;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.usp_ValidarLogin
+    @p_UsuarioOCorreo VARCHAR(100),
+    @p_ClavePlana     VARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @v_Salt UNIQUEIDENTIFIER, @v_ClaveHash VARBINARY(32), @v_IdUsuario INT, @v_Activo BIT;
+
+    SELECT @v_IdUsuario = u.IdUsuario, @v_Salt = u.Salt, @v_ClaveHash = u.ClaveHash, @v_Activo = u.Activo
+    FROM dbo.Usuario u
+    INNER JOIN dbo.Empleado e ON e.IdEmpleado = u.IdEmpleado
+    WHERE u.NombreUsuario = @p_UsuarioOCorreo OR e.Correo = @p_UsuarioOCorreo;
+
+    IF @v_IdUsuario IS NULL OR @v_Activo = 0
+    BEGIN
+        RAISERROR('Credenciales inválidas o cuenta inactiva.', 16, 1);
+        RETURN -1;
+    END;
+
+    IF HASHBYTES('SHA2_256', @p_ClavePlana + CAST(@v_Salt AS VARCHAR(36))) <> @v_ClaveHash
+    BEGIN
+        RAISERROR('Contraseña incorrecta.', 16, 1);
+        RETURN -2;
+    END;
+
+    INSERT INTO dbo.Auditoria (Tabla, Operacion, IdRegistro, ValorAnterior, ValorNuevo)
+    VALUES ('Usuario', 'LOGIN_AUTH', CAST(@v_IdUsuario AS VARCHAR(20)), 'SESION_CERRADA', 'AUTENTICACION_SHA256_EXITOSA');
+
+    SELECT u.IdUsuario, u.NombreUsuario, r.IdRol, r.NombreRol,
+           CONCAT(e.Nombres, ' ', e.Apellidos) AS NombreCompleto, e.Correo
+    FROM dbo.Usuario u
+    INNER JOIN dbo.Rol r      ON r.IdRol = u.IdRol
+    INNER JOIN dbo.Empleado e ON e.IdEmpleado = u.IdEmpleado
+    WHERE u.IdUsuario = @v_IdUsuario;
+END;
 GO`,
   },
   {
@@ -561,72 +614,342 @@ GO`,
   },
   {
     id: 'script-colab',
-    title: 'Google Colab — PySpark en Cluster & Operaciones sobre RDDs',
+    title: 'Google Colab — Gestión de Datos, RDD, SparkSQL y Estadística con Apache Spark',
     category: 'BIG_DATA',
-    description: 'Procesamiento en lote en Apache Spark: RDDs, DataFrames, broadcast de IGV, leftOuterJoin para detección de stock sin rotación y minería de márgenes negativos.',
+    description: 'Código oficial alineado con las 20 diapositivas de exposición (Semanas 11, 12 y 14): SparkSession, limpieza de BOM, RDDs, leftOuterJoin, SparkSQL, Parquet, Catalyst y Estadística Avanzada.',
     code: `# ==============================================================================
-# URBAN STYLOS - SPARK EN CLUSTER Y OPERACIONES SOBRE RDDs
-# Ejecutar en Google Colab con pyspark==3.5.* o 4.0.*
+# URBAN STYLE - GESTION DE DATOS CON APACHE SPARK
+# Base de Datos Avanzadas y Big Data - UPN
+# Codigo alineado con las diapositivas, separado por expositor / semana.
+#
+# INDICE
+#   EXPOSITOR 1 | Semana 11 | Gestion de datos con Spark        (diapositivas 4-7)
+#   EXPOSITOR 2 | Semana 12 | Spark en cluster y RDD             (diapositivas 8-11)
+#   EXPOSITOR 3 | Semana 14 | SparkSQL y DataFrames              (diapositivas 12-15)
+#   EXPOSITOR 4 | Semana 14 | Estadistica avanzada con Spark     (diapositivas 16-19)
+#   CIERRE      | Verificacion de las cifras de la diapositiva 3 y liberar memoria
 # ==============================================================================
 
+
+# ##############################################################################
+# EXPOSITOR 1 - SEMANA 11 - GESTION DE DATOS CON SPARK
+# Temas: SparkSession, carga de datos, limpieza y tipos
+# ##############################################################################
+
+# ------------------------------------------------------------------------------
+# 1.1  Iniciar Spark                                         (diapositiva 5)
+# ------------------------------------------------------------------------------
 import os
 import time
 import urllib.request
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 
-# Inicialización optimizada de SparkSession
 spark = (
     SparkSession.builder
-    .master("local[*]")
+    .master("local[*]")                              # todo en esta maquina, todos los nucleos
     .appName("UrbanStylos_RDD_Cluster")
-    .config("spark.sql.shuffle.partitions", "8")
+    .config("spark.sql.shuffle.partitions", "8")     # con pocos datos, 8 en vez de 200
+    .config("spark.sql.ansi.enabled", "false")       # evita errores de cast con filas sucias
     .getOrCreate()
 )
-sc = spark.sparkContext
+sc = spark.sparkContext                              # entrada a la API de RDD
 sc.setLogLevel("ERROR")
 
-print("Spark iniciado correctamente. Versión:", spark.version)
-print("Master:", sc.master, "| Tareas paralelas:", sc.defaultParallelism)
+print("Version:", spark.version)
+print("Master:", sc.master, "| tareas a la vez:", sc.defaultParallelism)
 
-# Descarga de datos limpios desde el repositorio oficial
+# ------------------------------------------------------------------------------
+# 1.2  Descargar los CSV y quitar el BOM                     (diapositiva 6)
+# ------------------------------------------------------------------------------
 BASE_URL = "https://raw.githubusercontent.com/FabrizioTrujillo/urbanstylos-data/refs/heads/main/"
 
+
 def descargar(nombre_remoto, nombre_local):
-    if os.path.exists(nombre_local):
-        print(f"{nombre_local} ya existe: no se descarga de nuevo.")
+    if os.path.exists(nombre_local):                 # no repetir la descarga
+        print(f"{nombre_local} ya existe")
         return
-    req = urllib.request.Request(BASE_URL + nombre_remoto, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=60) as r, open(nombre_local, "wb") as f:
-        f.write(r.read())
-    print(f"Descargado {nombre_remoto} -> {nombre_local}")
+    req = urllib.request.Request(BASE_URL + nombre_remoto,
+                                 headers={"User-Agent": "Mozilla/5.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r, open(nombre_local, "wb") as f:
+            f.write(r.read())
+        print(f"Descargado {nombre_remoto} -> {nombre_local}")
+    except Exception as e:
+        raise RuntimeError(f"No se pudo descargar {nombre_remoto}: {e}. "
+                           "Revisa tu internet o que el repositorio sea publico.")
+
 
 def sin_bom(df):
+    # el BOM (marca invisible de Windows) queda pegado a la 1.a columna y rompe F.col()
     return df.toDF(*[c.replace("\\ufeff", "").strip() for c in df.columns])
+
 
 descargar("ventas.csv", "ventas_demo.csv")
 descargar("stock.csv", "stock_demo.csv")
 
-df_ventas = sin_bom(spark.read.option("header", "true").option("inferSchema", "true").csv("ventas_demo.csv"))
-df_stock = sin_bom(spark.read.option("header", "true").option("inferSchema", "true").csv("stock_demo.csv"))
+# ------------------------------------------------------------------------------
+# 1.3  Leer y limpiar con DataFrames                         (diapositiva 7)
+# ------------------------------------------------------------------------------
+df_ventas_raw = sin_bom(
+    spark.read.option("header", "true").option("inferSchema", "true").csv("ventas_demo.csv")
+)
+df_stock_raw = sin_bom(
+    spark.read.option("header", "true").option("inferSchema", "true").csv("stock_demo.csv")
+)
 
-# Construcción de RDD cacheado
+# sqlcmd ensucia el CSV con lineas "---" y "rows affected": se filtran
+id_v = F.col("IdComprobante").cast("string")
+df_ventas = (
+    df_ventas_raw
+    .filter(F.col("IdComprobante").isNotNull()
+            & ~id_v.contains("---")
+            & ~id_v.contains("rows affected"))
+    .withColumn("Cantidad", F.col("Cantidad").cast("int"))
+    .withColumn("TotalLinea", F.col("TotalLinea").cast("double"))
+    .withColumn("Utilidad", F.col("Utilidad").cast("double"))
+)
+
+id_s = F.col("IdVariante").cast("string")
+df_stock = (
+    df_stock_raw
+    .filter(F.col("IdVariante").isNotNull()
+            & ~id_s.contains("---")
+            & ~id_s.contains("rows affected"))
+    .withColumn("Stock", F.col("Stock").cast("int"))
+    .withColumn("Precio", F.col("Precio").cast("double"))
+    .withColumn("ValorInventario", F.col("ValorInventario").cast("double"))
+)
+
+print("Registros limpios de ventas:", df_ventas.count())
+print("Registros limpios de stock :", df_stock.count())
+
+
+# ##############################################################################
+# EXPOSITOR 2 - SEMANA 12 - SPARK EN CLUSTER Y RDD
+# Temas: construir RDD, reduce, clave-valor, join / leftOuterJoin,
+#        takeOrdered, particiones, linaje y operaciones extra de la clase
+# ##############################################################################
+
+# ------------------------------------------------------------------------------
+# 2.1  Construir un RDD y reducirlo                          (diapositiva 9)
+# ------------------------------------------------------------------------------
+columnas_ventas = set(df_ventas.columns)
+col_canal = "Canal" if "Canal" in columnas_ventas else ("NombreCanal" if "NombreCanal" in columnas_ventas else None)
+
+# fila: (marca, modelo, canal, cantidad, total, utilidad)
 rdd_ventas = (
     df_ventas.rdd
     .filter(lambda r: r.TotalLinea is not None and r.Cantidad is not None)
-    .map(lambda r: (
-        str(r.NombreMarca), str(r.NombreModelo), str(r.Canal),
-        int(r.Cantidad), float(r.TotalLinea), float(r.Utilidad)
+    .map(lambda r, c=col_canal: (
+        str(r.NombreMarca) if r.NombreMarca is not None else "SinMarca",
+        str(r.NombreModelo) if r.NombreModelo is not None else "SinModelo",
+        str(r[c]) if (c is not None and r[c] is not None) else "General",
+        int(r.Cantidad),
+        float(r.TotalLinea),
+        float(r.Utilidad or 0.0)
     ))
-    .cache()
+    .cache()                                         # se reutiliza sin releer el CSV
 )
 
-print("\\n--- VENTAS TOTALES POR CANAL (RDD) ---")
-ventas_canal = rdd_ventas.map(lambda f: (f[2], f[4])).reduceByKey(lambda a, b: a + b).sortBy(lambda kv: -kv[1])
-for canal, total in ventas_canal.collect():
-    print(f"{canal:<15} S/ {round(total, 2)}")
+utilidades = rdd_ventas.map(lambda f: f[5])
+utilidad_total = 0.0 if utilidades.isEmpty() else utilidades.reduce(lambda a, b: a + b)
+print(f"Utilidad total neta: S/ {round(utilidad_total, 2)}")
+
+# ------------------------------------------------------------------------------
+# 2.2  Clave-valor, join y leftOuterJoin                     (diapositiva 10)
+# ------------------------------------------------------------------------------
+# (marca, (ventas, utilidad))
+ventas_por_marca = (
+    rdd_ventas
+    .map(lambda f: (f[0], (f[4], f[5])))
+    .reduceByKey(lambda a, b: (a[0] + b[0], a[1] + b[1]))
+)
+
+# (marca, stock_total)
+stock_por_marca = (
+    df_stock.rdd
+    .filter(lambda r: r.Stock is not None and r.NombreMarca is not None)
+    .map(lambda r: (str(r.NombreMarca), int(r.Stock)))
+    .reduceByKey(lambda a, b: a + b)
+)
+
+# join interno: solo marcas con ventas Y stock
+interno = ventas_por_marca.join(stock_por_marca)
+# leftOuterJoin parte del STOCK: conserva las marcas sin ventas
+completo = stock_por_marca.leftOuterJoin(ventas_por_marca)
+
+print("\\njoin interno:", interno.count(), "marcas")
+print("leftOuter   :", completo.count(), "marcas")
+
+print("\\n--- STOCK VS VENTAS POR MARCA (leftOuterJoin) ---")
+for marca, (stock_pares, vu) in completo.sortBy(lambda kv: -kv[1][0]).collect():
+    ventas_soles, utilidad_soles = vu if vu is not None else (0.0, 0.0)
+    estado = "SIN VENTAS" if vu is None else "con ventas"
+    print(f"{marca:<12} | Stock: {stock_pares:>4} pares | Ventas: S/ {round(ventas_soles, 2):>9} | "
+          f"Utilidad: S/ {round(utilidad_soles, 2):>8} | {estado}")
+
+sin_ventas = completo.filter(lambda kv: kv[1][1] is None).map(lambda kv: (kv[0], kv[1][0])).collect()
+print("\\nSIN VENTAS:", sin_ventas)
+
+# ------------------------------------------------------------------------------
+# 2.3  takeOrdered, particiones y linaje                     (diapositiva 11)
+# ------------------------------------------------------------------------------
+top3 = (
+    rdd_ventas
+    .map(lambda f: ((f[0], f[1]), f[3]))             # (marca, modelo) -> unidades
+    .reduceByKey(lambda a, b: a + b)
+    .takeOrdered(3, key=lambda kv: -kv[1])
+)
+print("\\n--- TOP 3 MODELOS (takeOrdered) ---")
+for (marca, modelo), unidades in top3:
+    print(f"{marca} {modelo}: {unidades}")
+
+print("\\nparticiones:", rdd_ventas.getNumPartitions(), "->", rdd_ventas.glom().map(len).collect())
+print("repartition(4):", rdd_ventas.repartition(4).getNumPartitions())
+print("coalesce(1)   :", rdd_ventas.coalesce(1).getNumPartitions())
+
+print("\\n--- LINAJE (toDebugString) ---")
+print(ventas_por_marca.toDebugString().decode("utf-8"))
+
+# ------------------------------------------------------------------------------
+# 2.4  Operaciones extra de la clase (diapositiva 8)
+# ------------------------------------------------------------------------------
+print("\\n--- EVALUACION PEREZOSA: TRANSFORMACION VS ACCION ---")
+t0 = time.time()
+con_perdida = rdd_ventas.filter(lambda f: f[5] < 0)
+print(f"Definir el filtro (transformacion): {time.time() - t0:.3f} s")
+t0 = time.time()
+print("Lineas con utilidad negativa      :", con_perdida.count())
+print(f"Ejecutar la accion                : {time.time() - t0:.3f} s")
+
+print("\\n--- BROADCAST: ventas netas sin IGV (cifra de la diapositiva 3) ---")
+tasa_igv = sc.broadcast(0.18)                        # se envia UNA vez a cada executor
+ventas_sin_igv = rdd_ventas.map(lambda f: f[4] / (1 + tasa_igv.value)).sum()
+print(f"Ventas netas sin IGV: S/ {round(ventas_sin_igv, 2)}")
+
+
+# ##############################################################################
+# EXPOSITOR 3 - SEMANA 14 - SPARKSQL Y DATAFRAMES
+# Temas: DataFrame API (groupBy/agg), SparkSQL con vistas temporales,
+#        cache, Parquet y plan de Catalyst
+# ##############################################################################
+
+# ------------------------------------------------------------------------------
+# 3.1  DataFrame API: groupBy y agg                          (diapositiva 13)
+# ------------------------------------------------------------------------------
+print("\\n--- TOP MODELOS MAS VENDIDOS (DataFrame) ---")
+df_ventas.groupBy("NombreMarca", "NombreModelo") \\
+    .agg(F.sum("Cantidad").alias("Total_Zapatillas")) \\
+    .orderBy(F.desc("Total_Zapatillas")) \\
+    .show(5, truncate=False)
+
+print("--- STOCK Y VALOR DE INVENTARIO POR MARCA (DataFrame) ---")
+df_stock.groupBy("NombreMarca") \\
+    .agg(
+        F.sum("Stock").alias("Pares_Disponibles"),
+        F.round(F.sum("ValorInventario"), 2).alias("Valor_Inventario_Soles")
+    ) \\
+    .orderBy(F.desc("Valor_Inventario_Soles")) \\
+    .show(truncate=False)
+
+# ------------------------------------------------------------------------------
+# 3.2  SparkSQL con vistas temporales                        (diapositiva 14)
+# ------------------------------------------------------------------------------
+df_stock.createOrReplaceTempView("stock")
+df_ventas.createOrReplaceTempView("ventas")
+
+print("--- SparkSQL: stock y valor por marca ---")
+spark.sql("""
+    SELECT NombreMarca, SUM(Stock) AS Pares,
+           ROUND(SUM(ValorInventario), 2) AS Valor
+    FROM stock
+    GROUP BY NombreMarca
+    ORDER BY Valor DESC""").show()
+
+print("--- SparkSQL: inventario sin rotacion (marcas con stock y sin ventas) ---")
+spark.sql("""
+    SELECT s.NombreMarca, SUM(s.Stock) AS Pares
+    FROM stock s
+    LEFT JOIN ventas v ON s.NombreMarca = v.NombreMarca
+    WHERE v.NombreMarca IS NULL
+    GROUP BY s.NombreMarca""").show()
+
+# ------------------------------------------------------------------------------
+# 3.3  cache, Parquet y el plan de Catalyst                  (diapositiva 15)
+# ------------------------------------------------------------------------------
+df_stock.cache()
+df_stock.count()                                     # 1.a accion: llena la cache
+
+resumen = df_stock.groupBy("NombreMarca").agg(F.sum("Stock").alias("Pares"))
+resumen.write.mode("overwrite").parquet("resumen_stock.parquet")
+leido = spark.read.parquet("resumen_stock.parquet")
+leido.show()
+
+resumen.explain()
+spark.sql("""SELECT NombreMarca, SUM(Stock) AS Pares
+             FROM stock GROUP BY NombreMarca""").explain()
+
+
+# ##############################################################################
+# EXPOSITOR 4 - SEMANA 14 - ESTADISTICA AVANZADA CON SPARK
+# Temas: describe, correlacion, cuantiles, margenes, crosstab, sample, perdidas
+# ##############################################################################
+
+# ------------------------------------------------------------------------------
+# 4.1  describe, correlacion y cuantiles                     (diapositiva 17)
+# ------------------------------------------------------------------------------
+df_ventas.select("TotalLinea", "Utilidad").describe().show()
+
+corr = df_ventas.stat.corr("TotalLinea", "Utilidad")             # Pearson
+print("Correlacion:", round(corr, 3))
+
+q = df_ventas.stat.approxQuantile("Utilidad", [0.25, 0.5, 0.75], 0.01)
+print("Q1, mediana, Q3:", q)
+
+print("Lineas con utilidad negativa:", df_ventas.filter(F.col("Utilidad") < 0).count(),
+      "de", df_ventas.count())
+
+# ------------------------------------------------------------------------------
+# 4.2  Margenes por marca y tabla de contingencia            (diapositiva 18)
+# ------------------------------------------------------------------------------
+(df_ventas.groupBy("NombreMarca")
+    .agg(F.round(F.sum("Utilidad") / F.sum("TotalLinea") * 100, 1).alias("MargenPct"))
+    .orderBy(F.desc("MargenPct"))
+    .show())
+
+df_ventas.stat.crosstab("NombreMarca", "Canal").show()
+
+# ------------------------------------------------------------------------------
+# 4.3  Muestreo y modelos que generan perdida                (diapositiva 19)
+# ------------------------------------------------------------------------------
+muestra = df_ventas.sample(withReplacement=False, fraction=0.10, seed=42)
+muestra.show(3)
+
+(df_ventas.filter(F.col("Utilidad") < 0)
+    .groupBy("NombreMarca", "NombreModelo")
+    .agg(F.round(F.sum("Utilidad"), 2).alias("Perdida"))
+    .orderBy("Perdida")
+    .show())
+
+
+# ##############################################################################
+# CIERRE - VERIFICACION DE LA DIAPOSITIVA 3 Y LIBERAR MEMORIA
+# ##############################################################################
+inmovilizado = (
+    df_stock.groupBy("NombreMarca")
+    .agg(F.sum("ValorInventario").alias("v"))
+    .join(df_ventas.select("NombreMarca").distinct(), "NombreMarca", "left_anti")
+    .agg(F.sum("v")).collect()[0][0]
+)
+print("\\n================ CIFRAS DE LA DIAPOSITIVA 3 ================")
+print(f"Ventas netas sin IGV      : S/ {round(ventas_sin_igv, 2)}")
+print(f"Utilidad neta total       : S/ {round(utilidad_total, 2)}")
+print(f"Lineas con perdida        : {con_perdida.count()} de {rdd_ventas.count()}")
+print(f"Inventario sin rotacion   : S/ {round(inmovilizado or 0.0, 2)}")
 
 rdd_ventas.unpersist()
-print("\\nProcesamiento Spark completado con éxito.")`,
+df_stock.unpersist()
+print("\\nFin del analisis.")`,
   },
 ];

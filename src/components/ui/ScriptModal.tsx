@@ -47,6 +47,7 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
   // Academic presets & Teacher explanation guide (collapsed by default for ultra-clean layout)
   const [selectedPresetId, setSelectedPresetId] = useState<string>(SQL_PRESETS[0].id);
+  const [presetGroup, setPresetGroup] = useState<'all' | 'oltp' | 'security' | 'dw' | 'spark'>('all');
   const [showDocenteGuide, setShowDocenteGuide] = useState<boolean>(false);
   const [copiedDocenteGuide, setCopiedDocenteGuide] = useState<boolean>(false);
 
@@ -58,6 +59,15 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
   // Current active preset object
   const activePreset = SQL_PRESETS.find((p) => p.id === selectedPresetId) || SQL_PRESETS[0];
+
+  const filteredPresets = SQL_PRESETS.filter((p) => {
+    if (presetGroup === 'all') return true;
+    if (presetGroup === 'oltp') return p.category === 'OLTP (3FN)' || p.category === 'Transaccional (ACID)';
+    if (presetGroup === 'security') return p.category === 'Auditoría & Triggers';
+    if (presetGroup === 'dw') return p.category === 'Data Warehouse (Kimball)';
+    if (presetGroup === 'spark') return p.category === 'Big Data (PySpark)';
+    return true;
+  });
 
   // Execute initial query when opened
   useEffect(() => {
@@ -199,24 +209,51 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
         {/* TAB 1: CONSOLA SQL INTERACTIVA */}
         {activeTab === 'console' && (
           <div className="flex-1 flex flex-col min-h-0 p-6 md:p-8 space-y-5 overflow-hidden">
-            {/* Quick Action Presets Chips */}
-            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 shrink-0 no-scrollbar">
-              {SQL_PRESETS.map((preset) => {
-                const isSelected = preset.id === selectedPresetId;
-                return (
-                  <button
-                    key={preset.id}
-                    onClick={() => handleSelectPreset(preset)}
-                    className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ease-spring shrink-0 cursor-pointer border active:scale-95 ${
-                      isSelected
-                        ? 'bg-white text-black border-white shadow-md'
-                        : 'bg-[#141414] text-[#8E8E93] border-white/[0.07] hover:text-white hover:bg-[#1c1c1c]'
-                    }`}
-                  >
-                    <span>{preset.title}</span>
-                  </button>
-                );
-              })}
+            {/* Preset Category Group Filter & Quick Action Presets Chips */}
+            <div className="space-y-2.5 shrink-0">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                {[
+                  { id: 'all', label: `Todos (${SQL_PRESETS.length})` },
+                  { id: 'oltp', label: 'OLTP & 3FN' },
+                  { id: 'security', label: 'Login, Roles & Seguridad' },
+                  { id: 'dw', label: 'Data Warehouse (Kimball)' },
+                  { id: 'spark', label: 'Apache Spark (Exposición)' },
+                ].map((grp) => {
+                  const active = presetGroup === grp.id;
+                  return (
+                    <button
+                      key={grp.id}
+                      onClick={() => setPresetGroup(grp.id as any)}
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ease-spring shrink-0 cursor-pointer border active:scale-95 ${
+                        active
+                          ? 'bg-[#007AFF] text-white border-[#007AFF] shadow-sm'
+                          : 'bg-[#111111] text-[#8E8E93] border-white/[0.06] hover:text-white hover:bg-[#1a1a1a]'
+                      }`}
+                    >
+                      {grp.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center gap-2.5 overflow-x-auto pb-2 shrink-0 custom-scrollbar">
+                {filteredPresets.map((preset) => {
+                  const isSelected = preset.id === selectedPresetId;
+                  return (
+                    <button
+                      key={preset.id}
+                      onClick={() => handleSelectPreset(preset)}
+                      className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ease-spring shrink-0 cursor-pointer border active:scale-95 ${
+                        isSelected
+                          ? 'bg-white text-black border-white shadow-md'
+                          : 'bg-[#141414] text-[#8E8E93] border-white/[0.07] hover:text-white hover:bg-[#1c1c1c]'
+                      }`}
+                    >
+                      <span>{preset.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* SQL EDITOR BOX */}

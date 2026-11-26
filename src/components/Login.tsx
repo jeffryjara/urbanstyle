@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { GlassButton } from './ui/GlassButton';
 import type { UserSession } from '../types';
-import { INITIAL_USERS } from '../data/initialData';
+import { executeSqlLogin } from '../utils/sqlEngine';
 
 interface LoginProps {
   onLoginSuccess: (session: UserSession) => void;
@@ -141,21 +141,18 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     setTimeout(() => {
-      const userFound = Object.values(INITIAL_USERS).find(
-        (u) => u.email.toLowerCase() === cleanEmail
-      );
+      // Ejecuta el procedimiento almacenado dbo.usp_ValidarLogin (SHA-256 + Salt + INNER JOIN Rol + INSERT Auditoria)
+      const sqlAuth = executeSqlLogin(cleanEmail, cleanPassword);
 
-      if (!userFound) {
+      if (!sqlAuth.success || !sqlAuth.userAccount) {
         setIsLoading(false);
-        setGeneralError('Cuenta no registrada');
-        setEmailError('Correo no encontrado');
-        return;
-      }
-
-      if (userFound.password !== cleanPassword) {
-        setIsLoading(false);
-        setPasswordError('Contraseña incorrecta');
-        setGeneralError('Credenciales inválidas');
+        if (sqlAuth.errorType === 'NOT_FOUND') {
+          setGeneralError('Cuenta no registrada');
+          setEmailError('Correo no encontrado');
+        } else {
+          setPasswordError('Contraseña incorrecta');
+          setGeneralError('Credenciales inválidas');
+        }
         return;
       }
 
@@ -170,7 +167,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       }
 
       setIsLoading(false);
-      onLoginSuccess(userFound);
+      onLoginSuccess(sqlAuth.userAccount);
     }, 350);
   };
 

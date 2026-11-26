@@ -127,20 +127,15 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
   }, [selectedRecordForInvoice, products]);
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-8 pb-8">
       {/* Centered Pill Toast Notification */}
       <Toast message={toast} onClose={clearToast} />
 
-      {/* Minimalist Oversized Header — Exactly like Dashboard & Pos */}
+      {/* Minimalist Oversized Header — Identical to Dashboard */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 stagger-1">
-        <div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-display tracking-tight text-white">
-            Mis Ventas
-          </h2>
-          <p className="text-sm sm:text-base font-medium text-[#8E8E93] mt-1.5">
-            Historial cronológico de transacciones registradas por fecha y hora con comprobante SUNAT
-          </p>
-        </div>
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-display tracking-tight text-white">
+          Mis Ventas
+        </h2>
 
         <div className="flex items-center gap-3">
           <GlassButton
@@ -148,7 +143,7 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
             size="md"
             icon={<ShoppingBag className="w-4.5 h-4.5" />}
             onClick={onNavigateToPos}
-            className="rounded-full px-6 py-3 text-base font-bold shadow-lg"
+            className="rounded-full px-6 py-2.5 text-sm font-bold shadow-lg"
           >
             Nueva Venta
           </GlassButton>
@@ -158,7 +153,7 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
       {/* 3 Minimalist Oversized Hero KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 stagger-2">
         {/* KPI 1: Total Recaudado */}
-        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[190px] p-6 sm:p-7">
+        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[200px] sm:min-h-[210px]">
           <div className="flex justify-between items-center">
             <span className="text-base font-semibold text-[#8E8E93]">Total Recaudado</span>
             <span className="inline-flex items-center gap-1 text-sm font-bold text-[#007AFF] bg-[#007AFF]/10 px-3 py-1 rounded-full border border-[#007AFF]/20">
@@ -167,7 +162,7 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
             </span>
           </div>
 
-          <div className="my-3">
+          <div className="my-4">
             <span className="text-3xl sm:text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight block">
               S/ {totalRevenue.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
@@ -182,7 +177,7 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
         </GlassCard>
 
         {/* KPI 2: Ventas de Hoy */}
-        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[190px] p-6 sm:p-7">
+        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[200px] sm:min-h-[210px]">
           <div className="flex justify-between items-center">
             <span className="text-base font-semibold text-[#8E8E93]">Ventas de Hoy</span>
             <span className="text-sm font-bold text-[#30D158] bg-[#30D158]/10 px-3 py-1 rounded-full border border-[#30D158]/20">
@@ -190,7 +185,7 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
             </span>
           </div>
 
-          <div className="my-3">
+          <div className="my-4">
             <span className="text-3xl sm:text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight block">
               S/ {todayRevenue.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
@@ -202,13 +197,13 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({
         </GlassCard>
 
         {/* KPI 3: Calzados Despachados */}
-        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[190px] p-6 sm:p-7">
+        <GlassCard hoverEffect className="flex flex-col justify-between min-h-[200px] sm:min-h-[210px]">
           <div className="flex justify-between items-center">
             <span className="text-base font-semibold text-[#8E8E93]">Calzados Despachados</span>
             <span className="text-sm font-bold text-white/70">Inventario Vendido</span>
           </div>
 
-          <div className="my-3 flex items-baseline gap-3">
+          <div className="my-4 flex items-baseline gap-3">
             <span className="text-3xl sm:text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
               {totalPairsSold}
             </span>

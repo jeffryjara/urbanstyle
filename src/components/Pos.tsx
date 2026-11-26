@@ -355,7 +355,7 @@ export const Pos: React.FC<PosProps> = ({
       </div>
 
       {/* Main POS Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start lg:!mt-0">
         {/* Left/Center: Catalog (8 cols) */}
         <div className={`lg:col-span-8 space-y-6 ${mobilePosTab === 'orden' ? 'hidden lg:block' : 'block'}`}>
           {/* Header & Oversized Search (Without keyboard shortcut badge) */}

@@ -21,7 +21,7 @@ import { Badge } from './ui/Badge';
 import { Toast, useToastNotification } from './ui/Toast';
 import { SegmentedControl, type SegmentOption } from './ui/SegmentedControl';
 import type { UserSession, AuditRecord, Product } from '../types';
-import { INITIAL_AUDIT_RECORDS, MONTHLY_SALES_DATA } from '../data/initialData';
+import { INITIAL_AUDIT_RECORDS, INITIAL_PRODUCTS, MONTHLY_SALES_DATA } from '../data/initialData';
 
 interface DashboardProps {
   user: UserSession;
@@ -39,7 +39,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   auditRecords,
   products,
 }) => {
-  const [timeframe, setTimeframe] = useState<Timeframe>('mes');
+  const [timeframe, setTimeframe] = useState<Timeframe>('hoy');
   const [docFilter, setDocFilter] = useState<DocFilter>('todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [hoveredMonth, setHoveredMonth] = useState<string | null>(null);
@@ -58,15 +58,143 @@ export const Dashboard: React.FC<DashboardProps> = ({
     { id: 'facturas', label: 'Facturas' },
   ];
 
-  // Dynamic KPI calculations based on timeframe
+  const records = auditRecords || INITIAL_AUDIT_RECORDS;
+  const catalogProducts = products && products.length > 0 ? products : INITIAL_PRODUCTS;
+
+  // Live revenue & pairs calculations from actual auditRecords
+  const initialBaseSum = INITIAL_AUDIT_RECORDS.reduce((acc, r) => acc + r.total, 0);
+  const liveSum = records.reduce((acc, r) => acc + r.total, 0);
+  const addedRevenue = Math.max(0, liveSum - initialBaseSum);
+
+  const initialStoreSum = INITIAL_AUDIT_RECORDS
+    .filter((r) => r.channel.toLowerCase().includes('tienda'))
+    .reduce((acc, r) => acc + r.total, 0);
+  const liveStoreSum = records
+    .filter((r) => r.channel.toLowerCase().includes('tienda'))
+    .reduce((acc, r) => acc + r.total, 0);
+  const addedStoreRevenue = Math.max(0, liveStoreSum - initialStoreSum);
+  const addedDigitalRevenue = Math.max(0, addedRevenue - addedStoreRevenue);
+
+  const initialPairsSum = INITIAL_AUDIT_RECORDS.reduce((acc, r) => acc + (r.itemsCount || 1), 0);
+  const livePairsSum = records.reduce((acc, r) => acc + (r.itemsCount || 1), 0);
+  const addedPairs = Math.max(0, livePairsSum - initialPairsSum);
+
+  // Dynamically determine Top Product from records + catalogProducts
+  const productSalesMap = new Map<string, { product: Product; pairs: number }>();
+  catalogProducts.forEach((p, idx) => {
+    // Base pairs aligned with presentation (Adidas Runfalcon leads initially)
+    const basePairs = idx === 0 ? 16 : idx === 1 ? 14 : idx === 2 ? 11 : Math.max(2, 10 - idx);
+    productSalesMap.set(p.id, { product: p, pairs: basePairs });
+  });
+
+  // Add pairs from any new sales recorded after INITIAL_AUDIT_RECORDS
+  const newRecords = records.filter(
+    (r) => !INITIAL_AUDIT_RECORDS.some((init) => init.id === r.id)
+  );
+  newRecords.forEach((rec) => {
+    const summary = (rec.itemsSummary || '').toLowerCase();
+    let matched = false;
+    catalogProducts.forEach((p) => {
+      if (summary.includes(p.name.toLowerCase())) {
+        matched = true;
+        const entry = productSalesMap.get(p.id);
+        if (entry) {
+          // Extract specific quantity "xN" if present, else use itemsCount
+          const regex = new RegExp(`${p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^,]*x(\\d+)`, 'i');
+          const m = (rec.itemsSummary || '').match(regex);
+          const qty = m ? parseInt(m[1], 10) : (rec.itemsCount || 1);
+          entry.pairs += qty;
+        }
+      }
+    });
+    if (!matched && catalogProducts[0]) {
+      const firstEntry = productSalesMap.get(catalogProducts[0].id);
+      if (firstEntry) firstEntry.pairs += rec.itemsCount || 1;
+    }
+  });
+
+  const sortedTopProducts = Array.from(productSalesMap.values()).sort((a, b) => b.pairs - a.pairs);
+  const topSeller = sortedTopProducts[0]?.product || catalogProducts[0];
+  const topSellerMargin = topSeller.cost
+    ? (((topSeller.price - topSeller.cost) / topSeller.price) * 100).toFixed(1)
+    : '42.8';
+
+  const formatSoles = (val: number) => {
+    const hasDecimals = Math.round(val * 100) % 100 !== 0;
+    return `S/ ${val.toLocaleString('es-PE', {
+      minimumFractionDigits: hasDecimals ? 2 : 0,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
+  // Dynamic KPI values per timeframe driven by live records
+  const hoyRevenue = liveSum;
+  const semanaRevenue = 41451 + liveSum;
+  const mesRevenue = 177931 + liveSum;
+  const anioBaseSum = MONTHLY_SALES_DATA.reduce((acc, m) => acc + m.total, 0);
+  const anioRevenue = anioBaseSum + addedRevenue;
+
+  const hoyDigitalBase = 1450 + addedDigitalRevenue;
+  const hoyStoreBase = 1050 + addedStoreRevenue;
+  const hoyDigitalPct = Math.round((hoyDigitalBase / (hoyDigitalBase + hoyStoreBase)) * 100);
+
+  const semanaDigitalPct = Math.round(((27395 + addedDigitalRevenue) / (48864 + addedRevenue)) * 100);
+  const mesDigitalPct = Math.round(((100116 + addedDigitalRevenue) / (185400 + addedRevenue)) * 100);
+  const anioDigitalPct = Math.round(((242300 + addedDigitalRevenue) / (anioBaseSum + addedRevenue)) * 100);
+
   const kpiData = {
-    hoy: { total: 'S/ 8,450', change: '+8.4%', topCount: 16, digitalPct: 58, storePct: 42, metaPct: '94%' },
-    semana: { total: 'S/ 48,920', change: '+11.7%', topCount: 88, digitalPct: 56, storePct: 44, metaPct: '91%' },
-    mes: { total: 'S/ 185,400', change: '+14.2%', topCount: 340, digitalPct: 54, storePct: 46, metaPct: '93%' },
-    anio: { total: 'S/ 1,480,200', change: '+22.6%', topCount: 2840, digitalPct: 52, storePct: 48, metaPct: '96%' },
+    hoy: {
+      total: formatSoles(hoyRevenue),
+      change: `+${(8.4 + (addedRevenue / 450)).toFixed(1)}%`,
+      topCount: 16 + addedPairs,
+      digitalPct: hoyDigitalPct,
+      storePct: 100 - hoyDigitalPct,
+      metaPct: `${Math.min(100, Math.round((hoyRevenue / 8500) * 100))}%`,
+    },
+    semana: {
+      total: formatSoles(semanaRevenue),
+      change: `+${(11.7 + (addedRevenue / 2500)).toFixed(1)}%`,
+      topCount: 88 + addedPairs,
+      digitalPct: semanaDigitalPct,
+      storePct: 100 - semanaDigitalPct,
+      metaPct: `${Math.min(100, Math.round((semanaRevenue / 54000) * 100))}%`,
+    },
+    mes: {
+      total: formatSoles(mesRevenue),
+      change: `+${(14.2 + (addedRevenue / 8000)).toFixed(1)}%`,
+      topCount: 340 + addedPairs,
+      digitalPct: mesDigitalPct,
+      storePct: 100 - mesDigitalPct,
+      metaPct: `${Math.min(100, Math.round((mesRevenue / 200000) * 100))}%`,
+    },
+    anio: {
+      total: formatSoles(anioRevenue),
+      change: `+${(22.6 + (addedRevenue / 25000)).toFixed(1)}%`,
+      topCount: 2840 + addedPairs,
+      digitalPct: anioDigitalPct,
+      storePct: 100 - anioDigitalPct,
+      metaPct: `${Math.min(100, Math.round((anioRevenue / 480000) * 100))}%`,
+    },
   }[timeframe];
 
-  const records = auditRecords || INITIAL_AUDIT_RECORDS;
+  // Dynamic monthly chart data (OCT reflects live new sales)
+  const dynamicMonthlyData = MONTHLY_SALES_DATA.map((item, idx) => {
+    if (idx === MONTHLY_SALES_DATA.length - 1) {
+      const updatedDigital = Math.round(item.digital + addedDigitalRevenue);
+      const updatedStore = Math.round(item.store + addedStoreRevenue);
+      return {
+        ...item,
+        digital: updatedDigital,
+        store: updatedStore,
+        total: updatedDigital + updatedStore,
+      };
+    }
+    return item;
+  });
+
+  const extraTxCount = Math.max(0, records.length - INITIAL_AUDIT_RECORDS.length);
+  const dynamicConversion = (3.8 + extraTxCount * 0.1).toFixed(1);
+  const dynamicConversionDelta = `+${(0.6 + extraTxCount * 0.1).toFixed(1)}%`;
 
   // Filtered audit records
   const filteredRecords = records.filter((rec) => {
@@ -140,7 +268,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm font-medium text-[#8E8E93]">
-              <span>Meta</span>
+              <span>Meta ({records.length} ventas)</span>
               <span className="text-white font-bold">{kpiData.metaPct}</span>
             </div>
             <div className="w-full h-2.5 bg-white/[0.08] rounded-full overflow-hidden">
@@ -156,7 +284,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <GlassCard hoverEffect className="flex flex-col justify-between min-h-[200px] sm:min-h-[210px]">
           <div className="flex justify-between items-center">
             <span className="text-base font-semibold text-[#8E8E93]">Más Vendido</span>
-            <span className="text-sm font-bold text-[#007AFF]">Ultraboost 22</span>
+            <span className="text-sm font-bold text-[#007AFF] truncate max-w-[160px]">{topSeller.name}</span>
           </div>
 
           <div className="my-4 flex items-center justify-between gap-4">
@@ -169,16 +297,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             <div className="w-20 h-14 sm:w-24 sm:h-16 rounded-2xl overflow-hidden border border-white/10 bg-black shrink-0">
               <img
-                src="https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&w=240&q=80"
-                alt="Ultraboost 22"
+                src={topSeller.image}
+                alt={topSeller.name}
                 className="w-full h-full object-cover"
               />
             </div>
           </div>
 
           <div className="flex justify-between text-sm text-[#8E8E93] font-medium">
-            <span>Adidas Running</span>
-            <span className="text-white font-bold">+42.8% margen</span>
+            <span>{topSeller.brand} • {livePairsSum} pares hoy</span>
+            <span className="text-white font-bold">+{topSellerMargin}% margen</span>
           </div>
         </GlassCard>
 
@@ -261,10 +389,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div className="w-full" />
               </div>
 
-              {MONTHLY_SALES_DATA.map((item) => {
+              {dynamicMonthlyData.map((item) => {
                 const maxVal = 65000;
-                const digitalHeight = Math.max((item.digital / maxVal) * 100, 8);
-                const storeHeight = Math.max((item.store / maxVal) * 100, 8);
+                const digitalHeight = Math.min(100, Math.max((item.digital / maxVal) * 100, 8));
+                const storeHeight = Math.min(100, Math.max((item.store / maxVal) * 100, 8));
                 const totalK = Math.round(item.total / 1000);
                 const isHovered = hoveredMonth === item.month;
 
@@ -336,10 +464,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <GlassCard hoverEffect className="flex-1 flex items-center justify-between py-6 px-7">
             <div className="space-y-1.5">
               <span className="text-base font-semibold text-[#8E8E93] block">Conversión</span>
-              <Badge variant="neutral">+0.6%</Badge>
+              <Badge variant="neutral">{dynamicConversionDelta}</Badge>
             </div>
             <span className="text-4xl xl:text-5xl font-extrabold font-display text-white tracking-tight">
-              3.8%
+              {dynamicConversion}%
             </span>
           </GlassCard>
 

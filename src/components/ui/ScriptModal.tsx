@@ -69,13 +69,6 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
     return true;
   });
 
-  // Execute initial query when opened
-  useEffect(() => {
-    if (isOpen && !queryResult) {
-      handleRunQuery(SQL_PRESETS[0].sql, false);
-    }
-  }, [isOpen]);
-
   // Close modal when pressing Escape key
   useEffect(() => {
     if (!isOpen) return;
@@ -116,7 +109,8 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
   const handleSelectPreset = (preset: SqlPreset) => {
     setSelectedPresetId(preset.id);
     setSqlQuery(preset.sql);
-    handleRunQuery(preset.sql, true);
+    setQueryResult(null);
+    showNotification(`Preset cargado: ${preset.title}`, 'info');
   };
 
   const handleCopy = (text: string, isScript = false) => {
@@ -151,8 +145,9 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
 
   const handleLoadScriptToConsole = (sqlSnippet: string) => {
     setSqlQuery(sqlSnippet);
+    setQueryResult(null);
     setActiveTab('console');
-    handleRunQuery(sqlSnippet, true);
+    showNotification('Código cargado: presiona Ejecutar', 'info');
   };
 
   return (
@@ -367,9 +362,11 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
               {/* Minimalist Result Meta Bar */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.07] bg-[#0e0e0e] shrink-0">
                 <span className="text-sm font-bold text-white">
-                  {queryResult?.isError
+                  {!queryResult
+                    ? 'Listo para ejecutar'
+                    : queryResult.isError
                     ? 'Error de sintaxis o restricción'
-                    : `${queryResult?.rowCount ?? 0} filas`}
+                    : `${queryResult.rowCount} filas`}
                 </span>
 
                 {queryResult?.isError || (queryResult?.affectedRows && queryResult.affectedRows > 0) ? (
@@ -433,7 +430,7 @@ export const ScriptModal: React.FC<ScriptModalProps> = ({
                   </table>
                 ) : (
                   <div className="h-full flex items-center justify-center text-base text-[#8E8E93]">
-                    {queryResult?.message || 'Ejecuta una consulta SQL'}
+                    {queryResult?.message || 'Presiona el botón "Ejecutar" para procesar la consulta SQL'}
                   </div>
                 )}
               </div>

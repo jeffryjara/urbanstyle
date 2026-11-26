@@ -1243,33 +1243,92 @@ function handleDelete(query: string, startTime: number): QueryResult {
 
   // 2. DELETE FROM VarianteProducto
   const prevCount = dbState.products.length;
+  let targetModel: string | null = null;
+  let targetSku: string | null = null;
   let targetBrand: string | null = null;
+
+  const modelMatch = query.match(/(?:NombreModelo|Modelo)\s*=\s*['"]([^'"]+)['"]/i);
+  if (modelMatch) targetModel = modelMatch[1];
+
+  const skuMatch = query.match(/SKU\s*=\s*['"]([^'"]+)['"]/i);
+  if (skuMatch) targetSku = skuMatch[1];
+
   for (const b of ['ADIDAS', 'NIKE', 'PUMA', 'REEBOK', 'NEW BALANCE', 'VANS', 'CONVERSE']) {
-    if (upper.includes(`'${b}'`)) {
+    if (upper.includes(`'${b}'`) && !targetModel) {
       targetBrand = b;
       break;
     }
   }
 
-  if (targetBrand) {
-    dbState.products = dbState.products.filter(p => p.brand.toUpperCase() !== targetBrand);
+  let deletedProducts: Product[] = [];
+
+  if (targetModel) {
+    deletedProducts = dbState.products.filter(
+      p => p.name.toLowerCase().trim() === targetModel!.toLowerCase().trim()
+    );
+    dbState.products = dbState.products.filter(
+      p => p.name.toLowerCase().trim() !== targetModel!.toLowerCase().trim()
+    );
+  } else if (targetSku) {
+    deletedProducts = dbState.products.filter(
+      p => p.sku.toLowerCase().trim() === targetSku!.toLowerCase().trim()
+    );
+    dbState.products = dbState.products.filter(
+      p => p.sku.toLowerCase().trim() !== targetSku!.toLowerCase().trim()
+    );
+  } else if (targetBrand) {
+    deletedProducts = dbState.products.filter(
+      p => p.brand.toUpperCase() === targetBrand
+    );
+    dbState.products = dbState.products.filter(
+      p => p.brand.toUpperCase() !== targetBrand
+    );
   } else {
-    dbState.products = dbState.products.slice(0, dbState.products.length - 1);
+    // Delete newest item if available
+    if (dbState.products.length > 0) {
+      deletedProducts = [dbState.products[0]];
+      dbState.products = dbState.products.slice(1);
+    }
   }
 
   const deleted = prevCount - dbState.products.length;
   if (deleted > 0) {
+    deletedProducts.forEach(dp => {
+      dbState.auditLogs.unshift({
+        id: dbState.auditLogs.length + 1,
+        tabla: 'VarianteProducto',
+        operacion: 'DELETE',
+        idRegistro: dp.sku,
+        valorAnterior: `Modelo=${dp.name}; Marca=${dp.brand}; Precio=${dp.price}; Stock=${dp.stock}`,
+        valorNuevo: 'NULL (Eliminado del Catálogo)',
+        usuario: 'SQL_Studio_User',
+        fecha: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      });
+    });
+
     notifySubscribers(dbState);
   }
 
+  const targetIdentifier = targetModel || targetSku || targetBrand || (deletedProducts[0]?.name) || 'Variante';
+
   return {
-    columns: ['Operación', 'Filas Eliminadas', 'Estado'],
-    rows: [['DELETE', deleted, 'Registro eliminado del catálogo en vivo']],
+    columns: ['Operación', 'Filas Eliminadas', 'Identificador', 'Estado', 'Impacto En Vivo'],
+    rows: [[
+      'DELETE FROM VarianteProducto',
+      deleted,
+      targetIdentifier,
+      deleted > 0 ? 'EXITOSO' : 'No encontrado (0 filas)',
+      deleted > 0
+        ? 'Removido al instante de Terminal POS e Inventario'
+        : 'El registro no existe o ya fue eliminado previamente',
+    ]],
     rowCount: 1,
     affectedRows: deleted,
     executionTimeMs: Math.max(1, Math.round(performance.now() - startTime)),
     operation: 'DELETE',
-    message: `${deleted} registros eliminados de VarianteProducto.`,
+    message: deleted > 0
+      ? `${deleted} calzado(s) "${targetIdentifier}" eliminado(s) de VarianteProducto. Reflejado en tiempo real en la web.`
+      : `0 filas afectadas. No se encontró "${targetIdentifier}" en VarianteProducto. (Si acaba de reiniciar, ejecute primero el preset INSERT Nueva Zapatilla).`,
   };
 }
 

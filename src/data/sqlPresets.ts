@@ -435,6 +435,42 @@ VALUES ('Ultraboost Light 2026', 'Adidas', 'Deportiva / Running', 42, 599.90, 20
   },
 
   {
+    id: 'delete_zapatilla',
+    title: 'DELETE Zapatilla (Catálogo)',
+    category: 'OLTP (3FN)',
+    badge: 'DML Mutación',
+    badgeColor: 'red',
+    sql: `-- Eliminación DML en VarianteProducto (Remover Calzado del Catálogo)
+DELETE FROM VarianteProducto
+WHERE NombreModelo = 'Ultraboost Light 2026';`,
+    description: 'Eliminación DML que retira del catálogo la zapatilla seleccionada y la descuenta del inventario en vivo.',
+    academicDocenteNote: 'Profesor, así como demostramos la inserción de nuevos productos con INSERT, aquí mostramos la instrucción DML DELETE en VarianteProducto. Al ejecutarla, el calzado es removido del catálogo y la terminal POS actualiza su inventario en tiempo real, registrando la operación en dbo.Auditoria.',
+    theoryConcept: 'Instrucciones DML (Data Manipulation Language), Integridad Referencial y Eliminación de Entidades.',
+    lineByLine: [
+      {
+        lineNum: 1,
+        code: 'DELETE FROM VarianteProducto',
+        explanation: 'Indica la tabla relacional transaccional de la cual se removerán los registros físicamente.',
+      },
+      {
+        lineNum: 2,
+        code: "WHERE NombreModelo = 'Ultraboost Light 2026';",
+        explanation: 'Cláusula WHERE determinista que restringe el impacto únicamente al modelo de calzado deseado, protegiendo el resto del inventario.',
+      },
+    ],
+    teacherQuestions: [
+      {
+        question: '¿Qué sucede si un producto ya tiene ventas registradas e intentamos hacer DELETE?',
+        answer: 'Si la clave foránea está configurada con RESTRICT o NO ACTION, el motor SQL Server abortará la instrucción con error de integridad referencial. Para productos con historial se suele preferir baja lógica (ej. Activo = 0 o Stock = 0).',
+      },
+      {
+        question: '¿Cómo se refleja este DELETE en la interfaz web?',
+        answer: 'Al ejecutarse, el motor notifica a los suscriptores y la tarjeta del calzado desaparece instantáneamente tanto de la Terminal POS como del Inventario general.',
+      },
+    ],
+  },
+
+  {
     id: 'update_stock',
     title: 'UPDATE Stock +15 (Adidas)',
     category: 'OLTP (3FN)',
